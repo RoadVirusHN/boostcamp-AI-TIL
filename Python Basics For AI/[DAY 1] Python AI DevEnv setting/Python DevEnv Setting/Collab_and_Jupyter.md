@@ -16,24 +16,24 @@ jupyter notebook --no-browser
 
 > conda 가상환경 내에서 설치
 
-![1610966981429](./Collab and Jupyter.assets/1610966981429.png)
+![1610966981429](Collab_and_Jupyter.assets/1610966981429.png)
 
 >conda 가상환경 내에서 jupyter notebook 실행
 
-![1610966817637](Collab and Jupyter.assets/1610966817637.png)
+![1610966817637](Collab_and_Jupyter.assets/1610966817637.png)
 
 - **--no-browser** 를 붙이지 않으면 ubuntu 내에서 실행되는 것으로 인식하여 아무 창도 안뜬다.
 - ubuntu wsi 처럼 가상환경 내에서 실행하는 게 아니라면 없어도 된다.
 
 > 주소를 웹페이지에 입력한 실행 결과
 
-![1610966796735](Collab and Jupyter.assets/1610966796735.png)
+![1610966796735](Collab_and_Jupyter.assets/1610966796735.png)
 
 ### 사용법
 
 - help의 shortcuts로 확인할 수 있다.
 
-![1610967126746](Collab and Jupyter.assets/1610967126746.png)
+![1610967126746](Collab_and_Jupyter.assets/1610967126746.png)
 
 ## Colab
 
@@ -45,10 +45,10 @@ jupyter notebook --no-browser
 
 - 구글에 로그인 후, colab에 들어가면 OK!
 
-![1610967451398](Collab and Jupyter.assets/1610967451398.png)
+![1610967451398](Collab_and_Jupyter.assets/1610967451398.png)
 
 ### 사용법
 
 - 도구 메뉴의 단축키와 도움말의 스니펫, 인트로 페이지가 잘되어있다.
 https://colab.research.google.com/notebooks/intro.ipynb#scrollTo=5fCEDCU_qrC0
-![1610967519049](Collab and Jupyter.assets/1610967519049.png)
+![1610967519049](Collab_and_Jupyter.assets/1610967519049.png)
