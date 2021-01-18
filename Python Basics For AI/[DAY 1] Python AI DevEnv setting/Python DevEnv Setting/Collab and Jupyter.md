@@ -16,7 +16,7 @@ jupyter notebook --no-browser
 
 > conda 가상환경 내에서 설치
 
-![1610966981429](Collab and Jupyter.assets/1610966981429.png)
+![1610966981429](./Collab and Jupyter.assets/1610966981429.png)
 
 >conda 가상환경 내에서 jupyter notebook 실행
 
