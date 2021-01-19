@@ -1,5 +1,7 @@
 ## boostcamp
 *.pdf
+*.bignono/
+*.bignono
 # Created by https://www.toptal.com/developers/gitignore/api/windows,linux,python,vscode,react,jupyternotebooks,web,virtualenv,dotenv
 # Edit at https://www.toptal.com/developers/gitignore?templates=windows,linux,python,vscode,react,jupyternotebooks,web,virtualenv,dotenv
 
