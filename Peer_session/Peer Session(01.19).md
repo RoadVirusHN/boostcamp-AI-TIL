@@ -1,4 +1,4 @@
-# 2021.01.18 Peer Session(22조 dAIving)
+# 2021.01.19 Peer Session(22조 dAIving)
 
 ## 질문
 
