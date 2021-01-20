@@ -258,9 +258,27 @@ _[ ]안에 서로 다른 자료형의 값을 콤마(,)로 구분해 하나 이�
 student1 = ["홍길동",20]
 student1[1] = False # 리스트이므로 변경됨, 
 ```
+##### List Comprehension(리스트 내포)
+- 기존의 배열을 이용해 다른 배열을 만드는 기법
+- for + append 보다 빠르다.
+```python
+data_list3 = []
+
+data_list3 = [item for item in data_list1] 
+# 리스트 내포기능을 통하여 list1과 동일한 항목으로만듬, 반복자료형의 경우 리터럴 안에 for문을 사용하여 내포가능
+
+data_list5 = [item for item in data_list1 if item % 2 == 1] # 홀수항목만 저장하는 법
+
+[x * y for x in data_list1 if x % 2 ==1 for y in data_list1 if y % 2 ==0]
+# 리스트 내포 안에 for문의 중첩 가능, if 문 사용 가능
+```
+
 
 #### Set
-_{ } 안에 서로 다른 자료형의 값을 콤마로 구분해 저장, __순서 없음__, __데이터 항목의 중복을 허용하지 않음__, 중복 입력시 하나만 입력됨, 그래서 인덱스로 접근 불가_
+- _{ } 안에 서로 다른 자료형의 값을 콤마로 구분해 저장, __순서 없음__, __데이터 항목의 중복을 허용하지 않음__, 중복 입력시 하나만 입력됨, 그래서 인덱스로 접근 불가_
+- 수학에서 활용하는 union, intersection, difference등의 함수를 사용 가능
+- List 보다 성능상 빠르며, 실수로 값을 변경하는 것을 방지
+
 >Set 자료형 예시
 ```Python
 student1 = {False,"홍길동",20,"이순신",False}
@@ -311,6 +329,104 @@ x ,y = [10,20]
 ```
 > Garbage collector가 자동으로 변수를 제거해서 메모리 관맇지만 del()함수로 직접 객체를 지울 수도 있음 
 
+
+#### collections
+- List, Tuple, Dict에 대한 Python Built-in 확장 자료 구조(모듈)
+- deque, Counter, OrderedDict, defaultdict, namedtuple 등의 모듈을 포함
+##### deque
+- stack과 queue를 지원하는 모듈
+- List에 비해 빠르다.
+- 기존 list의 함수들, stack, queue를 위한 appendleft 함수 뿐만 아니라, rotate, reverse 등 Linked List의 특성 지원
+```python
+from collections import deque
+
+deque_list = deque()
+for i in range(5):
+	deque_list.append(i)
+print(deque_list)
+deque_list.appendleft(10)
+print(deque_list)
+deque_list.rotate(2)
+print(deque_list)
+deque_list.rotate(2)
+print(deque_list)
+print(deque(reversed(deque_list)))
+
+deque_list.extend([5,6,7])
+print(deque_list)
+deque_list.extendleft([5,6,7])
+print(deque_list)
+```
+##### OrderedDict
+- 입력 순서에 따른 출력 순서를 보장하고(최신 Python은 기존 dict도 가능함), 정렬이 가능한 딕셔너리
+##### defaultdict
+- Dict type의 값에 기본 값을 지정, 신규값 생성시 사용하는 방법
+```python
+from collections import defaultdict
+from collections import OrderedDict
+text= "a to a and the press release that of your a to and the press that of and the press".lower().split()
+word_count = defaultdict(lambda: 0) # Default 값을 0으로 설정
+for word in text:
+    word_count[word] += 1  # 굳이 word_count[word] = 0 으로 생성안해도 됨
+
+for i, v in OrderedDict(sorted(word_count.items(), key=lambda t: t[1], reverse=True)).items():
+    print(i,v)
+###
+a 3
+and 3
+the 3
+press 3
+to 2
+that 2
+of 2
+release 1
+your 1
+###
+    
+```
+##### Counter
+- Sequence type의 data element들의 갯수를 dict 형태로 반환
+```python
+from collections import Counter
+
+c = Counter()
+c = Counter('gallahad')
+
+print(c) # Counter({'a': 3, 'l': 2, 'g': 1, 'h': 1, 'd': 1})
+
+c = Counter({'red': 4, 'blue': 2})
+print(c) # Counter({'red': 4, 'blue': 2})
+print(list(c.elements())) # ['red', 'red', 'red', 'red', 'blue', 'blue']
+
+c = Counter(cats=4, dogs=8)
+print(c) # Counter({'dogs': 8, 'cats': 4})
+print(list(c.elements())) # ['cats', 'cats', 'cats', 'cats', 'dogs', 'dogs', 'dogs', 'dogs', 'dogs', 'dogs', 'dogs', 'dogs']
+
+c = Counter(a=4, b=2, c=0, d=-2)
+d = Counter(a=1, b=2, c=3, d=4)
+print(c+d) # Counter({'a': 5, 'b': 4, 'c': 3, 'd': 2})
+print(c&d) # Counter({'b': 2, 'a': 1})
+print(c|d) # Counter({'a': 4, 'd': 4, 'c': 3, 'b': 2})
+c.subtract(d) # c- d
+print(c) # Counter({'a': 3, 'b': 0, 'c': -3, 'd': -6})
+
+# word counter 구현
+text= "a to a and the press release that of your a to and the press that of and the press".lower().split()
+print(Counter(text)) # Counter({'a': 3, 'and': 3, 'the': 3, 'press': 3, 'to': 2, 'that': 2, 'of': 2, 'release': 1, 'your': 1})
+print(Counter(text)["a"]) # 3
+```
+- Dict type, keyword parameter 등도 모두 처리 가능, Set 연산 지원
+##### namedtuple
+- Tuple 형태로 Data 구조체를 저장하는 방법
+- 저장되는 data의 variable을 사전에 지정해서 저장
+```python
+from collections import namedtuple
+
+point = namedtuple('Point', ['x', 'y'])
+p = point(11, y=22)
+print(p.x,p.y) # 11, 22
+
+```
 ## 연산자
 ### 산술 연산자
 ```python
@@ -709,7 +825,7 @@ func_noparameters_noreturn()
 ```
 #### 언팩 연산자와 키워드 언팩 연산자
 
-1. *언팩 연산자
+1. \*언팩 연산자
 - 매개변수의 개수를 가변적으로 사용할 수 있도록 언팩 연산자(*) 제공
 - 매개변수에 적용시 인자를 튜플 형식으로 처리
 
@@ -729,7 +845,7 @@ val = def calc_sum("덧셈",1,2,3,4,5)
 print(val[0] +", "+ val[1])  # 1+2+3+4+5 = 결과값 : 덧셈, 15
 ```
 
-2. **키워드 언팩 연산자
+2. \*\*키워드 언팩 연산자
 - 매개변수의 개수를 가변적으로 사용할 수 있도록 함
 - 키워드 인자들을 전달해 매개변수를 딕셔너리 형식으로 처리함
 > 키워드 언팩 연산자 예시
@@ -773,6 +889,7 @@ print(ret_val) # minus 함수를 매개변수로 넘겨주었기 때문에 결�
 	- 변수에 저장해 재사용이 가능한 함수처럼 사용함
 	- 기존의 함수처럼 매개변수의 인자로 전달함
 	- 함수의 매개변수에 직접 인자로 전달할 수 있음
+	- 최근에는 reduce 함수와 함께 가독성 문제로 사용을 권장하지 않음
 > 람다식 예제
 ```python
 def calc(operator_fn,x,y):
@@ -808,7 +925,7 @@ print(make_id()) # 결과값 : 1
 
 ```python
 def do_function(var_name: var_type) -> return_type:
-	```
+``\`
     # function description
     {{#args}}                       - iterate over function arguments
         {{var}}                     - variable name
@@ -838,7 +955,7 @@ def do_function(var_name: var_type) -> return_type:
         {{descriptionPlaceholder}}  - [description] placeholder
     {{/returns}}
     python Docstring Generator 기준
-    ```
+    ``\`
     pass
 ```
 
@@ -853,7 +970,68 @@ def do_function(var_name: var_type) -> return_type:
   - IDE에서 함수 작성시 팝업으로 뜨는 함수 설명을 커스터마이징하여 적을 수 있다.
   - VScode 등의 extension을 이용하면 좀더 쉽게 작성할 수 있다. 
 
+## Pythonic code
 
+- 파이썬 스타일의 효율적인 코딩 기법, 고급 코드 작성할 수록 많이 필요해짐
+
+- lamda, map, reduce, list comprehension 등이 있다.
+
+### enumerate
+- list의 element를 추출할 때 번호를 붙여서 추출
+```python
+for idx, value in enumerate(['tic', 'tac', 'toe']):
+	print(idx, value)
+###
+0 tic
+1 tac
+2 toe
+###	
+```
+
+### zip
+- 두 개의 list의 값을 병렬적으로 추출
+```python
+alist = ['a1', 'a2', 'a3']
+blist = ['b1', 'b2', 'b3']
+for a, b in zip(alist, blist):
+	print(a,b)
+###
+a1 b1
+a2 b2
+a3 b3
+###	
+```
+### iterable object
+- Sequence형 자료형에서 데이터를 순서대로 추출하는 object
+- list, set, 문자열 등에 있음
+- \_\_iter\_\_ 함수와 \_\_next\_\_ 함수로 iterable 객체를 iterator object로 사용
+- iter 함수 : 배열을 iterator object로 변경
+```python
+citieds = ["Seoul", "Busan", "Jeju"]
+iter_obj = iter(cities)
+
+print(next(iter_obj))# Seoul
+print(next(iter_obj))# Busan
+print(next(iter_obj))# Jeju
+next(iter_obj) # stopIteration 오류 발생
+```
+### generator
+- iterable ojbect를 특수한 형태로 사용해주는 함수
+- element가 사용되는 시점에 값을 메모리에 반환, :yield를 사용해 한번에 하나의 element만 반환
+```python
+def generator_list(value):
+	result = []
+	for i in range(value):
+		yield i
+```
+#### generator comprehension
+- [] 대신 ()를 사용하는 generator 형태의 list
+- 일반적인 list보다 적은 메모리를 사용함
+- list 타입 데이터 반환시, 큰 데이터, 파일 데이터를 사용할 때 많이 사용함
+```python
+gen_ex = (n*n for n in range(500))
+print(type(g))
+```
 
 [^1]: 각 나라별 언어를 모두 표현하기 위해 만든 통합 코드체계, 최대 65,536자를 표현 가능
 [^2]: 변수의 자료형을 미리 선언하지 않고, 실행 시간에 값에 의해 결정
@@ -869,6 +1047,3 @@ def do_function(var_name: var_type) -> return_type:
 [^12]: 문자열 내에 사용된 문자열 표시 유형을 특정값으로 변경하는 기법
 [^13]: 파이썬에서 명령어나 연산자 등으로 사용하도록 되어있는 단어들
 [^14]: 객체의 주소가 함수로 전달되는 방식, 전달된 객체를 참조해 변경시 호출자에게 영향을 주나 새로운 객체를 만들어 변수에 넣은 후로는 영향이 가지않는다.
-```
-
-```
