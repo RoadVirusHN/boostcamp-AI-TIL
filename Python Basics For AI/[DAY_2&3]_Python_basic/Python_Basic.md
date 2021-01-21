@@ -362,8 +362,7 @@ print(deque_list)
 ##### defaultdict
 - Dict type의 값에 기본 값을 지정, 신규값 생성시 사용하는 방법
 ```python
-from collections import defaultdict
-from collections import OrderedDict
+from collections import defaultdict, OrderedDict
 text= "a to a and the press release that of your a to and the press that of and the press".lower().split()
 word_count = defaultdict(lambda: 0) # Default 값을 0으로 설정
 for word in text:
@@ -1032,6 +1031,178 @@ def generator_list(value):
 gen_ex = (n*n for n in range(500))
 print(type(g))
 ```
+## Object-Oriented Programming(OOP, 객체지향 프로그래밍)
+- 객체 개념을 프로그램으로 표현하여 문제를 해결하는 방법
+- 객체 : 실생활에서 일조의 물건, 속성(Attribute)와 행동(Auction)을 가짐
+	- 클래스 : 객체를 만들기 위해 미리 속성과 행동이 적혀있는 설계도, 청사진, 템플릿
+	- 인스턴스 : 클래스를 사용하여 만든 구현 객체
+```python
+# class 이름은 Camelcase로, 함수, 변수는 snake_case로
+class SoccerPlayer(object):#object는 상속받는 객체명으로 생략가능
+	# __init__은 객체 초기화 예약 함수
+	def __init__(self, name, position, back_number):
+		# 객체 자신을 뜻하는 self를 꼭 넣어야 class 함수로 인정된다.
+		self.name = name		
+		self.position = position
+		self.back_number = back_number
+		
+	def change_back_number(self, new_number): # method
+		print("등번호 변경")
+		self.back_number = new_number
+jinhyun = SoccerPlayer("Jinhyun", "MF", 10) # 객체 생성 및 초기화
+# 객체명 = class명(__init__함수 interface(초기값))
+jinhuyn.change_back_number(5) #메소드 사용
+````
+- 이외에도 \_\_main\_\_, \_\_add\_\_, \_\_str\_\_,\_\_eq\_\_  등의 예약함수가 존재
+
+### Inheritance(상속)
+- 부모 클래스로부터 속성과 Method를 물려받은 자식 클래스를 생성하는 것
+```python
+class Person(object):
+	def __init__(self, name, age):
+		self.name = name
+		self.age = age
+	
+	def introduce(self):
+		print(self.name, self.age)
+
+class Korean(Person):
+	pass
+	
+first_korean = Korean("Sungchul", 35)
+print(first_korean.name) # korean 클래스에 없는 속성과 Method를 Person(부모 객체)것을 이용해 사용가능
+first_korea.introduce()
+```
+### Polymorphism(다형성)
+- 같은 이름 메소드의 내부 로직을 다르게 작성
+- Method Overriding을 의미함
+```python
+class Animal:
+	def talk(self):
+		raise NotImplementError("Subclass must implement abstract method")
+		
+class Cat(Animal):
+	def talk(self): # 부모의 메소드를 사용하지 않고 같은 이름으로 새로 바꾸어 사용
+		return 'Meow!'
+		
+class Dog(Animal):
+	def talk(self):
+		return 'Woof! Woof!'
+		
+nabi = Cat()
+yebbi = Dog()
+
+print(nabi.talk()) # Meow!
+print(yebbi.talk()) # Woof! Woof!
+		
+```
+
+### Visibility(가시성)
+- 객체의 정보를 볼 수 있는 레벨을 조절함.
+- 객체를 사용하는 사용자가 임의로 정보를 수정하거나 필요 없는 정보에 접근, 소스의 보호를 위해 사용
+- **Encapsulation(캡슐화, 정보은닉)** 라고도 함
+```python
+class Inventory(object):
+    def __init__(self):
+        self.__items = [] # private 변수로 타객체가 접근 불가
+
+    def add_new_item(self, product):
+        self.__items.append(product)
+
+    def get_number_of_items(self):
+        return len(self.__items)
+
+    @property
+     # property decorator, private 변수를 반환하게 해줌
+    def items(self):
+        return self.__items
+
+my_inventory = Inventory()
+my_inventory.add_new_item('potion')
+print(my_inventory.get_number_of_items()) # 1
+items = my_inventory.items # 함수로 변수처럼 호출하여 반환 가능
+print(items) # ['potion']
+print(my_inventory.__items) # AttributeError: 'Inventory' object has no attribute '__items'
+```
+### decorate
+#### first-class objects
+- 파이썬의 함수들의 특징, 일등함수 또는 일급 객체
+- 변수나 데이터 구조에 할당이 가능한 객체
+- 함수의 파라메터로 전달이 가능 + 리턴값으로 사용
+```python
+def square(x):
+	return x * x
+	
+	
+f = square
+print(f(5)) # 25
+
+```
+#### inner function
+- 함수 내에 또다른 함수가 존재 가능
+```python
+def print_msg(msg):
+	def printer(): # inner function
+		print(msg)
+	return printer # inner function을 return 값으로 반환
+
+
+another = print_msg("Hello, python")
+another()
+```
+#### decorator
+- 클로져 함수를 좀더 간단하게 쓰게 해줌.
+- @함수명을 함수 위에 놓음으로 inner함수로 만들 수 있음
+```python
+def star(func):
+	def inner(*args, **kwargs):
+		print('*' * 30)
+		func(*args, **kwargs)
+		print('*' * 30)
+	return inner
+	
+@star
+def printer(msg):
+	print(msg)
+printer("Hello")
+# ******************************
+# Hello
+# ******************************
+```
+## 모듈과 패키지
+### Module
+- 미리 정의된 함수와 클래스의 집합
+- 새로 정의한 커스텀 모듈과 파이썬이 기본제공하는 Built-in Module이 있다.
+- 모듈이름으로 할 같은 폴더 내에 **\_\_init\_\_.py**를 만들고, 기타 .py파일을 만들어 생성가능
+- **import 모듈명 from 모듈경로** 로 사용 가능
+	- 절대 참조나 현재 디렉토리 기준, 부모 디렉토리 기준으로 모듈 경로 지정 가능
+### Package
+- 모듈들을 모아놓은 단위, 하나의 프로그램
+- 모듈들의 합, 즉 폴더들의 합으로 연결됨
+> \_\_init\_\_.py 예시
+```python
+__all__ = ['image', 'stage', 'sound']
+
+from . import image
+from . import stage
+from . impoart sound
+```
+
+> \_\_main\_\_.py 예시
+```python
+from stage.main import game_start
+from stage.sub import set_stage_level
+from image.character import show_character
+from sound.bgm import bgm_play
+
+if __name__ == '__main__':
+	game_start()
+	set_stage_level(5)
+	bgm_play(10)
+	show_character()
+```
+- 가상환경을 이용해 프로젝트 진행 시 필요한 패키지만 설치 가능
+	- virtualenv + pip, conda 등이 있음 
 
 [^1]: 각 나라별 언어를 모두 표현하기 위해 만든 통합 코드체계, 최대 65,536자를 표현 가능
 [^2]: 변수의 자료형을 미리 선언하지 않고, 실행 시간에 값에 의해 결정
