@@ -1204,6 +1204,468 @@ if __name__ == '__main__':
 - 가상환경을 이용해 프로젝트 진행 시 필요한 패키지만 설치 가능
 	- virtualenv + pip, conda 등이 있음 
 
+## Exception/File/Log Handling
+
+### Exception
+
+- 프로그램 사용할 때 일어나는 오류들
+- 발생 여부를 사전에 인지할 수 있는 예외는 명시적으로 정의해줘서 해결
+- 예상 불가능한 예외는 인터프리터 과정에서 발생 가능한 예외, index값의 리스트 범위 넘어가기, 0으로 나누기 등...
+
+#### Exception 문법
+
+```python
+try:
+    	예외 발생 가능 코드
+except <Exception Type> as e: # as e 생략 가능
+    	print(e)
+    	예외 발생 시 대응 코드
+else: # 생략 가능
+    예외가 발생하지 않을 때 동작 코드
+finally:
+    예외 발생 여부와 상관없이 실행
+```
+
+- Built-in Exception
+
+| Exception 이름                          | 내용                          |
+| --------------------------------------- | ----------------------------- |
+| indexError                              | List의 Index 범위를 넘어감    |
+| NameError                               | 존재하지 않는 변수 호출       |
+| ZeroDivisionError                       | 0으로 숫자를 나눌 때          |
+| ValueError                              | 변환할 수 없은 문자/숫자 변환 |
+| FileNotFoundError                       | 존재하지 않는 파일 호출       |
+| 기타 등등, + 커스텀 Excpetion 제작 가능 |                               |
+
+#### raise, assert 구문
+
+```python
+if a == 0:
+    raise ZeroDivisionError: # raise <exception type>(예외정보)
+        print("Divided by 0")
+```
+
+- raise : 필요에 따라 강제로 Exception 발생
+
+```python
+def get_binary_number(decimal_number):
+    assert isinstance(decimal_number, int) # assert 예외조건
+    # true 일시 코드 정지
+    return bin(decimal_number)
+```
+
+- assert : 특정 조건에 만족하지 않으면 발생
+
+### File Handling
+- File system: OS에서 파일을 저장하는 트리구조 저장체계
+- 파일은 text 파일과 binary 파일로 나눔
+
+| Binary 파일                                                  | Text 파일                                                    |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 컴퓨터만 이해할 수 있는 이진법 형식 파일, 메모장으로 내용 확인 불가, (ex) 엑셀, 워드 등 | 인간도 이해할 수 있는 문자열(ASCII/UNICODE) 형식 파일, 메모장으로 내용확인 가능, (ex) HTML, 코드 등 |
+
+- 파이썬은 파일 처리를 위해 "open" 키워드 이용
+
+```python
+with open("<파일이름.확장자>", "<접근 모드>", encoding="<인코딩 종류>") as my_file: # with와 함께 사용하면 해당 구문 완료후 파일을 종료함.
+    # encoding의 종류 : "utf8", "utf16", "cp949" 등
+    contents = my_file.read() #my_file.readlines() : 파일 한줄 한줄을 list로 변환
+    print(contents)
+    my_file.write("기록 시작\n") # 기록 시작이라는 한줄이 파일에 적혀짐
+    # with를 안쓰면 f.close()로 닫아줘야함.
+```
+
+- 접근 모드의 종류 
+  - r : 읽기 모드, w: 쓰기 모드, a : 추가 모드
+
+- **os, pathlib, shutil 모듈**을 이용하여 directory를 다룰 수 있음
+
+```python
+import os, pathlib, shutil
+if not os.path.isdir("log"): #log directory가 아니면
+    os.mkdir("log") # log 폴더를 생성하라.
+if not os.path.exists("log/count_log.txt"): # log폴더 내에 count_log.txt 파일이 없으면
+    f = open("log/count_log.txt", "w", encoding="utf8") #파일 생성 
+	f.close
+    os.path.isfile("log/count_log.txt") # 파일 존재 여부, true
+   
+cwd = pathlib.Path.cwd() # pathlib 모듈을 이용해 path를 객체로 다룰 수 있음
+print(cwd) # WindowsPath('D:/workspace')
+print(cwd.parent) # WindowsPath('D:/')
+print(list(cwd.glob("*"))) # workspace 내의 폴더들...
+
+source = "i_have_a_dream.txt"
+dest = os.path.join("abc", "sungchul.txt") # abc\sungchul.txt 경로 저장
+shutil.copy(source, dest) # source 파일을 dest로 파일 복사
+# shutil : 파일 조작 간편한 모듈
+```
+
+- **Pickle**
+  - 파이썬의 객체를 영속화(persistence)하는 built-in 객체
+  - 데이터, object 등 실행중 정보를 저장-> 불러와서 사용
+  - 저장해야하는 정보, 계산 결과(AI 모델) 등에 활용
+
+```python
+import pickle
+
+class Multiply(object):
+    def __init__(self, multiplier):
+        self.multiplier = multiplier
+        
+    def multiply(self, number):
+        return number * self.multiplier
+    
+multiply = Multiply(5)
+print(multiply.multiply(10)) # 50
+    
+f = open("multiply_object.pickle", "wb")
+pickle.dump(multiply, f) # 객체 저장
+f.close()
+
+f = open("multiply_object.pickle", "rb")
+multiply_pickle = pickle.load(f) # 객체 불러오기
+multiply_pickle.multiply(5) # 25
+```
+
+
+### Loggin Handling
+
+- 로그 : 프로그램이 실행되는 동안 일어나는 정보를 기록에 남김
+  - 유저의 접근, 프로그램 Exception, 특정함수 사용 등
+  - 파일, DB의 형태로 남겨 분석하여 사용함
+  - console 창에 print하는 것은 남지 않으므로 체계적인 로그 모듈 사용을 권장
+
+```python
+import logging
+
+logger = logging.getLogger("main") # logger 선언
+stream_handler = logging.StreamHandler() # logger output 방법 선언 콘솔에 출력하는 방법
+
+stream_handler2 = logging.FileHandler(
+	"my.log", mode="w", encoding="utf8" # my.log라는 파일에 저장
+)
+
+logger.addHandler(stream_handler) # logger output 등록
+
+# logger.setLevel(logging.DEBUG) # 레벨 debug 급이후 부터만 로깅됨, 3.8버전 부터 바뀜
+logging.basicConfig(levle=logging.DEBUG)  # 3.8버전 이후 
+logger.debug("틀림") 
+logger.info("확인해")
+logger.warning("조심해")
+logger.error("에러났어!!!")
+logger.critical("망했다...")
+# logger.setLevel(logging.CRITICAL) # 레벨 CRITICAL급이후 부터만 로깅됨, 3.8버전 부터 바뀜
+```
+
+- logging level 종류
+
+| 레벨     | 개요                                                 | 예시                                       |
+| -------- | ---------------------------------------------------- | ------------------------------------------ |
+| debug    | 개발시 처리 기록을 남겨야하는 로그 정보를 남김       | A 객체 호출, 변수값 변경                   |
+| info     | 처리가 진행되는 동안의 정보를 알림                   | 서버 시작, 서버 종료, 접속                 |
+| warning  | 잘못 입력한 정보나 처리 가능한 의도치 않는 정보 알림 | 자료형 틀림, argument 타입 이상            |
+| error    | 잘못된 처리로 인한 에러지만 프로그램 동작 가능       | 기록할 파일이 존재 하지 않음, 연결 불가 등 |
+| critical | 데이터 손실이나 프로그램 동작 불가                   | 파일 삭제, 개인정보 유출, 강제종료 등      |
+
+#### 프로그램 설정
+
+- 데이터 파일 위치, 파일 저장 장소, Opertaion Type 등 여러가지를 설정해줘야함
+
+1) configparser - 파일에 프로그램 설정해서 알려줌
+
+	- Section, Key, Value 값의 형태로 설정된 설정 파일을 사용
+	- 설정파일을 Dict Type으로 호출 후 사용
+
+> configparser 출력 코드 예시
+
+```python
+import configparser
+config = configparser.ConfigParser()
+config.sections()
+
+config.read('example.cfg')
+config.sections()
+
+for key in config['SectionOne']:
+    print(key)
+
+config['SectionOne']["status"]
+```
+
+
+
+> config 파일(exmaple.cfg) 출력 예시
+
+```
+[SecionOne]
+Status: Single # key: Value 형식
+Name: Derek
+Value: Yes
+Age: 30
+Single: True
+
+[SectionTwo]
+FavoriteColor = Green # =을 사용해도됨 
+
+[SectionThree]
+FamilyName: Johnson
+```
+
+
+
+2) argparser - 실행시점에 프로그램 설정을 쉘에서 알려줌
+
+- 거의 모든 Console 기반 Python 프로그램 기본 제공
+- Command-Line Option 이라고도 부름
+
+```python
+import argparse
+
+parser = argparse.ArgumentParser(description='Sum two inegers.')
+
+parser.add_argument('-a', "--a_value", dest= "A_value", help="A integers", type=int)
+parser.add_argument('-b', "--b_value", dest= "B_value", help="B integers", type=int)
+# 짧은 이름, 긴 이름, 표시명, Help 설명, Argument Type
+
+args = parser.parse_args()
+print(args)
+print(args.a)
+print(args.b)
+print(args.a + args.b)
+```
+
+> 포멧 제시
+```python
+# 로깅 방식시
+formatter = logging.Formatter('%(asctime)s %(levelname)s %(process)d $(message)s')
+
+
+# 파일 설정 방식시
+logging.config.fileConfig('logging.conf')
+logger = logging.getLogger()
+logger.info('Open file {0}'.format("customers.csv",))
+
+```
+
+> logging 예시
+
+```python
+
+try:
+    with open("customers.csv", "r") as customer_data:
+        customer_reader = csv.reader(customer_data, delimiter=',', quotechar='"')
+        for customer in customer_reader:
+            if customer[10].upper() == "USA": #customer 데이터의 offset 10번째 값
+                logger.info('ID {0} added'.format(customer[0],))
+                customer_USA_only_list.append(customer) #즉 country 필드가 " USA " 것만
+except: FileNotFoundError as e:
+        logger.error('File Not Found {0}'.format(e,))
+```
+
+## Python Data handling
+
+**1) CSV(Comma(or character) seprate values) Handling**
+
+- 필드를 쉼표(,)로 구분한 텍스트 파일, 엑셀 양식의 데이터를 쓰기위해 사용
+- 쉼표 대신 탭이나 빈칸으로 구분하기도 함으로 Character-separated values 라고도 부름
+- 파이썬에서는 **파일 처리**를 이용하거나 **csv 모듈**을 활용 
+
+> 파일처리 예제
+
+```python
+line_counter = 0
+data_header = []
+employee = []
+customer_USA_only_list = []
+customer = None
+
+with open("customers.csv", "r") as customer_data:
+    while 1:
+        data = customer_data.readline()
+        if not data:
+            break
+        if line_counter==0:
+            data_header = data.split(",") # 데이터를 , 를 구분으로 나눔
+        else:
+            customer = data.split(",")
+            if customer[10].uppper() == "USA": #customer 데이터의 offset 10번째 값
+                customer_USA_only_list.append(customer) # 즉 country 필드가 "USA" 것만
+        list_counter += 1 #customer_USA_only_list에 저장
+print("Header:\t", data_header)
+for i in range(0, 10):
+    print("Data: \t\t", customer_USA_only_list[i])
+print(len(customer_USA_only_list))
+
+with open("customers_USA_only.csv", "w") as customer_USA_only_csv:
+    for customer in customer_USA_only_list:
+        customer_USA_only_csv.write(",".join(customer).strip('\n')+"\n")
+        #customer_USA_only_list 객체에 있는 데이터를 customer_USA_only.csv 파일에 , 를 구분으로 쓰기   
+```
+
+``` python
+import csv
+reader = csv.reader(f, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
+# delimiter: 글자를 나누는 기준
+# linterminator: 줄 바꿈 기준 (기본값: \r\n)
+# quotechar: 문자열을 둘러싸는 신호문자(기본값: ")
+# quoting: 데이터를 나누는 기준이 quotechar에 의해 둘러쌓인 레벨(기본값: QUOTE_MINIMAL)
+with open("파일 명.csv", "w", encoding="utf9") as f:
+    writer = csv.writer(f, delimiter="\t", quotechar="'", quoting=csv.QUTOTE_ALL)
+    writer.writerow(heade)# 제목 필드 헤더 쓰기
+    for row in seung_namdata:
+        write.writerow(row)# 한줄 씩 쓰기
+```
+
+**2) HTML Handling**
+
+- HTML : 데이터 표시를 위한 텍스트 형식, 웹 상의 정보를 구조적으로 표현키 위한 언어
+- 자세한 것은 web, HTML TIL 참조
+- 최근 활발히 사용하고 있음, 규칙을 분석하여 방대한 양의 데이터를 분석 가능
+- 정규식 (regular expression)
+  - regexp 또는 regex 등으로 불림
+  - 복잡한 문자열 패턴을 정의하는 문자 표현 공식
+  - 특정한 규칙을 가진 문자열의 집합 추출
+  - http://www.regexr.com/
+  - 정규식 정리 참조
+
+> 정규식 in 파이썬
+
+```python
+import re
+import urlib.request
+
+url = "https://bit.ly/3rxQFS4"
+html = urllib.request.urlopen(url)
+html_contents = str(html.read().decode("utf8")) #utf8으로 인코딩해서 문자열 추출
+id_results = re.findall(r"([A-Za-z0-9]+\*\*\*)", html_contents) # findall 전체에서 패턴대로 데이터 찾기
+for result in id_results:
+	...    
+```
+
+- beautifulsoup4, selenium을 이용해도 쉽게 추출할 수 있다.
+
+**3) XML Handling**
+
+- eXtensible Markup Language, 데이터 구조와 의미를 설명하는 TAG(MarkUp)을 사용하여 표시하는 언어
+- Tag와 Tag 사이에 값이 표시되고, 구조적인 정보를 표현 가능, HTML과 비슷함
+- 정보의 구조에 대한 정보인 스키마와 DTD 등으로 정보에 대한 정보(메타정보)가 표현되며, 용도에 따라 다양한 형태로 변경 가능
+
+> XML 예시
+
+![1611285918373](Python_Basic.assets/1611285918373.png)
+
+```xml
+<?xml version="1.0"?>
+<books>
+	<book>
+    	<author>Carson</author>
+        <price
+     format="dollar">31.95</price>
+        <pubdate>05/01/2001</pubdate>
+    </book>
+    <pubinfo>
+    	<publisher>MSPress</publisher>
+        <state>WA</state>
+    </pubinfo>
+</books>
+```
+
+- BeautifulSoup
+  - HTML, XML 등 Markup 언어 스크립팅을 위한 도구
+  - lxml, html5lib 같은 parser 이용
+
+> 파이썬에서의 beautifulsoup를 이용한 XML 처리
+
+```python
+from bs4 import BeautifulSoup #beautifulsoup 인스톨
+
+wiht open("books.xml", "r", encoding="utf8") as books_file:
+    books_xml = books_file.read() # File을 String으로 읽어오기
+    
+soup = BeautifulSoup(books_xml, "lxml") # lxml Parser를 사용해서 데이터 분석
+
+# author가 들어간 모든 element 추출
+for book_info in soup.find_all("author"): 
+    print(book_info)
+    print(book_info.get_text())
+```
+
+
+
+
+
+**4) JSON Handling**
+
+- JavaScript Object Notation, 원래 웹 언어인 Java Script의 데이터 객체 표현 방식
+- 간결하고 인간, 기계 둘다 이해 쉬움, 데이터 용량 적고, code로 전환 쉬움
+- 최근 XML을 대체하는 중
+- javascript의 dict 타입과 비슷
+
+> JSON 예시
+
+```json
+{
+    "employees":
+    	[
+            {
+            	"name":"Shyam",
+         		"email":"shyamjaiswal@gmail.com"
+         	},
+            {
+            	"name":"Bob",
+         		"email":"Bob32@gmail.com"
+         	},
+            {
+            	"name":"Jai",
+         		"email":"Jai87@gmail.com"
+         	},
+        ]
+}
+```
+
+
+
+> Python Json 처리
+
+- **json 모듈**을 사용하여 손쉽게 파싱 및 저장 가능
+
+```python
+import json
+with open("json.json","r", encoding="utf8") as f: # json 불러오기
+    contents = f.read()
+    json_data = json.loads(contents)
+    print(json_data["employees"])
+     
+with open("data.json", "w") as f: # json 파일 쓰기
+    json.dump(json_data, f)
+```
+
+
+
+> 트위터 크롤링 예제
+
+```python
+import requests
+from requests_oauthlib import OAuth2
+
+consumer_key = ENV.KEY
+consumer_secret = ENV.SECRET
+access_token = ENV.TOKEN
+access_token_secret= ENV.TOKEN_SECRET
+
+oauth = OAuth2(client_key=consumer_key, client_secret=consuer_secret, resource_owner_key=access_token, resource_owner_secret=access_token_secret)
+
+url="api.url"
+r = requests.get(url=url,auth=oauth)
+statuses= r.json()
+
+for status in statuses:
+    print(status['text'], status['created_at'])
+
+```
+
+
+
 [^1]: 각 나라별 언어를 모두 표현하기 위해 만든 통합 코드체계, 최대 65,536자를 표현 가능
 [^2]: 변수의 자료형을 미리 선언하지 않고, 실행 시간에 값에 의해 결정
 [^3]: 메모리 관리 기법 중의 하나로, 프로그램이 동적으로 할당했던 메모리 영역 중 필요없게 된 영역을 해제하는 기능
