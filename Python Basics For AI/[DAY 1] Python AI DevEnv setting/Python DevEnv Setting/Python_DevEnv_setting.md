@@ -1,5 +1,44 @@
 # Python DevEnv setting
 
+## Window Setting
+
+1. Anaconda installer 다운로드
+
+   ![1611483500673](Python_DevEnv_setting.assets/1611483500673.png)
+
+2. Anaconda 설치
+
+   ![1611486147071](Python_DevEnv_setting.assets/1611486147071.png)
+
+   - Just Me로 설치
+
+     ![1611486476654](Python_DevEnv_setting.assets/1611486476654.png)
+
+   - 아래만 체크한 뒤 설치
+
+3. VScode 터미널에 source 추가
+
+   ```bash
+   conda -V # conda 설치 확인, 생략 가능
+   set PATH=%PATH%;<your_path_to_anaconda_installation>\Scripts
+   source <your_path_to_anaconda_installation>c/profile.d/conda.sh
+   conda init <사용하는 터미널>
+   ```
+
+   - 설치 경로가 다르면 경로를 다르게 바꾸어야한다.
+   - 이래도 안될경우 anaconda3 prompt에서 해당 경로에서 "code"를 쳐서 들어간 뒤 해보자.
+
+4. conda 가상 환경 설정 후, pytorch 및 추가 모듈 설치
+
+```bash
+conda create --name <가상환경명>
+conda activate <가상환경명>
+conda install pytorch, matplotlib # 기타 추가 모듈
+conda deactivate # 가상환경 나가기
+```
+
+## ubuntu Setting
+
 - Window 내 WSL을 이용한 ubuntu 및 vscode 세팅
 
 1. 윈도우 10 내의 VM과 WSL 기능 활성화

@@ -13,6 +13,12 @@ def forward(x):
 def loss(y_pred, y_val):
     return (y_pred - y_val) ** 2
 
+
+# compute gradient
+def gradient(x, y):  # d_loss/d_w
+    return 2 * x * (x * w - y)
+
+
 # Before training
 print("Prediction (before training)",  4, forward(4).item())
 
