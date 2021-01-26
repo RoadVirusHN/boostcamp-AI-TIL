@@ -24,17 +24,17 @@
 
 ### 벡터의 성질
 
-1. 벡터에 양수를 곱해주면 방향은 그대로, 길이만 변한다.
+**1. 벡터에 양수를 곱해주면 방향은 그대로, 길이만 변한다.**
 
    - 이 때 곱해주는 숫자를 **스칼라곱(α)**이라고 표현한다.
 
    - 스칼라곱이 음수이면 방향이 정반대 방향이 된다.
 
    - 벡터의 길이는 1보다 크면 길이가 증가, 1보다 작으면 길이가 감소한다.
-2. 같은 모양(같은 행과 열)을 가지면 덧셈, 뺄셈, 곱셈, 나눗셈이 가능하다.
+**2. 같은 모양(같은 행과 열)을 가지면 덧셈, 뺄셈, 곱셈, 나눗셈이 가능하다.**
 	- 이때의 곱셈을 성분곱(Hadamard product)라고 한다.
 	- numpy array에도 적용된다.
-3. 벡터와 벡터의 덧셈과 뺄셈은 다른 벡터로부터 상대적 위치 이동을 표현함.
+**3. 벡터와 벡터의 덧셈과 뺄셈은 다른 벡터로부터 상대적 위치 이동을 표현함.**
 
 ![1611572169045](AIMath.assets/1611572169045.png)
 
@@ -159,7 +159,7 @@ $$
 
 ### 행렬의 이해
 
-1. 첫번째 의미
+**1. 첫번째 의미**
 
 - 벡터가 공간의 한점을 의미한다면 행렬은 **공간에서 여러 점들의 집합**을 의미함.
 - 행렬의 행벡터 x~i~는 i번째 데이터를 의미함.
@@ -170,7 +170,7 @@ $$
 - 벡터와 마찬가지로 **같은 모양을 가지면 같은 인덱스 위치끼리 덧셈, 뺄셈. 성분곱을 계산할 수 있다.**
 -  벡터와 마찬가지로 **스칼라곱(α) 또한 가능하다.**
 
-2. 두번째 의미
+**2. 두번째 의미**
 
 - 행렬은 **벡터 공간에서 사용되는 연산자(operator)**를 의미.
 - 행렬 곱을 통해 벡터를 다른 차원의 공간을 보낼 수 있음
@@ -184,7 +184,7 @@ $$
 
 ### 행렬의 곱셈(matrix multiplication)과 내적
 
-1. 행렬의 곱셈(matrix multiplication)
+**1. 행렬의 곱셈(matrix multiplication)**
 
 - 행렬 곱셈은 **i번째 행벡터와 j 번째 열벡터 사이의 내적을 성분으로 가지는 행렬**을 만듭니다.
 
@@ -207,7 +207,7 @@ print(x @ Y) # numpy에선 @ 연산으로 행렬 곱셈 계산
 #         	[-5, 1]])
 ```
 
-2. 행렬의 내적
+**2. 행렬의 내적**
 
 - `np.inner`는 **i번째 행벡터와 j번째 행벡터 사이의 내적을 성분으로 가지는 행렬**을 계산합니다.
 - 수학의 행렬 내적 **tr(XY^T^)**과 다름
@@ -269,7 +269,7 @@ print(Y @ np.linalg.pinv(Y)) # np.linalg.pinv(Y) Y 행렬의 유사역행렬이 
 
 ### 행렬의 응용
 
-1. 연립방정식 풀기
+**1. 연립방정식 풀기**
 
 $$
 a_{11}x_1 + a_{12}x_2 + \dots + a_{1m}x_{m} = b_{1}\\
@@ -287,7 +287,7 @@ Ax = B \\
 =A^T(AA^T)^{-1}b
 $$
 
-2. 선형회귀분석
+**2. 선형회귀분석**
 
 - `np.linalg.pinv`를 이용하면 데이터를 선형모델(linear model)로 해석하는 선형회귀식을 찾을 수 있다.![1611582591497](AIMath.assets/1611582591497.png)
 
@@ -305,4 +305,191 @@ X_ = np.array([np.append(x,[1]) for x in X]) # intercept 항 추가
 beta = np.linalog.pinv(X_) @ y
 y_test = np.append(x, [1]) @ beta
 ```
+
+## Gradient Algorithm(경사하강법)
+
+### 미분 (differentiation)이란?
+
+- **변수의 움직임에 따른 함수값의 변화를 측정하기 위한 도구.**
+- **변화율의 극한, 최적화에서 제일 많이 사용하는 기법.**
+
+$$
+f'(x) = \lim_{h\rightarrow0}\frac{f(x+h) - f(x)}h
+$$
+
+> 미분 코드 구현
+
+```python
+import sympy as sym # 기호를 통해 함수를 이해하게 해줌
+from sympy.abc import x
+
+sym.diff(sym.poly(x**2 + 2*x + 3), x)
+#Poly(2*x + 2, x, domain='zz')
+```
+### 미분 활용
+- 함수 그래프의 접선의 기울기와도 같으며, 이를 통해 함수값의 증감을 알 수 있다.
+
+![1611627291652](AIMath.assets/1611627291652.png)
+
+- 이렇게 구한 기울기를 통하여 미분값을 더하거나 빼서, 고차원 공간에서도 최적화 가능
+
+  - ![1611642449114](AIMath.assets/1611642449114.png)
+  - 미분값을 더하면 경사상승법이라 하며, 함수의 극대값을 찾는데 사용
+  - 미분값을 빼면 경사하강법이라 하며, 함수의 극소값을 찾는데 사용
+- 극소값이나 극대값에 도달하면 미분값이 0이므로 최적화가 종료됨.
+  
+  ![1611628210487](AIMath.assets/1611628210487.png)  
+
+
+### 경사하강법 (Gradient Algorithm) 구현
+> 코드 구현 슈도 코드
+
+```python
+Input : gradeint, init, lr, eps, Output: var
+# gradient: 미분을 계산하는 함수
+# init: 시작점, lr: 학습률, eps: 알고리즘 종료 조건
+
+var = init
+grad = gradient(var)
+while(abs(grad) > eps): # 미분값이 정확이 0이 되는 경우는 거의 없음, 즉 아주 작은값(eps)이하가 되면 종료
+    var = var - lr * grad # lr: 학습률이 높을수록 넓게 업데이트함, 너무 크거나 작으면 안됨
+    grad = gradient(var) # 미분값 업데이트
+```
+
+**다변수 함수일 경우?**
+
+- 벡터가 입력인 다변수 함수의 경우 **편미분(partial differentiation)**을 사용.
+
+$$
+\partial _{x_{i}}f\left( x\right) =\lim _{h\rightarrow 0}\dfrac{f\left( x+he_{i}\right) -f\left( x\right) }{h}\\
+e_{i}\ :\ i번째\ 값만 \ 1이고\ 나머지는\ 0인\ 단위벡터
+$$
+
+> 코딩을 이용한 편미분
+
+```python
+import sympy as sym
+from sympy.abc import x, y
+
+sym.diff(sym.poly(x**2 + 2*x*y + 3) + sym.cos(x + 2*y), x)
+# 2*x + 2*y - sin(x+2*y)
+```
+
+- 각 변수 별로 **편미분을 계산한 그레이언트 벡터를 이용하여 경사하강/경사상승법**에 사용 가능.
+
+$$
+\partial _{x_{i}}f\left( x\right) =\lim _{h\rightarrow 0}\dfrac{f\left( x+he_{i}\right) -f\left( x\right) }{h}\\
+e_{i}\ :\ i번째\ 값만 \ 1이고\ 나머지는\ 0인\ 단위벡터 \\ 
+\nabla f = (\partial_{x1}f,\partial_{x2}f,\dots,\partial_{xd}f)
+$$
+
+### 그레디언트 벡터 (Gradient vector) 이용한 경사하강법
+
+![1611629412267](AIMath.assets/1611629412267.png)
+
+- ∇f (x,y)는 임의의 점(x,y)에서 가장 빨리 함수값이 증가하는 방향이다
+- 그러므로  -∇f (x,y)방향으로 가면 가장 빨리 함수값이 감소하는 방향이 되며, 이를 적용해 경사하강을 한다.
+
+> 그레디언트 벡터가 적용된 경사하강법 슈도코드
+
+```python
+Input : gradeint, init, lr, eps, Output: var
+# gradient: 그레디언트 벡터를 계산하는 함수
+# init: 시작점, lr: 학습률, eps: 알고리즘 종료 조건
+
+var = init
+grad = gradient(var)
+while(norm(grad) > eps): # 벡터의 절대값 대신 노름(norm)을 계산해 종료조건 설정
+    var = var - lr * grad # lr: 학습률이 높을수록 넓게 업데이트함, 너무 크거나 작으면 안됨
+    grad = gradient(var) # 미분값 업데이트
+```
+
+### 경사하강법의 선형 회귀 적용 (apply to linear regression)
+
+- 무어-펜로즈 행렬을 이용해서 선형회귀가 가능했지만, 경사하강법을 이용하는게 일반적이다.
+
+- **선형회귀의 목적식은 ∥y-Xβ∥~2~ 또는 ∥y-Xβ∥~2~^2^ ** 이며, 이를 최소하하는 β를 찾는게 목적이므로 다음과 같은 그레디언트 벡터를 구해야한다.(loss : RMSE 기준)
+  $$
+  \nabla_\beta\left\| y - X\beta\right\|_2  = (\partial_{\beta_1}\left\| y - X\beta\right\|_2,\dots,\partial_{\beta_d}\left\| y - X\beta\right\|_2)\\
+  \partial_{\beta_k}\left\| y - X\beta\right\|_2 = \partial_{\beta_k}\left\{\frac{1}n\sum_{i=1}^n{\left(y_i - \sum_{j=1}^{d}X_{ij}\beta_j\right)^2}\right\}^\frac{1}2 = -\frac{X^T_{\cdot k}(y - X\beta)}{n\left\| y - X\beta\right\|_2}\\
+  X^T_{\cdot k} = 행렬\ X의\ k번째\ 열(column)\ 벡터를\ 전치시킨\ 것\\
+  즉,\\
+  \nabla_\beta\left\| y - X\beta\right\|_2  = (\partial_{\beta_1}\left\| y - X\beta\right\|_2,\dots,\partial_{\beta_d}\left\| y - X\beta\right\|_2) = \left( -\frac{X^T_{\cdot 1}(y - X\beta)}{n\left\| y - X\beta\right\|_2},\dots, -\frac{X^T_{\cdot d}(y - X\beta)}{n\left\| y - X\beta\right\|_2}\right)
+  $$
+
+- 이에 목적식을 최소화하는 β를 구하는 경사하강법 알고리즘은 다음과 같다.
+
+$$
+\beta^{(t+1)}\leftarrow\beta^{(t)} - \lambda\nabla_\beta\left\| y - X\beta\right\|_2 =\beta^{(t)} + \frac{\lambda}n\frac{X^T(y - X\beta^{(t)})}{\left\| y - X\beta\right\|_2}\\
+$$
+
+- 목적식으로 ∥y-Xβ∥~2~ 대신 ∥y-Xβ∥~2~^2^을 최소화하면 식이 좀더 간단해진다.
+
+$$
+\nabla_\beta\left\| y - X\beta\right\|_{2}^2  = (\partial_{\beta_1}\left\| y - X\beta\right\|_{2}^2,\dots,\partial_{\beta_d}\left\| y - X\beta\right\|_{2}^2) = -\frac{2}nX^T(y - X\beta) \\
+\beta^{(t+1)}\leftarrow\beta^{(t)} + \frac{2\lambda}{n}X^T(y - X\beta^{(t)})
+$$
+
+> 경사하강법 기반 선형회귀 알고리즘 슈도 코드
+
+```python
+Input: X, y, lr, T, Output: beta
+# norm: L2-노름을 계산하는 함수
+# lr: 학습률, T: 학습횟수 = hyperparameter
+for t in range(T):  # 학습횟수 제한, 또는 이전 처럼 일정한 수준 이하로 떨어질 때까지 해도 된다.
+    error = y - X @ beta
+    grad = - transpose(X) @ error
+    beta = beta - lr * grad # 베타 업그레이드
+```
+
+### 확률적 경사하강법 (stochastic gradient descent)
+
+- 이론적으로 적절한 학습률과 학습횟수를 선택시, 수렴이 보장되어있다.
+
+- 하지만 비선형회귀의 경우 목적식이 볼록하지 않으므로(non-convex) 수렴이 항상 보장되지 않음
+
+  - 딥러닝의 목적식은 대부분 볼록함수가 아니다, 즉 대부분 보장하지 않음
+  - 아래와 같은 경우 특정 부분에 수렴했지만 함수의 최소지점이 아니다.
+
+  ![1611640246290](AIMath.assets/1611640246290.png)
+
+​	
+
+- **확률적 경사하강법(SGD)은 모든 데이터를 사용해서 업데이트 하는 대신 데이터 한개 또는 일부활용하여 업데이트**합니다.
+
+  > 가정
+
+  ![1611640728653](AIMath.assets/1611640728653.png)
+
+  
+
+$$
+\theta^{(t+1)}\leftarrow\theta^{(t)}-\widehat{\nabla _{a}L}(\theta^{(t)})
+$$
+
+- 만능은 아니지만 딥러닝에서 **mini-batch 방식을 추가**하여 일반적으로 사용함.
+- SGD는 데이터의 일부를 가지고 패러미터를 업데이트하기 때문에 연산자원을 좀 더 효율적으로 활용
+  - **연산량이 b/n으로 감소**
+
+$$
+\beta^{(t+1)}\leftarrow\beta^{(t)} + \frac{2\lambda}{b}X^T_{(B)}(y_{(b)} - X_{(b)}\beta^{(t)})
+$$
+
+- 경사하강법은 전체 데이터를 가지고 목적식 그레디언트 벡터를 계산하는 반면, SGD는 미치배치(데이터의 일부)를 가지고 그레디언트 벡터를 계산
+
+- 그러므로 매번 다른 데이터셋을 사용하는 것과 비슷하기 때문에 함수 곡선의 모양이 미니배치마다 바뀌게 된다.
+
+- 하지만 최종적인 방향성은 유사하게 이동하게 된다.
+
+  ![1611641382157](AIMath.assets/1611641382157.png)
+
+- 즉 볼록모양이 아니어도 효율적으로 활용가능 하다.
+
+> 경사하강법(좌) vs 확률적 경사하강법(우)
+
+![1611641475679](AIMath.assets/1611641475679.png)
+
+- 다만 mini-batch 사이즈를 너무 작게 잡으면 경사하강법에 비해 너무 느려진다.
+
+- 최근에는 경사하강법으로 전체 데이터를 이용해 학습시키면, 방대한 데이터셋에 의하여 메모리가 초과되므로 미니배치로 나누어서 학습하는 SGD를 사용한다.
 
