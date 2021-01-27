@@ -82,7 +82,7 @@ np.array(tensor, int).size # 12, 항목 갯수 출력
 
 - Array shape 쌓임 예시
 
-![1611543245384](AIMath.assets/1611543245384.png)
+![1611543245384](Numpy.assets/1611543245384.png)
 
 ```python
 a = np.array([[1, 2, 3], [4.5, 5, 6]], dtype=np.int8)
@@ -168,7 +168,7 @@ a[:,-1] #array([ 5, 10])
 
 - 여기서 -1은 알아서 할당이 아닌 마지막 값을 의미한다.
 
-![1611547054478](AIMath.assets/1611547054478.png)
+![1611547054478](Numpy.assets/1611547054478.png)
 
 - Start, end, sequence를 지정해줄 수 있다.
 
@@ -238,7 +238,7 @@ np.eye(N=3, M=5, dtype=np.int8)
 
 > diag 함수
 
-![1611548223053](AIMath.assets/1611548223053.png)
+![1611548223053](Numpy.assets/1611548223053.png)
 
 - 대각 행렬의 값을 추출, k는 시작 인덱스
 
@@ -276,7 +276,7 @@ test_array.std(), test_array.std(axis=0) #(3.452052529534663, array([3.26598632,
 
 - 모든 operation function을 실행할 때 기준이 되는 dimension 축
 
-![1611549042127](AIMath.assets/1611549042127.png)
+![1611549042127](Numpy.assets/1611549042127.png)
 
 
 
@@ -298,7 +298,7 @@ np.hstack((a, b)) # array([[1, 2], [2, 3], [3, 4]])
 
 > 축에 따른 붙이는 모습 도식화
 
-![1611549579765](AIMath.assets/1611549579765.png)
+![1611549579765](Numpy.assets/1611549579765.png)
 
 > 축을 추가하여 붙이기
 
@@ -346,7 +346,7 @@ test_a.T
 
 > broadcasting
 
-![1611550159180](AIMath.assets/1611550159180.png)
+![1611550159180](Numpy.assets/1611550159180.png)
 
 ```python
 test_matrix
@@ -358,7 +358,7 @@ test_matrix // 2  # Matrix - Scalar 몫
 ```
 - shape 가 다른 배열 간 연산을 지원하는 기능
 
-![1611550274706](AIMath.assets/1611550274706.png)
+![1611550274706](Numpy.assets/1611550274706.png)
 
 #### comparisions
 

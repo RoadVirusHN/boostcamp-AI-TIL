@@ -493,3 +493,153 @@ $$
 
 - 최근에는 경사하강법으로 전체 데이터를 이용해 학습시키면, 방대한 데이터셋에 의하여 메모리가 초과되므로 미니배치로 나누어서 학습하는 SGD를 사용한다.
 
+## 인공지능 학습의 수학적 이해
+
+### 신경망의 해석
+
+- 비선형, 복잡한 모델이 대부분인 신경망은 사실 선형 모델과 비선형 함수들의 결합으로 이루어져 있다.
+
+$$
+\begin{aligned}\begin{aligned}\begin{bmatrix} O_1 \\ O_2 \\ \vdots \\ O_n \end{bmatrix} = \begin{bmatrix} x_1 \\ x_2 \\ \vdots \\ x_n \end{bmatrix} \begin{bmatrix} w_{11} & w_{12} & \dots & w_{1p}\\  w_{21} & w_{22} & \dots & w_{2p} \\ \vdots & \vdots & \ddots & \vdots \\ w_{d1} & w_{d2} & \dots & w_{dp} \end{bmatrix} + \begin{bmatrix} \vdots&\vdots&\ddots&\vdots\\b_1&b_2&\dots&b_p \\ b_1&b_2&\dots&b_p \\ b_1&b_2&\dots&b_p\\\vdots&\vdots&\ddots&\vdots\end{bmatrix}\\
+O\ \ \ \ \ \ \ \ \ \ \ \ \ \ X\ \ \ \ \ \ \ \ \ \ \  \ \ \ \ \ \ \ \ \ \ \ \ W \ \ \ \ \ \ \ \ \ \ \ \ \  \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ b\ \ \ \ \ \ \ \ \ \ \ \ \ \ \end{aligned}\\(n \times p)\ \ \ \ (n \times d)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (d\times p)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (n\times p) \ \ \ \ \ \ \ \ \ \end{aligned}
+$$
+
+**[math0. 신경망 수식 분해]**
+
+- b는 각 한 행의 모든 값이 같다.
+
+```mermaid
+graph BT
+	x1((x<sub>1</sub>)) & x2((x<sub>2</sub>)) & x((x...)) & xd((x<sub>d</sub>))-->o1((O<sub>1</sub>)) & os((o...)) & op((O<sub>p</sub>))
+```
+
+**[chart0. 신경망 모델의 차트화]**
+
+- d개의 변수로 p개의 선형모델을 만들어 p개의 잠재변수를 설명하는 모델의 도식화이다.
+
+- 화살표는 w~ij~들의 곱을 의미한다.
+
+### 소프트맥스 연산
+
+$$
+softmax(o) = softmax(Wx+b) = 
+\left( \dfrac{\exp(0)}{\sum_{k=1}^p\exp(o_k) }, \dots, \dfrac{\exp(0_p)}{\sum_{k=1}^p\exp(o_k) },\right)
+$$
+
+**[math1.softmax]**
+
+- 소프트맥스(softmax) 함수는 *모델의 출력을 확률로 해석할 수 있게 변환해주는 연산*
+- 분류 문제를 풀 때 선형모델과 소프트 맥스 함수를 결합하여 예측
+
+```python
+def softmax(vec):
+    denumerator = np.exp(vec - np.max(vec, axis=-1, keepdims=True)) # 각 출력의 값
+    # 너무 큰 벡터가 들어오는 것을 막기위해 np.max(vec)을 vec에서 빼서 방지
+    numerator = np.sum(denumerator, axis=-1, keepdims=True)#모든 출력의 값들의 합
+    val = denumerator / numerator
+    return val
+```
+
+**[code1.softmax의 코드 구현]**
+
+- 이러한 소프트맥스 함수로 벡터를 확률 벡터(각 성분의 합이 1인 벡터)로 변환할 수 있다.
+
+```python
+def one_hot(val, dim):
+    return [np.eye(dim)[_] for _ in val]
+def one_hot_encoding(vec):
+    vec_dim = vec.shape[1]
+    vec_argmax= np.argmax(vec, axis=-1)
+    return one_hot(vec_argmax, vec_dim)
+```
+
+**[code1-1.one_hot 함수 구현]**
+
+- 학습이 아닌 추론시에는 one_hot 벡터를 이용해 가장 큰 벡터를 정답으로 삼으면 되므로 softmax()를 씌울 필요 없다.(~~one_hot(softmax(o)~~=> **X**, one_hot(o) => **O**)
+
+### 활성화 함수(activation function)와 다층 신경망(MLP)
+
+- 신경망은 *선형모델과 활성함수(activation function)을 합성한 함수*
+
+$$
+\bold{H} = (\sigma (z_1), \dots, \sigma(z_n)), \sigma(z) = \sigma(Wx + b)\\
+\sigma = 활성함수(비선형),\ z = (z_1,\dots,z_q) = 잠재벡터,\ \bold H = 새로운\ 잠재벡터 = 뉴런
+$$
+
+**[math2. 신경망 뉴런]**
+
+![image-20210127165653697](AIMath.assets/image-20210127165653697.png)
+
+**[img2. 신경망 뉴런 도식화]**
+
+- *잠재벡터들을 이용해 만든 새로운 잠재벡터들*,(그리고, 이 새로 만든 잠재벡터로 만들 새로운 잠재벡터들)을 *뉴런(neuron) 또는 *이라고 하며, 이러한 구조의 인공신경망을 *퍼셉트론(perceptron)*이라고 한다.
+  - 각 뉴런(노드) 가 가지고 있는 값은 텐서(tensor)라고 한다.
+
+- 활성화 함수는 *실수값을 받아 실수값을 돌려주는 비선형(nonlinear) 함수*
+- 이로 인해 딥러닝이 선형모형과 차이를 보였으며, *시그모이드(sigmoid), tanh, 그리고 주로 쓰이고 있는 ReLU 함수* 등이 있다. 
+
+![image-20210127172913738](AIMath.assets/image-20210127172913738.png)
+
+**[img3. sigmoid, tanh, ReLu 함수 그래프]**
+
+- 만약, 이렇게 구한 *잠재 벡터 H에서 가중치행렬 W^(2)^와 b^(2)^를 통해 다시 한번 선형 변환해서 출력하게 되면 (W^(2)^, W^(1)^)를 패러미터로 가진 2층(2-layers) 신경망*이 된다.
+
+$$
+\bold O = \bold H\bold W^{(2)} + b^{(2)},\  \bold{H} = (\sigma (z_1), \dots, \sigma(z_n)) = \sigma(\bold Z^{(1)}),\ \sigma(z) = \sigma(W^{(1)}x + b^{(1)}) \\
+\bold Z^{(1)} = \bold X\bold W^{(1)} + \bold b^{(1)}
+$$
+
+**[math2-1. 2중 신경망]**
+
+![image-20210127210938621](AIMath.assets/image-20210127210938621.png)
+
+**[img2-1.2중 신경망의 구조]**
+
+- 이렇게 *신경망이 여러층 합성된 함수를 다층(multi-layer) 퍼셉트론(MLP)*라고 한다.
+
+$$
+\\ \bold O = \bold Z^{(L)}
+\\ \vdots
+\\ \bold H^{(l)} = \sigma(\bold Z^{(l)})
+\\ \bold Z^{(l)} = \bold H^{(l-1)}\bold W^{(l)} + \bold b^{(l)}
+\\ \vdots
+\\ \bold{H^{(1)}} = \sigma(\bold Z^{(1)})
+\\ \bold Z^{(1)} = \bold X\bold W^{(1)} + \bold b^{(1)}
+$$
+
+**[math2-2. n층으로 이루어진  다중신경망의 합성함수]**
+
+- l = 1,...,L까지 순차적인 신경망 계산을 순전파(forward propagation)이라 부른다.
+
+![image-20210127212725927](AIMath.assets/image-20210127212725927.png)
+
+**[img2-3. 다층 신경망 구조]**
+
+- 이론적으로 2층 정도의 신경망으로도 임의의 연속함수를 근사(universal approximation theorem)할 수 있다.
+- 층이 깊을 수록 필요한 뉴런(텐서를 가지고 있는 노드), 파라미터의 숫자가 기하급수적으로 줄어들어 좀 더 효율적이다.
+  - 즉, 층을 깊이 하면 넓이를 얇게 해도 된다.
+  - 물론 최적화는 여전히 어렵다.(CNN에서 깊게 설명)
+
+### 역전파(backpropagation) 알고리즘
+
+- *각 층에 사용된 패러미터 **{W^{l}^,b^{l}^}^L^ ~l=1~**을 역순으로 학습*하는데 사용된다.
+- 합성미분의 *연쇄법칙(chain-rule) 기반 자동미분(auto-differentiation)*을 이용하여 역순으로 구한다. 
+
+$$
+z = (x+y)^2의\ 그레디언트\ 벡터,\ \dfrac{\partial z}{\partial x} =\ ?\\
+z = w^2 \rightarrow \dfrac{\partial z}{\partial w} = 2w 
+w = x + y \rightarrow \dfrac{\partial w}{\partial x} = 1,\  \dfrac{\partial w}{\partial y} = 1\\
+\dfrac{\partial z}{\partial x} = \dfrac{\partial z}{\partial w}\dfrac{\partial w}{\partial x} = 2w \cdot 1 = 2(x+y)
+$$
+
+**[math3. 편미분을 이용한 역전파 알고리즘 예시]**
+
+- 먼저 윗층의 그레디언트 벡터를 구한 뒤, 그 벡터를 이용해 그 아래 그레디언트 벡터를 구한다.
+  - 포워드 프로파 게이션과 달리, 각 뉴런 또는 노드의 텐서 값을 메모리에 넣어야 하므로, 메모리를 많이 먹는다.
+
+![image-20210127222227474](AIMath.assets/image-20210127222227474.png)
+
+**[img4. 2층 신경망 어려운 예제]**
+
+- 파란색 : forward propagation
+- 빨간색 : back propagation

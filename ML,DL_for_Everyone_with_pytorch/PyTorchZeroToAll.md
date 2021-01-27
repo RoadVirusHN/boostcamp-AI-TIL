@@ -86,7 +86,7 @@ conda deactivate # 가상환경 나가기
 
 - **비지도 학습(Unsupervised Learning)**
   - 오직 features만 가지고 있을 경우 어떻게 할까? (결과값은 모름)
-  - 예를들어 x,y값(features)을 가지고 있는 여러가지 점들의 그래프를 가까이 모여있는 것들끼리 그룹으로 만들어 (Clustering)해당 그룹(label)을 결과값으로 만든다.
+  - 예를 들어 x,y값(features)을 가지고 있는 여러가지 점들의 그래프를 가까이 모여있는 것들끼리 그룹으로 만들어 (Clustering)해당 그룹(label)을 결과값으로 만든다.
 - **지도 학습(Supervised Learning) **
   - features 라는 정보를 받아서 label을 얻어내는 것
   - 그러므로 둘 모두의 정확한 정보를 대량으로 가지고 있어야한다.
@@ -190,20 +190,28 @@ conda deactivate # 가상환경 나가기
 
 - 2개의 가중치를 가지는 모델의 기울기 구하기
 $$
-\frac{\partial x}{\partial w_1} =  \frac{\partial }{\partial w_1}[2w_2x]+\frac{\partial }{\partial w_1}[w_1] = 1 + 0 = 1
+\frac{\partial loss}{\partial w_1} =  \frac{\partial}{\partial w1}(x^2w_2 + xw_1 + b - y)^2 = 2(x)(x^2w_2 + xw_1 + b -y) = 2x(\widehat{y}-y)
 $$
 $$
-\frac{\partial x}{\partial w_2} = 2x\times\frac{\partial }{\partial w_2}[w_2] + \frac{\partial }{\partial w_2}[w_1] = 2x \times 1 + 0 = 2x
+\frac{\partial loss}{\partial w_2} = \frac{\partial}{\partial w2}(x^2w_2 + xw_1 + b - y)^2 = 2(x^2)(x^2w_2 + xw_1 + b -y) = 2x^2(\widehat{y}-y)
 $$
+
+$$
+\frac{\partial loss}{\partial b} = \frac{\partial}{\partial b}(x^2w_2 + xw_1 + b - y)^2 = 2(1)(x^2w_2 + xw_1 + b -y) = 2(\widehat{y}-y)
+$$
+
+
 
 
 - 해당 모델의 Optimizer 구현
 
   ```python
   # compute gradient
-  def gradient1(x, y):  # d_loss/d_w
-      return 2 * (x**2 * w2 + x * w1 + b - y)
-  def gradient2(x, y):  # d_loss/d_w
+  def gradient_w1(x, y):  # d_loss/d_w
+      return 2 * x *(x**2 * w2 + x * w1 + b - y)
+  def gradient_w2(x, y):  # d_loss/d_w
+      return 2 * x**2 * (x**2 * w2 + x * w1 + b - y)
+  def gradient_b(x, y):  # d_loss/d_b
       return 2 * 2 * x * (x**2 * w2 + x * w1 + b - y)
   ```
 
@@ -243,11 +251,21 @@ $$
 2) autograd
 
 - pytorch의 tensor를 사용하면 requires_grad=True로 놓아 자동으로 gradient를 구할 수 있다.
-- ![1611538519759](PyTorchZeroToAll.assets/1611538519759.png)
+
+  ![1611538519759](PyTorchZeroToAll.assets/1611538519759.png)
 
 3) 과제 리뷰
 
-​	Ex 4-1 : ![1611514739976](PyTorchZeroToAll.assets/1611514739976.png)
+​	Ex 4-1 : 
+
+```mermaid
+graph LR
+	A((text)) -->B((text)) -->id1([why not])
+```
+
+
+
+![1611514739976](PyTorchZeroToAll.assets/1611514739976.png)
 
 ![1611536290831](PyTorchZeroToAll.assets/1611536290831.png)
 

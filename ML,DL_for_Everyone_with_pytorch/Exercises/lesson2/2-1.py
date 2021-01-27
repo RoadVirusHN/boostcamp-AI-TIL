@@ -11,8 +11,8 @@ with open('kc_house_data.csv','r') as f :
     idxCounter = 0
     for row in reader:
         if('e' not in row['sqft_living'] and 'e' not in row['price']):
-            x_data.append(int(row['price']))
-            y_data.append(int(row['sqft_living'])*500)
+            x_data.append(int(row['price']/500))
+            y_data.append(int(row['sqft_living']))
             idxCounter += 1
         if idxCounter > 200:
             break
