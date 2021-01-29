@@ -504,7 +504,7 @@ $$
 O\ \ \ \ \ \ \ \ \ \ \ \ \ \ X\ \ \ \ \ \ \ \ \ \ \  \ \ \ \ \ \ \ \ \ \ \ \ W \ \ \ \ \ \ \ \ \ \ \ \ \  \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ b\ \ \ \ \ \ \ \ \ \ \ \ \ \ \end{aligned}\\(n \times p)\ \ \ \ (n \times d)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (d\times p)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ (n\times p) \ \ \ \ \ \ \ \ \ \end{aligned}
 $$
 
-**[math0. 신경망 수식 분해]**
+**[math 0. 신경망 수식 분해]**
 
 - b는 각 한 행의 모든 값이 같다.
 
@@ -513,7 +513,7 @@ graph BT
 	x1((x<sub>1</sub>)) & x2((x<sub>2</sub>)) & x((x...)) & xd((x<sub>d</sub>))-->o1((O<sub>1</sub>)) & os((o...)) & op((O<sub>p</sub>))
 ```
 
-**[chart0. 신경망 모델의 차트화]**
+**[chart 0. 신경망 모델의 차트화]**
 
 - d개의 변수로 p개의 선형모델을 만들어 p개의 잠재변수를 설명하는 모델의 도식화이다.
 
@@ -540,7 +540,7 @@ def softmax(vec):
     return val
 ```
 
-**[code1.softmax의 코드 구현]**
+**[code 1.softmax의 코드 구현]**
 
 - 이러한 소프트맥스 함수로 벡터를 확률 벡터(각 성분의 합이 1인 벡터)로 변환할 수 있다.
 
@@ -553,7 +553,7 @@ def one_hot_encoding(vec):
     return one_hot(vec_argmax, vec_dim)
 ```
 
-**[code1-1.one_hot 함수 구현]**
+**[code 1-1.one_hot 함수 구현]**
 
 - 학습이 아닌 추론시에는 one_hot 벡터를 이용해 가장 큰 벡터를 정답으로 삼으면 되므로 softmax()를 씌울 필요 없다.(~~one_hot(softmax(o)~~=> **X**, one_hot(o) => **O**)
 
@@ -566,21 +566,22 @@ $$
 \sigma = 활성함수(비선형),\ z = (z_1,\dots,z_q) = 잠재벡터,\ \bold H = 새로운\ 잠재벡터 = 뉴런
 $$
 
-**[math2. 신경망 뉴런]**
+**[math 2. 신경망 뉴런]**
 
 ![image-20210127165653697](AIMath.assets/image-20210127165653697.png)
 
-**[img2. 신경망 뉴런 도식화]**
+**[img 2. 신경망 뉴런 도식화]**
 
 - *잠재벡터들을 이용해 만든 새로운 잠재벡터들*,(그리고, 이 새로 만든 잠재벡터로 만들 새로운 잠재벡터들)을 *뉴런(neuron) 또는 *이라고 하며, 이러한 구조의 인공신경망을 *퍼셉트론(perceptron)*이라고 한다.
   - 각 뉴런(노드) 가 가지고 있는 값은 텐서(tensor)라고 한다.
 
 - 활성화 함수는 *실수값을 받아 실수값을 돌려주는 비선형(nonlinear) 함수*
+  - 비선현 근사를 하기 위해 존재
 - 이로 인해 딥러닝이 선형모형과 차이를 보였으며, *시그모이드(sigmoid), tanh, 그리고 주로 쓰이고 있는 ReLU 함수* 등이 있다. 
 
 ![image-20210127172913738](AIMath.assets/image-20210127172913738.png)
 
-**[img3. sigmoid, tanh, ReLu 함수 그래프]**
+**[img 3. sigmoid, tanh, ReLu 함수 그래프]**
 
 - 만약, 이렇게 구한 *잠재 벡터 H에서 가중치행렬 W^(2)^와 b^(2)^를 통해 다시 한번 선형 변환해서 출력하게 되면 (W^(2)^, W^(1)^)를 패러미터로 가진 2층(2-layers) 신경망*이 된다.
 
@@ -589,11 +590,11 @@ $$
 \bold Z^{(1)} = \bold X\bold W^{(1)} + \bold b^{(1)}
 $$
 
-**[math2-1. 2중 신경망]**
+**[math 2-1. 2중 신경망]**
 
 ![image-20210127210938621](AIMath.assets/image-20210127210938621.png)
 
-**[img2-1.2중 신경망의 구조]**
+**[img 2-1.2중 신경망의 구조]**
 
 - 이렇게 *신경망이 여러층 합성된 함수를 다층(multi-layer) 퍼셉트론(MLP)*라고 한다.
 
@@ -607,13 +608,13 @@ $$
 \\ \bold Z^{(1)} = \bold X\bold W^{(1)} + \bold b^{(1)}
 $$
 
-**[math2-2. n층으로 이루어진  다중신경망의 합성함수]**
+**[math 2-2. n층으로 이루어진  다중신경망의 합성함수]**
 
 - l = 1,...,L까지 순차적인 신경망 계산을 순전파(forward propagation)이라 부른다.
 
 ![image-20210127212725927](AIMath.assets/image-20210127212725927.png)
 
-**[img2-3. 다층 신경망 구조]**
+**[img 2-3. 다층 신경망 구조]**
 
 - 이론적으로 2층 정도의 신경망으로도 임의의 연속함수를 근사(universal approximation theorem)할 수 있다.
 - 층이 깊을 수록 필요한 뉴런(텐서를 가지고 있는 노드), 파라미터의 숫자가 기하급수적으로 줄어들어 좀 더 효율적이다.
@@ -632,14 +633,107 @@ w = x + y \rightarrow \dfrac{\partial w}{\partial x} = 1,\  \dfrac{\partial w}{\
 \dfrac{\partial z}{\partial x} = \dfrac{\partial z}{\partial w}\dfrac{\partial w}{\partial x} = 2w \cdot 1 = 2(x+y)
 $$
 
-**[math3. 편미분을 이용한 역전파 알고리즘 예시]**
+**[math 3. 편미분을 이용한 역전파 알고리즘 예시]**
 
 - 먼저 윗층의 그레디언트 벡터를 구한 뒤, 그 벡터를 이용해 그 아래 그레디언트 벡터를 구한다.
   - 포워드 프로파 게이션과 달리, 각 뉴런 또는 노드의 텐서 값을 메모리에 넣어야 하므로, 메모리를 많이 먹는다.
 
 ![image-20210127222227474](AIMath.assets/image-20210127222227474.png)
 
-**[img4. 2층 신경망 어려운 예제]**
+**[img 3. 2층 신경망 어려운 예제]**
 
 - 파란색 : forward propagation
 - 빨간색 : back propagation
+
+## 확률론
+
+- 딥러닝은 **확률론 기반의 기계학습 이론에 바탕**을 두고 있으며, 통계적 해석은 손실함수 들의 기본 작동원리이다.
+  - 회귀 분석의 L~2~노름은 예측오차 분산을 최소화하는 방향으로 학습하며
+  - 분류 문제의 교차 엔트로피는 모델 예측의 불확실성을 최소화하는 방향으로 학습한다.
+
+### 확률분포
+
+- 확률분포란, *확률 변수가 특정한 값을 가질 확률을 나타내는 함수*를 의미한다.
+
+- 확률분포는 데이터공간 (x,y) 에서 데이터를 추출하는 분포이다.
+
+- 확률 변수는 이산형(discrete)과 연속형(continuous)으로 구분된다.
+
+  - 이산형 확률 변수 : 확률 변수가 가질 수 있는 경우의 수를 모두 고려하여 확률을 더해 모델링
+    $$
+    \mathbb{P}(X \in A) = \sum_{x\in A}{P(X= x)}\\
+    \mathbb{P} = 확률변수
+    $$
+
+  **[math 4. 이산형 확률변수]**
+
+  - 연속형 확률 변수 : 데이터 공간에 정의된 확률변수의 밀도(density) 위에서의 적분을 통해 모델링한다.
+
+  $$
+  \mathbb{P}(X \in A) = \int_{A}{P(x)dx}\\
+  P(x)=\lim_{h\rightarrow0}\frac{\mathbb{P}(x - h \leq X \leq x + h)}{2h}= 확률변수의\ 밀도
+  $$
+
+  **[math 4-1. 연속형 확률변수]**
+
+-  P(x)는 *입력 x에 대한 주변확률 분포*로 y에 대한 정보를 주진 않음
+
+
+### 기대값
+- 조건부 확률 P(x|y)는 *데이터 공간에서 입력 x와 출력 y 사이의 관계를 모델링하며, 입력 변수 x에 대해 정답이 y일 확률*을 의미함.
+- softmax(WΦ  + b )은 데이터 x으로부터 추출된 특징패턴 Φ(x)과 가중치행렬 W을 통해 조건부확률 P(y|x)을 계산
+
+- 기대값(expectation)은 *데이터를 대표하는 통계량, 확률 분포를 통해 다른 통계적 범함수를 계산하는데 사용*
+
+  - 회귀 문제의 경우 조건부 기대값을 추정하며 이는 각 확률분포에 따라 다음과 같이 구한다.
+
+  $$
+  \mathbb{E}_{x\sim P(x)}[f(x)] = \int_\chi f(x)P(x)dx \rightarrow연속확률분포\\
+  \mathbb{E}_{x\sim P(x)}[f(x)] = \sum_{x\in\chi} f(x)P(x) \rightarrow 이산확률분포
+  $$
+
+	**[math 5. 기대값 구하기]**
+
+	- 분산, 첨도 공분산 등의 통계량을 계산하는데 사용함.
+
+$$
+분산	 : \mathbb{V}(x) = \mathbb{E}_{x\sim P(x)}[(x-\mathbb{E}[x])^2]\\
+비대칭도 : Skewness(x) = \mathbb{E}\left[\left(\frac{x-\mathbb{E}[x]}{\sqrt{\mathbb{V}(x)}}\right)^3\right]\\
+공분산 : Cov(x_1,x_2) = \mathbb{E}_{x_1,x_2\sim P(x_1,x_2)}(x_1 -\mathbb{E}[x_1])(x_2 - \mathbb{E}[x_2])
+$$
+
+​	**[math 5-1. 기대값의 사용]**
+
+### 몬테카를로 샘플링(Monte Carlo sampling)
+
+- *확률 분포를 모를 때 데이터를 이용하여 기대값을 계산하는 방법*.
+- 이산형, 연속형이든 관계없이 다음과 같이 표현함.
+
+$$
+\mathbb{E}_{x\sim P(x)}[f(x)] \approx \frac{1}{N}\sum^N_{i=1}f(x^{(i)}),\ x^{(i)}\stackrel{\text{i.i.d.}}{\sim} P(x)
+$$
+
+**[math 6.몬테카를로 샘플링]**
+
+- *독립 추출만 보장된다면 대수의 법칙(law of large number)에 의해 수렴성을 보장*
+
+```python
+import numpy as np
+#f(x) = e^(-x^2), [-1, 1]
+def mc_int(fun, low, high, sample_size=100, repeat=10):
+    int_len = np.abs(high - low)
+    stat = []
+    for _ in range(repeat):
+        x = np.random.uniform(low=low, high=high, size=sample_size)
+        fun_x = fun(x)
+        int_val = int_len * np.mean(fun_x)
+        stat.append(int_val)
+    return np.mean(stat), np.std(stat)
+
+def f_x(x):
+    return np.exp(-x**2)
+
+print(mc_int(f_x, low=-1, hight=1, sample_size=10000, repeat=100))
+```
+
+**[code 6. f(x), [-1, 1] 몬테카를로 코드구현]**
