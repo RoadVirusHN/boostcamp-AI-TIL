@@ -185,13 +185,68 @@ plt.show()
 - 박스 범위는 IQR(Interquartile Range), 박스 사이는 25~75% 사이이며, 그 위에 박힌 점은 outlier, 즉 이상치다.
 - 중간의 노란선은 50% 지점이다.
 
-
 ## seaborn
+
+### introduction
 
 - 통계적 데이터의 visualization, matplotlib의 wrapper이며, 더욱 쉽게 사용하게 해준다.
 - 튜토리얼이 잘되있으니 추천
 
+```bash
+conda install seaborn
+```
 
+**[code 5. seaborn 인스톨]**
+
+```python
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+sns.set(style="darkgrid")# 테마 제공1, 홈페이지 참조
+tips = sns.load_dataset("tips")# 기본 제공 dataset
+fmri = sns.load_dataset("fmri")# 기본 제공 dataset2
+```
+
+**[code 5-1. seabron 및 기본 datset import]**
+
+#### 기본 사용법
+
+```python
+sns.lineplot(x="timepoint", y="signal", hue="event", data=fmri) # 선으로 되어있는 그래프 생성
+# 중앙선은 평균, 넓이는 분포, 기본적으로 정렬이 되서 연속적으로 표현됨.
+# hue를 통해 해당 category 별로변하는 데이터를 보여줌
+fmri.sample(n=10, random_state=1) # seaborn의 샘플 추출법, random으로 추출 가능
+# 물론, 기본적인 fmri.head() 또한 가능하다.
+```
+
+**[code 6. line plot 사용과 샘플 추출]**
+
+![image-20210130150153587](DataVisualization.assets/image-20210130150153587.png)
+
+**[img 6. lineplot example]**
+
+![image-20210130150111395](DataVisualization.assets/image-20210130150111395.png)
+
+**[img 6-1. sample example]**
+
+```python
+sns.scatterplot(x="total_bill", y="tip", hue="time", data=tips)
+sns.regplot(x="total_bill", y="tip", data=tips) # 중간에 선형함수를 줄쳐주는 scatter plot
+```
+
+**[code 6-1. scatter plot 코드]**
+
+![image-20210130154253686](DataVisualization.assets/image-20210130154253686.png)![image-20210130154146417](DataVisualization.assets/image-20210130154146417.png)
+
+**[img 6-2. scatter plot 와 regplot 결과]**
+
+- 이외에도 barplot, distplot 등의 plot이 있다.
+
+
+
+#### 기타 추가 적인 plots
 
 - vilolinplot : boxplot에 distribution을 함께 표현
 - stripplot : scatter와 category 정보를 함께 표현
@@ -200,3 +255,18 @@ plt.show()
 - pointplot : category 별로 numeric의 평균, 신뢰구간 표시
 - regplot : scatter + 선형함수를 함께 표시
 - FacetGrid : 4개 정도의 grid를 만든 뒤, map함수를 통해각 그리드에 들어가야할 plot을 설정해줌
+
+#### multiple plots
+
+- 한개 이상의 도표를 하나의 plot에 작성
+- Axes를 사용해서 grid를 나누는 방법
+
+![image-20210130151746857](DataVisualization.assets/image-20210130151746857.png)
+
+**[img 8. multiple plot 사용 예제]**
+
+- replot : Numeric 데이터 중심의 부포/ 선형 표시
+- catplot : category 데이터 중심의 표시
+- FacetGrid : 특정조건에 따른 다양한 plot을 grid로 표시
+- pairplot : 데이터 간의 상관관계 표시
+- implot : regression 모델과 category 데이터를 함께 표시

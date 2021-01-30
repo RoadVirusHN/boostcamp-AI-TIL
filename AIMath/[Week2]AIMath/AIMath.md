@@ -572,7 +572,7 @@ $$
 
 **[img 2. 신경망 뉴런 도식화]**
 
-- *잠재벡터들을 이용해 만든 새로운 잠재벡터들*,(그리고, 이 새로 만든 잠재벡터로 만들 새로운 잠재벡터들)을 *뉴런(neuron) 또는 *이라고 하며, 이러한 구조의 인공신경망을 *퍼셉트론(perceptron)*이라고 한다.
+- *잠재벡터들을 이용해 만든 새로운 잠재벡터들*,(그리고, 이 새로 만든 잠재벡터로 만들 새로운 잠재벡터들)을 *뉴런(neuron) 또는* 이라고 하며, 이러한 구조의 인공신경망을 *퍼셉트론(perceptron)*이라고 한다.
   - 각 뉴런(노드) 가 가지고 있는 값은 텐서(tensor)라고 한다.
 
 - 활성화 함수는 *실수값을 받아 실수값을 돌려주는 비선형(nonlinear) 함수*
@@ -737,3 +737,131 @@ print(mc_int(f_x, low=-1, hight=1, sample_size=10000, repeat=100))
 ```
 
 **[code 6. f(x), [-1, 1] 몬테카를로 코드구현]**
+
+## 통계학
+
+- *통계적 모델링은 적절한 가정 위에서 확률 분포를 추정(inference)하는 것이 목표*이며, 이는 기계학습이 결과를 예측하는 것과 같은 목표이다.
+- 유한한 개수의 데이터로는 모집단의 분포를 정확하게 알아낼 수 없으므로 근사적으로 확률분포를 추정하여 불확실성을 최소화
+
+### 모수
+
+- *데이터가 특정 확률분포를 따른다고 선험적으로(a priori) 가정한 후 그 분포를 결정하는 모수(parameter)를 추정하는 방법을 모수적(parametirc) 방법론*이라고 함.
+  - 이와 반대로 데이터에 따라 모델의 주조 및 개수가 유연하게 바뀌면 비모수(nonparametric) 방법론이라 부르며 기계학습의 많은 방범론이 이를 따르기도 함.
+
+### 데이터 모수 추정
+
+#### 확률 분포 가정
+
+- 히스토그램의 모양을 관찰하여 확률분포를 가정할 수 도 있다.
+
+![image-20210130173640696](AIMath.assets/image-20210130173640696.png)
+
+**[img 7. 여러가지 모양의 확률 분포]**
+
+| 확률 분포명               | 데이터 모양                                    |
+| ------------------------- | ---------------------------------------------- |
+| 베르누이 분포             | 데이터가 2개의 값(0 또는 1)만 가짐             |
+| 카테고리 분포             | 데이터가 n개의 이산적인 값만을 가짐            |
+| 베타 분포                 | 데이터가 [0, 1] 사이에서 값을 가짐             |
+| 감마 분포, 로그 정규 분포 | 데이터가 0 이상의 값을 가짐                    |
+| 정규 분포, 라플라스 분포  | 데이터가 $\mathbb{R}$(실수) 전체에서 값을 가짐 |
+
+**[fig 7.  확률 분포의 예시]**
+
+- 하지만 이런식으로 가정하는 것보다 *데이터를 생성하는 원리를 고려한 뒤, 각 분포마다 모수를 추정 후  각 확률분포의 검정방벙으로 검정하는 방식이 원칙*이다.
+
+#### 데이터 모수 추정
+
+- 데이터 확률분포를 가정한 수 데이터 모수를 추정한다.
+
+- 평균 $\mu$와 분산 $\sigma^2$으로 이를 추정하는 통계량(statistic)은 다음과 같다.
+  $$
+  \stackrel{표본 평균}{\bar{X} = \frac{1}{N}\sum^N_{i=1}X_i},\ \ \ \stackrel{표본 분산}{S^2 = \frac{1}{N-1}\sum^N_{i=1}(X_i-\bar{X})^2}\\
+  \mathbb{E}[\bar{X}] = \mu,\ \ \ \mathbb{E}[S^2] = \sigma^2,\ 표본 표준 편차 = \sqrt{표본분산} = \sqrt{S^2} = S
+  $$
+  **[math 7. 통계량 계산]**
+
+  - 표본분산을 구할 때 N이 아닌 N-1로 나누는 이유는 불편(unbiased) 추정량을 구하기 위해서라고 하며, 고급 통계학 내용이므로 일단 넘어가겠다.
+
+- *통계량의 확률 분포를 표집분포(Sampling distribution)*이라 부르며, 특히 표본평균의 표집분포는 N이 커질수록 정규분포 $\mathcal{N}(\mu,\sigma^2/N )$를 따릅니다.
+
+  - 이를 중심 극한 정리(Central Limit Theorem)이라 부르며, 모집단의 분포가 정규분포를 따르지 않아도 성립합니다.
+
+### 최대 가능도(maximum likelihood estimation, MLE) 추정
+
+- 통계량을 측정하는 적절한 방법은 확률분포마다 다르다.
+
+- 이론적으로 가장 *가능성이 높은 모수 측정 방법은 최대 가능도 추정법(maximum likelihood estimation, MLE)*입니다.
+  $$
+  \hat{\theta}_{MLE} = argmax\ L(\theta;x) = argmax\ P(x|\theta)
+  $$
+  **[math 8. 최대가능도 추정법]**
+
+- 데이터 집합 **X**가 *독립적으로 추출되었을 경우 로그가능도를 최적화*합니다.
+  
+  - 이때 모수 $\theta$는 가능도를 최적화하는 MLE가 됩니다.
+
+$$
+L(\theta;X) = \prod^n_{i=1}P(x_i|\theta) \Rightarrow log\ L(\theta; X) = \sum^n_{i=1}logP(x_i|\theta)
+$$
+
+​	**[math 8. 독립 추출 시의 추정법 최대가능도 추정법]**
+
+- 데이터의 숫자가 수억단위가 되면 컴퓨터의 연산으로 계산 불가능하므로, 데이터가 독립일 시, 로그 가능도의 덧셈으로 바꾸면 컴퓨터로 연산이 가능해짐.
+  - 경사하강법으로 가능도 최적화시, 미분연산을 사용하며, 음의 로그가능도(negative log-likelihood)를 사용하면 연산량이 O(n^2^)에서 O(n)으로 줄여준다.
+  - 불편 추정량을 보장하진 않음.
+
+#### 최대 가능도 추정법 예제
+
+#####  정규분포
+
+$$
+\hat{\theta}_{MLE}= argmax\ L(\theta; x) = argmax\ P(x|\theta)\\
+log\ L(\theta;X) = \sum^n_{i=1}logP(x_i|\theta) = \sum^n_{i=1}log\frac{1}{\sqrt{2\pi\sigma^2}}e^{-\frac{{|x_i-\mu|^2}}{2\mu^2}} = -\frac{n}{2}log2\pi\sigma^2 - \sum^n_{i=1}\frac{{|x_i-\mu|}^2}{2\sigma^2}
+$$
+
+**[math 8-1. 모수 추정을 위한 로그 가능도 계산]**
+$$
+0 = \frac{\partial logL}{\partial\mu}= -\sum^n_{i=1}\frac{x_i - \mu}{\sigma^2} \Rightarrow \hat{\mu}_{MLE}=\frac{1}{n}\sum^N_{i=1}x_i\\
+0 = \frac{\partial logL}{\partial\sigma}= -\frac{n}{\sigma}+\frac{1}{\sigma^3}\sum^n_{i=1}|{x_i - \mu}|^2 \Rightarrow \hat{\sigma}_{MLE}^2=\frac{1}{n}\sum^N_{i=1}(x_i -\mu)^2\\
+$$
+**[math 8-2. 미분을 통한 모수 추정]**
+
+##### 카테고리 분포
+
+$$
+\hat{\theta}_{MLE}= argmax\ P(x_i|\theta) = argmax\ log(\prod^n_{i=1}\prod^d_{k=1}p_k^{x_i,k})\\
+log(\prod^n_{i=1}\prod^d_{k=1}p_k^{x_i,k})=\sum^d_{k=1}(\sum^n_{i=1}x_{i,k})logp_k = \sum^d_{k=1}n_klogp_k\ with\ \sum^d_{k=1}p_k=1\\
+\Rightarrow \mathcal{L}(p_1,\dots,p_k,\lambda) = \sum^d_{k=1}n_k logp_k + \lambda(1-\sum_kp_k) (라그랑주\ 승수법)\\
+0 = \frac{\partial \mathcal{L}}{\partial p_k} = \frac{n_k}{p_k} - \lambda,\ \ \ 0=\frac{\partial \mathcal{L}}{\partial \lambda} = 1 - \sum^d_{k=1}p_k \rightarrow\ p_k =\frac{n_k}{\sum^d_{k=1}n_k}
+$$
+
+**[math 8-3. 모수 추정] **
+
+#### 딥 러닝에서 최대가능도 추정법
+
+- 딥러닝 모델의 가중치를 $\theta=(W^{(1)},\dots,W^{(L)})$라 표기했을 때 분류 문제에서 소프트맥스 벡터는 카테고리 분포의 모수 $(p_1,\dots,p_k)$를 모델링합니다.
+
+- 원핫벡터로 표현한 정답레이블 $y= (y_1, \dots,y_k)$을 관찰데이터로 이용해 확률분포인 소프트맥스 벡터의 로그가능도를 최적화할 수 있습니다.
+  $$
+  \hat{\theta}_{MLE} = argmax \frac{1}{n}\sum^n_{i=1}\sum^K_{k=1}y_{i,k}log(MLP_\theta(x_i)_k)
+  $$
+   **[math 9. 분류 문제 최대가능도 추정]**
+
+#### 확률분포의 거리 구하기 - 쿨백-라이블러 발산
+
+- *기계학습에서 사용되는 함수들은 모델이 학습하는 확률분포와 데이터에서 관찰되는 확률분포의 거리를 통해 유도*됩니다.
+- 두 개의 확률분포 P(x), Q(x)가 있을 경우 두 확률분포 사이의 거리(distance)를 계산할 때 여러 함수를 이용
+  - 총변동 거리 (Total Variation Distance, TV)
+  - 쿨백-라이블러 발산 (Kullback-Leibler Divergence, KL)
+  - 바슈타인 거리 (Wasserstein Distance)
+
+- 이 중 쿨백-라이블러 발산(KL Divergence)은 다음과 같이 정의.
+  $$
+  \mathbb{KL}(P\|Q) = -\mathbb{E}_{x\sim P(x)}[logQ(x)] + \mathbb{E}_{x\sim P(x)}[logP(x)]\\
+   -\mathbb{E}_{x\sim P(x)}[logQ(x)] = 크로스\ 엔트로피,\ \mathbb{E}_{x\sim P(x)}[logP(x)] =  엔트로피
+  $$
+
+**[math 10. 쿨백-라이블러 발산 구하기]**
+
+- *분류 문제에서 정답레이블을 P, 모델 예측을 Q라 두면 최대가능도 추정법은 쿨백-라이블러 발산을 최소화* 하는 것과 같음.
