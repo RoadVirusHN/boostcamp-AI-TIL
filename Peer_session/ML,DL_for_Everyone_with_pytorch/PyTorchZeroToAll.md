@@ -223,7 +223,7 @@ $$
 - **각 paramete의  비용함수를 구하기 위한 방법을 역전파(Back-propagation) 알고리즘**이라고 한다.
 - 심층 신경망의 핵심 개념으로, 60년 전에 발표됬다가 XOR 문제를 해결하지 못하여 사장되었던 머신러닝 이론을 다시 부흥시킨 알고리즘이다.
   - XOR 문제 : A XOR B의 값은 A,B 값이 서로 달라야 1이 된다, 과거 머신러닝은 둘 중 하나만 true여야 true, A, B 둘다 true면 0이 되는 문제를 이해하지 못했다.
-- 순전파(feedforward, 입력한 파라미터를 신경망 순서에 따라 가공)의 반대방향으로 진행하기에 역전파라는 이름이 붙여졌다.
+- 순전파(feed forward, 입력한 파라미터를 신경망 순서에 따라 가공)의 반대방향으로 진행하기에 역전파라는 이름이 붙여졌다.
 
 2) 역전파 알고리즘 실습
 
@@ -273,9 +273,7 @@ graph LR
 
 ![1611537213420](PyTorchZeroToAll.assets/1611537213420.png)
 
-​	Ex 4-3 : ??
-
-​	![1611514808256](PyTorchZeroToAll.assets/1611514808256.png)
+​	Ex 4-3 : 	![1611514808256](PyTorchZeroToAll.assets/1611514808256.png)
 
 ​	Ex 4-4: Lesson 3 참고
 
@@ -289,3 +287,201 @@ graph LR
 
 ![1611538551254](PyTorchZeroToAll.assets/1611538551254.png)
 
+
+# Lesson 5
+
+## 파이토치 딥러닝 과정
+
+### 1. class와 ~~Variables 함수~~를 이용하여 모델 디자인
+
+- ~~Variables 함수는 deprecated 됬으며 이제 torch의 tensor 객체에 requires_grad=True를 줌으로써 바로 활용할 수 있다.~~
+- 그냥 Tensor  만으로 사용 가능
+
+```python
+import torch
+
+x_data = torch.Tensor([[1.0], [2.0], [3.0]])
+y_data = torch.Tensor([[2.0], [4.0], [6.0]]) # Variable 함수는 deprecated 되었다.
+# 대신 requires_grad를 True로 줌으로써 활용 가능 -> 이것도 deprecated 된듯하다.
+# requires_grad에 해당하는 argument가 존재하지 않음
+
+class Model(torch.nn.Module): # 이름은 아무거나 정할 수 있지만 여기서는 Model
+    def __init__(self): # 기타 추가 element 생성 가능
+        super(Model, self).__init__()
+        self.linear = torch.nn.Linear(1, 1) # 선형 모델 생성 y = x 그래프이므로 1, 1
+
+
+    def forward(self, x): # x를 넣어준 뒤 예상한 y를 리턴 
+        y_pred = self.linear(x)
+        return y_pred
+
+model = Model() # 모델 객체 생성
+```
+
+### 2. PyTorch API를 통하여 loss 함수와 optimizer 구현
+
+```python
+# 2. PyTorch API를 통하여 loss 함수와 optimizer 구현
+criterion = torch.nn.MSELoss(size_average=False) # MSE Loss function 설정
+optimizer = torch.optim.SGD(model.parameters(), lr=0.01) #  SGD 설정 lr = learning rate
+
+for epoch in range(500):
+    y_pred = model(x_data)# x_data = metrics
+
+    loss = criterion(y_pred, y_data) # 결과 값을 통해 loss 값 계산
+    print(epoch, loss.item()) # 결과값이 0 dimension 이므로 data[0]를 할 수 없다는 결과가 나옴. loss.item()으로 확인가능
+
+    optimizer.zero_grad() # 모든 gradient 값 0으로 초기화
+    loss.backward() # back propagation
+    optimizer.step() # back propagation 값으로 parameters 값을 업데이트해줌
+    # 수많은 데이터에서는 비효율적인 방법이지만 지금 과정에서는 괜찮다.
+```
+
+### 3. Training cylce 형성
+
+```python
+# 3. 모델 테스트
+hour_var =torch.Tensor([[4.0]]) # 학습을 tensor로 했으므로 input 또한 tensor로 줘야한다.
+print("predict : ", 4, model.forward(hour_var).data[0][0])
+```
+
+![image-20210201014600413](PyTorchZeroToAll.assets/image-20210201014600413.png)
+
+- loss 값이 아주 작은 값으로 떨어지며 예상값 또한 답에 가까운 것을 알 수 있다.
+
+### Exercise
+
+- 여러가지 optimizer를 사용해보았다. (500 epoch)
+
+![image-20210201015531680](PyTorchZeroToAll.assets/image-20210201015531680.png)
+
+# Lesson 6
+
+## Logistic Regression
+
+- 합/불합 또는 승리/패배 예측처럼 0 또는 1 즉 binary prediction을 위한 모델이 중요하다.
+- Linear 모델이 sigmoid 함수를 적용하면 0 또는 1 값의 결과를 줄 수 있다.
+
+$$
+\sigma(z) = \frac{1}{1+e^{-z}}
+$$
+
+![image-20210201020215707](PyTorchZeroToAll.assets/image-20210201020215707.png)
+
+**[sigmoid 함수 예제]**
+
+- 값을 이런식으로 0 또는 1로 바꾸어준다.
+
+  
+
+![image-20210201020457419](PyTorchZeroToAll.assets/image-20210201020457419.png)
+
+- 하지만 이렇게 출력값을 바꾸고 기존의  loss function에 넣으면 값이 달라지므로, 새로운 Loss fuction이 필요하다.
+- (Binary) Meet Cross Entropy Loss
+
+$$
+loss = -\frac{1}{N}\sum^N_{n=1}y_nlog\hat{y}_n + (1-y_n)log(1-\hat{y}_n)
+$$
+
+![image-20210201021038391](PyTorchZeroToAll.assets/image-20210201021038391.png)
+
+- 이러한 형태의 loss 값을 가지게 된다.
+
+```python
+# 5강에서 만든 모델에서 일부만 바꿔주면 된다
+import torch.nn.functional as F
+
+class Model(torch.nn.Module):
+    def __init__(self):
+        super(Model, self).__init__()
+        self.linear = torch.nn.Linear(1, 1)
+
+    def forward(self, x):
+        y_pred = F.sigmoid(self.linear(x)) # 모델에 sigmoid 함수를 씌우기만 하면 된다.
+        return y_pred
+    
+model = Model()
+criterion = torch.nn.BCELoss(size_average=False) # BCELoss로 바꿔준다.
+```
+
+**[sigmoid 함수의 코드 구현]**
+
+![image-20210201023044345](PyTorchZeroToAll.assets/image-20210201023044345.png)
+
+**[학습 결과와 모델 예측]**
+
+### Exercise
+
+- 대부분 추가적인 조정이나 argument를 필요로 하였고 제대로 된 값이 나오지 않았다.
+- 대부분 Non-linear Activations라고 한다.
+
+![image-20210201025804510](PyTorchZeroToAll.assets/image-20210201025804510.png)
+
+# Lesson 7
+
+## Wide & Deep
+
+- 여러 input을 이용해 넓게, 여러 layer을 사용해 깊게 모델을 학습하여 더 정확한 모델을 얻을 수있다.
+
+### 더 넓게
+
+- 기존에 사용했던 모델은 x 하나의 0차원 데이터를 사용했지만 Matrix Multiplication을 이용해 여러 차원의 데이터를 학습에 이용할 수 있다.
+
+$$
+\begin{bmatrix} a_1& b_1  \\  a_2 & b_2 \\ \dots & \dots  \\ a_n&b_n \end{bmatrix} 
+\begin{bmatrix}w_1 \\ w_2  \end{bmatrix} = \begin{bmatrix}y_1 \\ y_2 \\ \dots \\ y_n \end{bmatrix} \\
+XW = \hat{Y}
+$$
+
+```python
+linear = torch.nn.Linear(2,1)
+y_prd = linear(x_data)
+```
+
+**[Matrix Multiplication 코드]**
+
+### 더 깊게
+
+- 여러 층의 layer를 활용하여 더욱 정확도 높은 모델을 만들 수 있다. (Multilayer deep learning)
+
+![image-20210201043004028](PyTorchZeroToAll.assets/image-20210201043004028.png)
+
+```python
+sigmoid = torch.nn.Sigmoid()
+
+l1 = torch.nn.Linear(2, 4)
+l2 = torch.nn.Linear(4, 3)
+l3 = torch.nn.Linear(3, 1)
+
+out1 = sigmoid(l1(x_data))
+out2 = sigmoid(l2(out1))
+y_pred = sigmoid(l3(out2))
+```
+
+**[여러 층을 이용한 신경망 코드]**
+
+- 단, sigmoid 함수를 이용할 시, 결과값이 0~1로 제한되는 과정에 의해 backpropagation을 진행할수록 weight가 옅어지는 현상이 나타난다.
+
+![image-20210201043340112](PyTorchZeroToAll.assets/image-20210201043340112.png)
+
+- 이를 Vanishing Gradient Problem이라고 하며 이를 해결하기 위해 다른 다양한 함수들을 사용할 수 있다.
+
+# Lesson 8
+
+## PyTorch DataLodader
+
+# Lesson 9
+
+## Softmax Classifier
+
+# Lesson 10
+
+## Basic CNN
+
+# Lesson 11
+
+## Advanced CNN
+
+# Lesson 12
+
+## Basic RNN
