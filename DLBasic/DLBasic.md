@@ -412,6 +412,17 @@ $$
 
 - feature map을 연산할 때 여러 층의 feature가 나오는 방법은 여러겹의 필터를 곱하여 만드는 것이다.
 
+#### maxpool2d층 원리
+
+![image-20210208011810873](DLBasic.assets/image-20210208011810873.png)
+
+**[img. Maxpool 2d층 예시]**
+
+- 각 구역을 kenelsize와 stride 만큼 나누어 가장 큰값을 취함
+- Max값을 취하는 Maxpool이외에도 평균값을 취하는 averagepool등도 있다.
+- featureamp의 크기가 줄어들어 성능을 줄이고 특징을 두드러지게 할 수 있다.
+- 다만, 공간 정보(위치, 방향, 비율)등이 모호해 지기도 한다.
+
 ### CNN 구조와 용어
 
 ![image-20210204160439761](DLBasic.assets/image-20210204160439761.png)
@@ -447,3 +458,281 @@ $$
 
 ### Convolution Arithmetic
 
+![image-20210207221941702](DLBasic.assets/image-20210207221941702.png)
+
+**[img. $3 \times 3$  kernel, Padding 1, Stride 1 의 연산  parameter 계산 예시]**
+
+- parameter의 수는 가중치의 수
+- convolution layer의 학습 파라미터 수는 *(필터 폭  X 필터 높이  X 입력 채널 수 X 출력 채널 수)*로 계산
+
+- 위 예시는 $3 \times 3 \times 128 \times 64 = 73,728 $ 개의 학습 파라미터 수
+
+- Max pooling layer는 parameter output이 없다.
+  - 메모리 성능 제한 때문에 2개로 나누어 trainig 하는 layer?
+  - 그러므로 나뉜 수만큼 곱해주면 된다.
+
+![image-20210207232952600](DLBasic.assets/image-20210207232952600.png)
+
+**[img. convolution 연산 추가 예시]**
+
+- $5 \times 5 \times 48 \times 128*2 \approx 307k$
+- 굳이 정확히 숫자를 세는 것이 아니라 대략적인 양(마치 알고리즘의 big O 표기처럼) 성능을 측정할 수 있어야 한다.
+
+![image-20210207234905710](DLBasic.assets/image-20210207234905710.png)
+
+**[img. dense layer (fully connected layer) 연산 예시]**
+
+- input의 neuron과 output의 neuron의 수를 곱한 만큼이다.
+
+- $13 * 13 * 128 * 2 \times 2048 *2 \approx 177M$
+
+- $2048 * 2 \times 2048 *2 \approx 16M$
+- $2048*2 \times 1000 \approx 4M$
+- Convolution operator는 같은 kernel을 연산에 쓰면서 parameter가 공유되므로 비교적 적다.
+- 1000배 이상의 parameter가  fully connected layer에 쓰이므로 이 부분을 줄이는 추세이다.
+
+### 1x1 convolution를 활용한 최적화
+
+![image-20210208001104816](DLBasic.assets/image-20210208001104816.png)
+
+**[img. 1x1 convolution 적용에 의한 차원(filter)의 감소 효과]**
+
+- 1x1 convolution layer 연산을 통하여 차원(filter)를 감소시켜 parameter 수를 줄이며, 층 수는 늘릴 수 있다.
+- bottleneck 구조의 원리
+
+## Modern CNN
+
+- ~2018년 까지의 CNN 기술
+- ImageNet Large-Scale Visual Recognition Challenge 위주
+  - Classification, Detection, Localization, Segmentation 등의 부문이 있음
+
+- 딥러닝의 최근 Error rate는 3.5% 이하로 인간의 5.1% 보다 에러가 적다.
+
+1. AlexNet
+
+![image-20210208080644909](DLBasic.assets/image-20210208080644909.png)
+
+**[img. AlexNet 구조]**
+
+- 컴퓨터 성능의 한계를 극복하기 위해 네트워크를 2개의 길로 나눈 8단의 layer.
+
+- 11x11x3 filter 사용
+  - fitler의 크기가 클수록 convolution 연산 시, 고려되는 input의 크기(receptive field)가 커짐
+  - receptive field : feature map 추출시 고려 가능한 입력의 spacial dimension.
+  - 단, parameter의 수가 커짐
+- ReLU 활성 함수 사용.
+
+![image-20210208081912800](DLBasic.assets/image-20210208081912800.png)
+
+- **[img. Relu 함수, 0 이하는 0으로 바꾼다.]**
+  - 선형 모델의 장점, 학습이 용이, generalization 효과가 좋고, Vanishing gradient problem 극복
+- 2개 GPU 사용, Data augmentation, Dropout 활용
+  - 그 외에도 Local Response normalization, Overlapping pooling 활용
+
+2. VGGNet
+
+![image-20210208082150147](DLBasic.assets/image-20210208082150147.png)
+
+**[img.VGGNet 구조]**
+
+- 3x3 convolution filter를 활용하여 파라미터 수 줄임
+
+- ![image-20210208090026567](DLBasic.assets/image-20210208090026567.png)
+
+  **[img. 3x3 filter 두번 사용 vs 5x5 filter 한번 사용 파라미터 수 비교]**
+
+  - 필터를 통해 보는 input field의 크기는 같으나 2번 걸침으로 써 파라미터의 수는 줄일 수 있다. 
+  - 이 방법을 통해 보통 최대 7x7 필터를 넘지 않는다.
+
+- Dropout과 1x1 convolution을 dense layer에 활용
+
+- 16층 버전(VGG16), 19층 버전(VGG19)이 있음
+
+3. GoogleNet
+
+![image-20210208090439348](DLBasic.assets/image-20210208090439348.png)
+
+**[img. googlenet 구조]**
+
+- NIN 구조(Network in Network) : 네트워크 내부에 모듈 형식의 작은 네트워크들의 반복이 존재
+
+- Inception blocks: 여러개로 퍼졌다고 다시 합쳐지는 블록
+
+  - ![image-20210208090603118](DLBasic.assets/image-20210208090603118.png)
+
+  **[img. inception 모듈]**
+
+  - 여러 개의 responsed를 추출 가능
+
+  - 1x1 Conv layer에 의해 파라미터의 수 감소.
+
+  - 채널 방향의 차원을 줄이는 효과가 있음
+
+  ![image-20210208092105983](DLBasic.assets/image-20210208092105983.png)
+
+  **[img. 1x1 convolution의 채널 감소 효과에 의한 파라미터 수 감소]**
+
+- VGGNet, AlexNet에 비해 layer는 깊지만 파라미터 수는 오히려 적음
+
+4. ResNet
+
+- 깊은 층을 가진 DNN의 training error와 test error의 갭을 줄이고 학습을 용이하게 함.
+
+- 이를 통해 깊은 층의 DNN을 활용할 수 있게 해줌.
+
+- parameter  수는 줄고, 성능을 늘어나기 시작함
+
+- Residual connection (or Identity map)
+
+  - ![image-20210208093731195](DLBasic.assets/image-20210208093731195.png)
+
+    **[img. identity map(residual map) 비교]**
+
+  - 출력 값을 일부 layer 너머의 출력에 더해 줌(skip connection)
+
+  - 위 처럼 더해주는 simp shortcut 방식과 1x1 conv layer를 거쳐서 더해주는 Projected shortcut 방식(차원을 맞춰줘야 더 해지므로)이 있다.
+  - 일반적으로 convolution layer 다음에 batch Norm, activation 함수 순으로 배치되며, Residual 합산은 batch Norm 뒤에, activation 앞에서 이루어진다.
+    
+    - 논란이 있으며, 순서가 바뀌어야 성능이 좋아질 때도 잇다.
+
+- Bottleneck architecture 
+
+  - 1x1 conv layer을 통해 input channel을 줄여서 parameter 수를 줄이고,  다시 채널을 늘려서 값을 더할 수 있게 함.
+
+![image-20210208095358891](DLBasic.assets/image-20210208095358891.png)
+
+**[img. bottleneck architecture 그림]**
+
+5. DenseNet
+
+![image-20210208103813747](DLBasic.assets/image-20210208103813747.png)
+
+**[img. Resnet과 DenseNet 차이]**
+
+- Resnet과 달리 결과값을 더하는 것이 아닌 concatenation 하는 방식
+- 채널이 점점 기하 급수적으로 커지므로, 중간에 한번씩 채널을 줄여줌
+  - Dense Block : layer결과를 concatenate하여 채널을 늘림
+  - Transition Block : batchnorm과 1x1 conv, 2x2 avgPooling을 통하여 채널 수 줄임
+  - 위 두 block의 반복
+- 간단하고 성능이 좋다.
+
+## Computer Vision Applications
+
+### Semantic Segmentation
+
+- 이미지 내부의 일부(픽셀)를 물체로써 식별하는 문제
+- 자율 주행에서 사람, 인도, 자동차 등을 식별하는 등에 사용
+
+#### Fully Convolutional Network(FCN)
+
+![image-20210208195212790](DLBasic.assets/image-20210208195212790.png)
+
+**[img. 기존의 CNN vs Fully Convolutional Network]**
+
+- dense layer을 거치지 않고, convolution layer로 바꾸어 결과의 크기를 10이 아닌 차원의 수를 10으로 만드는 것을 convolutionalization이라고 한다.
+
+- 양쪽 다 parameter 수는 똑같이 4x4x16x10 = 2560으로 같다.
+
+- 하지만 이를 통하여 원본보다 size가 줄어든 heat map을 구할 수 있다.
+
+![image-20210208210608453](DLBasic.assets/image-20210208210608453.png)
+
+**[img. convolutionalize 를 통한 heat map 생성, 고양이의 추정위치 확인이 가능해짐. ]**
+
+#### Deconvolution(conv transpose)
+
+![image-20210208212617919](DLBasic.assets/image-20210208212617919.png)
+
+**[img. Deconvolution 개념]**
+
+- 위의 줄어든 size를 원래대로 돌리기 위해 Deconvolution을 진행할 수 있다.
+- 원래 픽셀을 그대로 돌려주진 않으나 원본 크기로 돌아가게 된다.
+
+![image-20210208212709296](DLBasic.assets/image-20210208212709296.png)
+
+**[img. Deconvolution의 도식화]**
+
+### Detection
+
+- 이미지 내 물체의 바운딩 박스를 찾는 문제
+
+#### R-CNN
+
+![image-20210208213527247](DLBasic.assets/image-20210208213527247.png)![image-20210208214004374](DLBasic.assets/image-20210208214004374.png)
+
+**[img. R-CNN의 절차와 예시]**
+
+1. 이미지에서 Selective search를 통해 물체로 추정되는 부분의 bounding box를 bounding box regression을 통하여 전부 뽑는다.
+2. 해당 bounding box를 같은 크기로 바꾼 뒤, CNN(여기서는 AlexNet)을 통하여 feature를 뽑는다.
+3. features를 SVM(support vector machine)을 통하여 classification한다.
+
+- 1번의 물체를 추정되는 부분의 bounding box를 전부 뽑는 부분이 엄청나게 느리다.
+
+#### SPPNet
+
+![image-20210208214203081](DLBasic.assets/image-20210208214203081.png)
+
+**[img. SPPNet의 구조]**
+
+- CNN을 한번만 돌린 뒤, 해당 바운딩 박스 하나에서 feature를 뽑고 나서 그것을 spatial pyramid pooling을 통하여 classification함.
+
+#### Fast R-CNN
+
+![image-20210208221610071](DLBasic.assets/image-20210208221610071.png)
+
+**[img. fasc R-CNN]**
+
+- SPPNet과 비슷하다.
+
+1. 인풋 이미지의 바운딩 박스를 여러개 뽑는다.
+2.  CNN feature map을 만든다.
+3. ROI(region of interest) pooling을 통하여 feature map을 뽑고, classification과 bounding-box regressor를 뽑는다.
+
+#### Faster R-CNN
+
+- Fast R-CNN + Region Proposal Network
+
+- Region Proposal Network(RPN)
+
+- ![image-20210208222331311](DLBasic.assets/image-20210208222331311.png)
+
+  **[img. RPN 예시]**
+
+  - 바운딩 박스를 찾는 알고리즘 또한 교육함, classification은 하지 않음.
+  - Anchor Boxes: 미리 정의한 물체 크기로 이루어진 kernel
+
+- ![image-20210208222455115](DLBasic.assets/image-20210208222455115.png)
+
+  **[img. RPN 차원]**
+
+  -  RPN의 Fully Conv에 의해 해당 공간이 원하는 물체를 가지고 있는지 판단
+  - 3개의 region 크기(128, 256,512)와 3개의 비율(1:1, 1:2, 2:1)을 가진 총 9개의 anchor boxes를 가짐
+  - 각 bouding box가 조정되어야할 크기 (width 크기, height 크기, x offset, y offest) 4개
+  - 해당 bounding box가 classification에 쓸모 있는가?(use it or not) 2개
+  - 총 9*(4+2) = 54개의 채널을 가진 Fully Conv를 가진다.
+
+- 좀 더 좋은 성능의 detection 가능
+
+#### YOLO(You only look once)
+
+![image-20210208224922143](DLBasic.assets/image-20210208224922143.png)
+
+**[img. yolo 예시]**
+
+- v5 까지 나왔음, 아주 빠름, 리얼 타임을 유지할 수 있다.
+
+- 추출한 bounding box들의 feature를 통해 각각 classification 하는 방식이 아니라, 한꺼번에 모든 bounding box를 classification 함
+
+- 여러 bounding box를 동시에 한번만 하므로 YOLO라고 한다.
+
+  ![image-20210208231334933](DLBasic.assets/image-20210208231334933.png)
+
+  **[img. YOLO 절차]**
+
+  1. 먼저 주어진 이미지를 SxS 그리드로 나눈다.
+     - 찾고 싶은 물체의 중앙점이 속해있는 그리드에서 bouding box와 classification을 진행한다.
+  2. 무언가 물체의 중앙점을 갖는 여러개의 bounding box의 x,y 위치와 w,h 크기 그리고 쓸모 여부를 예측한다 ( 이 정보 5개를 B 라고 하자.).
+  3. 위 2번과 동시에 각 그리드가 속한 물체의 classification(C개의 class가 있다고 가정하자)을 진행한다.
+  4. 해당 정보를 취합한 뒤, SxSx(B*5+C) 사이즈를 가진 tensor가 된다.
+
+- v2의 경우 ROI 처럼 미리 정의된 크기의 bounding box를 이용하기도 하고, 다른 모델들 또한 yolo의 방법을 사용하는 등의 상호의 장점을 이용한 발전을 한다.
