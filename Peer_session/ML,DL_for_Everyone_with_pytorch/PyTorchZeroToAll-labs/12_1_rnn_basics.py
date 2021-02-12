@@ -29,7 +29,7 @@ for one in inputs:
 inputs = inputs.view(1, 5, -1)
 out, hidden = cell(inputs, hidden)
 print("sequence input size", inputs.size(), "out size", out.size())
-
+print(out)
 
 # hidden : (num_layers * num_directions, batch, hidden_size) whether batch_first=True or False
 hidden = Variable(torch.randn(1, 3, 2))
@@ -46,6 +46,7 @@ inputs = Variable(torch.Tensor([[h, e, l, l, o],
 # B x S x I
 out, hidden = cell(inputs, hidden)
 print("batch input size", inputs.size(), "out size", out.size())
+print(out)
 
 
 # One cell RNN input_dim (4) -> output_dim (2)
@@ -58,3 +59,4 @@ inputs = inputs.transpose(dim0=0, dim1=1)
 # S x B x I
 out, hidden = cell(inputs, hidden)
 print("batch input size", inputs.size(), "out size", out.size())
+print(out)

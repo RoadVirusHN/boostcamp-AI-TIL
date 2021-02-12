@@ -18,11 +18,11 @@ labels = Variable(torch.LongTensor(y_data))
 
 num_classes = 5
 input_size = 5
-embedding_size = 10  # embedding size
-hidden_size = 5  # output from the LSTM. 5 to directly predict one-hot
-batch_size = 1   # one sentence
-sequence_length = 6  # |ihello| == 6
-num_layers = 1  # one-layer rnn
+embedding_size = 10  
+hidden_size = 5  
+batch_size = 1   
+sequence_length = 6
+num_layers = 1  
 
 
 class Model(nn.Module):
@@ -37,17 +37,11 @@ class Model(nn.Module):
         self.fc = nn.Linear(hidden_size, num_classes)
 
     def forward(self, x):
-        # Initialize hidden and cell states
-        # (num_layers * num_directions, batch, hidden_size)
         h_0 = Variable(torch.zeros(
             self.num_layers, x.size(0), self.hidden_size))
 
         emb = self.embedding(x)
         emb = emb.view(batch_size, sequence_length, -1)
-
-        # Propagate embedding through RNN
-        # Input: (batch, seq_len, embedding_size)
-        # h_0: (num_layers * num_directions, batch, hidden_size)
         out, _ = self.rnn(emb, h_0)
         return self.fc(out.view(-1, num_classes))
 

@@ -464,15 +464,69 @@ y_pred = sigmoid(l3(out2))
 
 ![image-20210201043340112](PyTorchZeroToAll.assets/image-20210201043340112.png)
 
-- 이를 Vanishing Gradient Problem이라고 하며 이를 해결하기 위해 다른 다양한 함수들을 사용할 수 있다.
+- 이를 Vanishing Gradient Problem이라고 하며 이를 해결하기 위해 다른 다양한  activation 함수들을 사용할 수 있다.
+
+  ![image-20210203003918364](PyTorchZeroToAll.assets/image-20210203003918364.png)
 
 # Lesson 8
 
 ## PyTorch DataLodader
 
+- 모든 데이터를 한꺼번에 학습에 이용하면 메모리와 속도와 같은 성능이 급격하게 저하된다.
+
+### Batch(batch size)
+
+- 전체 데이터를 batch size 별로 나누어 학습시킨 뒤 업데이트하는 방법을 쓴다.
+
+| 용어                          | 설명                                                         |
+| ----------------------------- | ------------------------------------------------------------ |
+| 에포크(one epoch)             | 전체 트레이닝 데이터로 한번 forwarding과 backwarding이 진행되는 주기(one forward pass and one backward pass and one backward pass of all the training examples.) |
+| 배치 사이즈 (batch size)      | (the number of training examples in one forward/backward pass. The higher the batch size, the more memory space you'll need.) |
+| 연산 수(number of iterations) | 전체 학습 데이터를 배치사이즈로 나눈 것, 1 epoch 동안 일어나는 pass 의 수(number of passes, each pass using [batch size] number of examples. To be clear, one pass = one pass + one backward pass(we do not count the forward pass and backward pass as two different passes)) |
+
+- 데이터를 큐에 집어 넣고 셔플 하는 행위는 torch의 dataloader에서 자동으로 해주므로, batch를 나누는 것에 신경쓰면 된다.
+
+```python
+class DiabetesDataset(Dataset):
+    def __init__(self):
+    # download, read data, etc.
+    
+    def __getitem__(self,index): # return one item on the index
+        return
+    
+    def __len__(self): # return the data length
+        return 
+    
+   
+dataset = DiabetesDataset()
+train_loader = DataLoader(dataset=dataset,
+                         batch_size=32,
+                          shuffle=True, # data sample 순서 랜덤으로
+                          num_workers=2 # 사용할 cpu 코어 갯수
+                         )   
+```
+
+**[custom dataset 만들기]**
+
+- torch.vision을 통하여 기본 제공하는 데이터셋들을 가져올 수 있다.
+  - torchvision.datasets의 데이터 셋들
+    - CIFAR, FakeDATA, KMNIST, phototour 등
+
 # Lesson 9
 
 ## Softmax Classifier
+
+
+
+![image-20210203031816235](PyTorchZeroToAll.assets/image-20210203031816235.png)
+$$
+\sigma(z)_j = \frac {e^{z_j}}{\sum^K_{k=1}e^{z_k}} for j = 1, \dots, K.
+$$
+![image-20210203031839554](PyTorchZeroToAll.assets/image-20210203031839554.png)
+$$
+D(\hat{Y}, Y) = -Ylog\hat{Y}
+$$
+![image-20210203033039845](PyTorchZeroToAll.assets/image-20210203033039845.png)
 
 # Lesson 10
 

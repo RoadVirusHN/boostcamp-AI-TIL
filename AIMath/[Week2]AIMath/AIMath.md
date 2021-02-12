@@ -950,3 +950,163 @@ P_b(R=1) = \sum_{z\in \{0,1\}}P(R=1|T=b,Z=z)P(Z=z) = \frac{234}{270}\times\frac{
 $$
 
 **[math 13. 조정 효과를 통한 Z(중첩요인) 개입 제거]**
+
+## CNN
+
+### CNN(Convolution Neural Network)의 이해
+
+- 기존의 모델들은 뉴런이 모두 연결된 (fully connected) 구조였지만 *CNN은 동일한 고정된 가중치 값을 가진 커널(kernel)을 입력벡터 상에서 움직여가면서 선형모델과 합성함수가 적용되는 구조*임.
+- 선형의 변환의 한 종류임은 같음,
+- 커널 사이즈는 고정되므로 parameter 사이즈가 작다.
+
+$$
+h_i =\sigma\left(\sum^k_{j=1}V_jx_{i+j-1}\right)
+$$
+
+**[math 14.  Convolution 연산]**
+
+![image-20210202212714627](AIMath.assets/image-20210202212714627.png)
+
+**[img 14. Convolution 연산 그림]**
+
+- CNN의 수학적 의미는 신호(signal)를 커널을 이용해 국소적으로 증폭 또는 감소시켜 정보를 추출 또는 필터링하는 것이며, 이는 크게 2가지 정의 할 수 있다.
+  - 정의역이 연속적(continuous)인 공간 : 적분으로 표현
+  - 정의역이 이상(discrete) 공간 : 급수로 표현
+
+$$
+continuous\ \  [f*g](x) = \int_{\mathbb{R}^d}f(z)g(x-z)dz=\int_{\mathbb{R}^d}f(x-z)g(z)dz=[g*f](x)\\
+discrete\ \  [f*g](i) = \sum_{a \in \mathbb{Z}^d}f(a)g(i-a)=\sum_{a \in \mathbb{Z}^d}f(i-a)g(a)=[g*f](i) \\
+g(x-z), g(i-a) : signal\ term,\ f(z), f(a): kernal\ term
+$$
+
+**[math 14-1.  Convolution 연산 수식]**
+
+- z 또는 a만 움직이는 형태로 연산
+- 사실 x-z, i-a가아니라 x+z, i+a 이며 cross-correlation 이다.
+  - 전체 공간에서는 +,-가 차이가 크지않으므로 convolution이라 불러왔음
+
+![image-20210202223148091](AIMath.assets/image-20210202223148091.png)
+
+**[img 14-1. Convolution 연산 그래픽적 이해]**
+
+- 커널은 정의역 내에서 움직여도 변하지 않고(translation invariant) 주어진 신호에 국소적(local)로 적용.
+
+
+$$
+1D-conv\ \  [f*g](i) = \sum^d_{p=1}f(p)g(i+p)\\
+2D-conv\ \  [f*g](i,j) = \sum_{p,q}f(p,q)g(i+p, j+q)\\
+3D-conv\ \  [f*g](i,j,k) = \sum_{p,q,r}f(p,q,r)g(i+p, j+q, k+r)\\
+$$
+
+**[math 14-2.  Convolution 여러 차원 연산]**
+
+- 1차원 뿐만 아니라 다양한 차원에서 계산 가능
+- 1차원(text), 2차원(흑백), 3차원(컬러)별로 적용 가능
+- 앞의 f항은 바뀌지 않는다.
+
+### 다차원 CNN(Convolution Neural Network)의 이해
+
+![image-20210202223807091](AIMath.assets/image-20210202223807091.png)
+
+**[img 14-2. 2차원 Convolution 연산 그래픽적 이해-1]**
+
+![image-20210202225109490](AIMath.assets/image-20210202225109490.png)
+
+
+
+**[img 14-3. 2차원 Convolution 연산 그래픽적 이해-2]**
+$$
+O_H=H-K_H+1\\
+O_W=W-K_w+1
+$$
+
+**[math 14-3.  Convolution 출력 크기 계산]**
+
+- 예를 들어 28x28 입력을 3x3 커널로 연산시 26x26이 된다.
+
+![image-20210202225605899](AIMath.assets/image-20210202225605899.png)
+
+**[img 14-4. 3차원 Convolution 연산 그래픽적 이해]**
+
+- 3차원의 경우 2차원 Convolution을 3번 적용하는 것이다.
+  - 커널의 갯수도 늘어남
+- 3차원 부터는 입력을 텐서라고 말한다.
+
+### CNN의 역전파
+
+- 커널이 모든 입력데이터에 공통으로 적용되므로 역전파 계산시 convolution 연산을 함
+
+$$
+\frac \partial {\partial x}[f*g](x) = \frac \partial {\partial x}\int_{\mathbb{R}^d}f(y)g(x-y)dy =\int_{\mathbb{R}^d}f(y)\frac {\partial g}{\partial x}(x-y)dy =[f*g'](x)
+$$
+
+**[math 14-4.  Convolution 연산 연속시 역전파]**
+
+- Discrete 구조에도 마찬가지로 성립한다.
+
+$$
+\frac {\partial \mathcal{L}}{\partial w_i} = \sum_j \delta_jx_i+j-1, \\
+ex) \frac {\partial \mathcal{L}}{\partial w_1}= \delta_ix_i + \delta_2x_2+\delta_3x_3
+$$
+
+**[math 14-5.  Convolution 연산]**
+
+## RNN
+
+### 시퀀스(sequence) 데이터
+
+- 소리, 문자열, 주가 추이 등, 순차적으로 들어오는 데이터
+  - 시계열(time-series) 데이터는 시간 순서에 따라 나열된 데이터로, 시퀀스 데이터에 속함.
+- 독립 동등 분포 (i.i.d)가정을 위배하기 때문에 순서를 바꾸거나 과거 정보이 변형되면 데이터의 확률 분포도 바뀜.
+  - ex) 개가 사람을 물었다. $\leftrightarrow$ 사람이 개를 물었다. $\rightarrow$ 위치를 바꾼것 만으로, 데이터의 확률, 의미가 달라짐.
+
+#### sequence data handling
+
+- 이전 시퀀스의 정보로 앞으로의 데이터의 확률 분포를 다루기 위해 조건부확률 결합법칙 이용
+
+$$
+P(X_1,\dots,X_t) = P(X_t|X_1,\dots,X_{t-1})P(X_1,\dots,X_{t-1})\\
+= P(X_t|X_1,\dots,X_{t-1})P(X_{t-1}|X_1,\dots,X_{t-2})\times P(X_1,\dots,X_{t-2})\\
+=\prod^t_{s=1}P(X_s|X_{s-1},\dots,X_1)\\
+\prod_{s=1}^t = s =1,\dots,t 까지\ 전부\ 곱하라\\
+즉,\ X_t \sim P(X_t|X_{t-1},\dots,X_1), \\
+X_{t+1} \sim P(x_{t+1}|X_t,X_{t-1},\dots,X_1)
+$$
+
+**[math. 베이즈 법칙에 의한 P(X~s~) 추론 ]**
+
+- 과거 정보를 사용하지만 0부터 t-1까지 모든 데이터가 필요한건 아님, 오히려 지나친 과거 정보는 제외
+  - 시퀀스 데이터를 다루기 위해선 길이가 가변적인 데이터를 다룰 수 있어야 한다.
+  - 예를 들어, 시퀀스 데이터 $X_t$ 예측 시 전부가 아닌, $X_{t-1}\sim X_{t-\tau}$개 만큼만 사용하는 모델을 AR($\tau$), 즉 자기 회귀 모델(Autoregressive Model)이라고 부름.
+
+- 위의 자기 회귀 모델의 경우 $\tau$를 파라메터로 하는데 이 값을 짐작하기 힘들거나 $\tau$이상의 과거 정보가 필요할지도 모른다.
+
+  - 이를 보완하기 위한 모델이 잠재 자기 회귀 모델(Latent regressive Model)이라고 부르며 RNN의 기본 모델이다.
+
+    
+
+$$
+X_t \sim P(X_t|X_{t-1},H_t), \\
+X_{t+1} \sim P(x_{t+1}|X_t,X_{t-1},H_{t+1})\\
+잠재변수\ H_t=Net_\theta(H_{t-1},X_{t-1})
+$$
+
+**[math. ]**
+
+### RNN의 이해와 BPTT
+
+$$
+O = HW^{(2)}+b^{(2)}\\
+H = \sigma(X_tW^{(1)}+b^{(1)})=\sigma(X_tW_X^{(1)}+H_{t-1}W^{(1)}_H+b^{(1)})\\
+H_t=잠재변수,\ \sigma=활성화함수,\ X_tW^{(1)}=가중치행렬,\ b^{(1)}=bias
+$$
+
+**[math. ]**
+$$
+L(x,y,w_h,w_o)=\sum^T_{t=1}l(y_t,o_t)\\
+\partial_{w_h}L(x,y,w_h,w_o)=\sum^T_{t=1}\partial_{w_h}l(y_t,o_t)=\sum^T_{t=1}\partial_{o_t}l(y_t,o_t)\part_{h_t}g(h_t,w_h)[\part_{w_h}h_t],\\
+\part_{w_h}h_t=\part_{w_h}f(x_t,h_{t-1},w_h)+\sum^{t-1}_{i=1}\left(\prod^t_{j=t+1}\part_{h_{j-1}}f(x_j,h_{j-1},w_h)\right)\part_{w_h}f(x_i,h_{i-1},w_h)\\
+while\ h_t=f(x_t,h_{t-1},w_h)\ and\ o_t =g(h_t,w_o).
+$$
+**[math. ]**
+

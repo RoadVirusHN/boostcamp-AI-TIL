@@ -46,6 +46,7 @@ class Model(nn.Module):
         # Input: (batch, seq_len, input_size)
         # hidden: (num_layers * num_directions, batch, hidden_size)
         out, hidden = self.rnn(x, hidden)
+        # print(" before view:", out.shape)
         return hidden, out.view(-1, num_classes)
 
     def init_hidden(self):
@@ -56,7 +57,6 @@ class Model(nn.Module):
 
 # Instantiate RNN model
 model = Model()
-print(model)
 
 # Set loss and optimizer function
 # CrossEntropyLoss = LogSoftmax + NLLLoss
@@ -67,17 +67,13 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
 for epoch in range(100):
     optimizer.zero_grad()
     loss = 0
-    hidden = model.init_hidden()
+    hidden = model.init_hidden() 
 
-    sys.stdout.write("predicted string: ")
     for input, label in zip(inputs, labels):
-        # print(input.size(), label.size())
         hidden, output = model(hidden, input)
-        val, idx = output.max(1)
-        sys.stdout.write(idx2char[idx.data[0]])
         loss += criterion(output, torch.LongTensor([label]))
 
-    print(", epoch: %d, loss: %1.3f" % (epoch + 1, loss))
+    print(", epoch: %d, loss: %1.3f" % (epoch + 1, loss.item()))
 
     loss.backward()
     optimizer.step()
