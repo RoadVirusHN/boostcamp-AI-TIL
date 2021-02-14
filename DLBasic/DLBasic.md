@@ -737,3 +737,559 @@ $$
 
 - v2의 경우 ROI 처럼 미리 정의된 크기의 bounding box를 이용하기도 하고, 다른 모델들 또한 yolo의 방법을 사용하는 등의 상호의 장점을 이용한 발전을 한다.
 
+## Sequential Models - RNN
+
+### Sequential Model
+
+- sequential data란 순서 관계가 중요한 연속형 데이터로, 입력의 차원의 크기를 정확히 알 수 없다는 문제가 있다.(언제 부터 언제까지의 데이터를 사용해야하는가? 언제 데이터는 끝이 나는가?) 
+- 이러한 문제 때문에 CNN이나 Fully connected layer는 사용 못한다.
+
+1. Naive sequence Model
+
+![image-20210213145729813](DLBasic.assets/image-20210213145729813.png)
+
+**[img. Naive sequence Model]**
+
+- 과거의 정보들을 모두 고려하는 모델
+
+2. Autoregressive model(AR model)
+
+![image-20210213145749117](DLBasic.assets/image-20210213145749117.png)
+
+**[img. Autoregressive model]**
+
+- fixed timespan $\tau$만큼 만을 고려하는 모델
+
+3. Markov model(first-order autoregressive model)
+
+![image-20210213145807612](DLBasic.assets/image-20210213145807612.png)
+
+**[img. Markov model]**
+
+- 바로 전 정보만을 이용하는 모델, joint distribution 표현이 쉬움
+
+4. Latent autoregressive model
+
+![image-20210213145826876](DLBasic.assets/image-20210213145826876.png)
+**[img. Latent autoregressive model]**
+
+- 중간의 과거 정보들을 요약하는 Hidden state를 생성하여 해당 정보를 이용하는 모델 
+
+### Recurrent Neural Network(RNN)
+
+![image-20210213153323143](DLBasic.assets/image-20210213153323143.png)
+
+**[img. RNN 그림]**
+
+- RNN은 AR model들을 구현한 신경망, 
+- Short-term dependecies : RNN의 단점, 과거 시점의 정보가 미래에 영향을 끼치기 힘듦, 이를 해결하기 위해 밑의 LSTM이 나타남.
+
+![image-20210213155738322](DLBasic.assets/image-20210213155738322.png)
+
+**[img.  RNN hidden state의 gradient 문제의 원인]**
+
+- 또한 Activation function의 종류에 따라 Vanishing/exploding gradient 문제가 생길 수 있다.
+  - RNN에서 ReLU를 잘 안쓰는 이유
+
+### Long Short Term Memory(LSTM)
+
+![image-20210213160223994](DLBasic.assets/image-20210213160223994.png)
+
+**[img. Vanilla RNN Unit]**
+
+- tanh(hyperparabolic) 함수를 activation 함수로 활용하는 기본 유닛이다.
+
+![image-20210213160255147](DLBasic.assets/image-20210213160255147.png)
+
+**[img. LSTM Unit]**
+
+- Long Term dependency 문제를 해결하는데 좋은 LSTM 유닛
+- 이전 LSTM Unit에서 이후 LSTM Unit으로 cell state와 hidden state 를 넘겨주게 된다.
+- cell state는 hidden state와 달리 output으로 나오지 않으며, 일종의 이전 정보들을 summary를 해주는 정보, LSTM의 Core idea
+
+#### Gate
+
+- LSTM을 이루는 3개의 게이트가 존재, LSTM의 데이터를 조작
+
+1. Forget Gate
+
+![image-20210213162034756](DLBasic.assets/image-20210213162034756.png)
+
+**[img. Forget gate 구조]**
+
+- 어떤 정보를 잊어버릴지 결정.
+- f~t~는 sigmoid를 사용하여 0 에서 1 사이 값으로 나오며,  이전 cell state 정보의 일부를 버리거나 살린다.
+
+2. Input Gate
+
+![image-20210213162053068](DLBasic.assets/image-20210213162053068.png)
+
+**[img. Input Gate 구조]**
+
+- 어떤 정보를 cell state에 올릴지 결정
+- i~t~는 이전 Hidden state와 X~t~를 통하여 어떤 정보를 올릴지 말지 결정한 결과인 i~t~를 만든다.
+- 또 한 마찬가지로 이전 Hidden state와 X~t~를 통하여 올릴 정보인 $C_t^{\sim}$(C 틸다)를 만든다.
+
+![image-20210213162709154](DLBasic.assets/image-20210213162709154.png)
+
+**[img. 새로 통과시킬 Cell State 형성]**
+
+-  $C_t^{\sim}$와 i~t~,f~t~ 를 이용해 업데이트할 Cell을 만들게 된다.
+
+3. Ouput Gate
+
+![image-20210213162821444](DLBasic.assets/image-20210213162821444.png)
+
+**[img. Oupt Gate 구조]**
+
+- 위에서 만든 Update cell state와 input 을 이용해 output값을 만든다.
+
+### Gated Recurrent Unit(GRU)
+
+![image-20210213165320497](DLBasic.assets/image-20210213165320497.png)
+
+**[img. GRU unit 구조]**
+
+- reset gate와 update gate만 존재하며 cell state가 존재 하지 않다.
+  - forget gate와 비슷한 reset gate와 비슷한 update gate가 존재한다.
+- LSTM에 비해 구조가 단순하여 parameter 수가 적어 generalization performance가 좋으며, 성능이 좋은 편이다
+- 하지만 최근에는 위 세가지 구조 전부를 transfromer 구조로 대체되는 추세이다.
+
+## Transformer 모델
+
+- Jay Alammar의 블로그에서 가져온 그림들임(http://jalammar.github.io/illustrated-transformer/)
+
+- 불규칙적이고 예상하기 힘든 sequential 데이터의 문제점을 해결한 모델
+
+![image-20210213192304126](DLBasic.assets/image-20210213192304126.png)
+
+**[img. sequential data의 대표 오류]**
+
+### Transformer
+
+![image-20210213192519328](DLBasic.assets/image-20210213192519328.png)
+
+**[img. Transformer 모델 예시]**
+
+- 재귀적 구조가 없는 대신, attention이란 구조를 활용한 sequence model
+
+- 기계어 번역 문제를 해결하기 위해 시작했지만 여러 문제를 해결 할 수 있다.
+
+- Encoder와 Decoder 구조로 이루어져 잇다.
+
+![image-20210213213040186](DLBasic.assets/image-20210213213040186.png)
+
+**[img. NMT 문제에서 encoder, decoder 구조]**
+
+- 동일한 구조, 다른 파라미터를 받는 encoder, decoder가 쌓여있는 구조
+- 하나의 모델에 입력과 출력 값이 각각 도메인, 입력의 숫자 등을 다르게 줄 수 있다.
+- 즉 encoder-decoder 모델의 경우, encoder가 하나씩이 아닌 한번에 입력을 처리한다.
+
+#### 어떻게 encoder는 한번에 n개의 입력을 동시에 처리하는가?
+
+![image-20210213221542564](DLBasic.assets/image-20210213221542564.png)
+
+**[img. encoder 구조]**
+
+- Feed Forward Neural Network: MLP때와 동일
+
+- Self-Attention: encoder와 decorder 구조의 핵심, Attention이란 해당 단어를 처리할 때 다른 단어에 얼마나 관계성을 할당하는 가?이다.
+
+![image-20210214004658258](DLBasic.assets/image-20210214004658258.png)
+
+**[img. 단계1, 2 ]**
+
+1. 먼저 각 단어들을 embedding vector로 바꾼 뒤, self attention 층에서 입력된 n개의 단어들을 모두 고려하여 새로운 z벡터를 생성한다.
+2. 그 후 Feed Forward에서는 동일한 조건의 Feed-forward 층을 각 단어 독립적으로 통과 시킨다.
+
+##### 좀 더 자세한 벡터 처리 예시
+
+![image-20210214004934458](DLBasic.assets/image-20210214004934458.png)
+
+**[img. 단어가 2개 주어졌을 시 예시]**
+
+![image-20210214010304363](DLBasic.assets/image-20210214010304363.png)
+
+**[img. 세 벡터 생성]**
+
+- Self attention 구조는 embedding된 벡터 형태로 단어가 주어지면, 각 단어 마다 Neutral network를 이용해 Queries, Keys, Values 라는 세개의 벡터(Q,K,V 벡터)를 생성한다.
+  - 이 세 벡터를 통해 embedding vector를 새로운 벡터로 바꿔준다.(=encoding)
+
+![image-20210214010645549](DLBasic.assets/image-20210214010645549.png)
+
+**[img. Thinking 단어의 Score 생성]**
+
+- Thinking의 Queries 벡터와 모든 단어들의 Keys 벡터를 내적(inner product)하여 Score를 생성
+  - Score를 통해 다른 단어와의 관계성, 유사성 등(=attention)을 구할 수 있다.
+
+![image-20210214012722424](DLBasic.assets/image-20210214012722424.png)
+
+**[img. Score의 normalize 및 z1 벡터 생성]**
+
+- Score 값을 8(키 벡터의 차원(여기서는 64)의 루트,$\sqrt d_k$)로 나눠 주어 Normalize(일정 범위에만 머무르게 하기 위해서)한다.
+- 이 후, softmax 함수로 0~1 사이로 만들어 Attention weights를 만든다.
+- Attention Weights를 Value vector로 Weighted Sum을 하여 한 단어의 z(인코딩 벡터) 벡터를 생성한다.
+
+![image-20210214013256771](DLBasic.assets/image-20210214013256771.png)
+
+**[img. Key, Query, Value vector 생성]**
+
+- W^Q^,W^K^,W^V^는 모든 단어가 공유한다.
+
+![image-20210214013749122](DLBasic.assets/image-20210214013749122.png)
+
+**[img. 인코딩 벡터 생성]**
+
+- Value vector의 차원은 엄밀히 말해 weighted sum만 하므로 Query vector, Key vector와 달라도 된다.
+
+#### Transformer 구조의 장단점
+
+- 이런식으로 모든 단어들이 서로 영향을 주므로, 같은 단어라도 다른 단어가 들어가면 결과값이 달라지므로, 변화에 용이한 모델이 나온다..
+- 대신 모든 단어를 고려해야하므로 많은 컴퓨팅 자원이 필요하다.
+
+#### Multi-headed attention(MHA)
+
+![image-20210214014450983](DLBasic.assets/image-20210214014450983.png)
+
+**[img. attention이 2번 실행된 단어]**
+
+- attention 과정을 여러번 실행함, 단어마다 Query, Key, Value 벡터가 여러개 생성된다.
+
+![image-20210214014729085](DLBasic.assets/image-20210214014729085.png)
+
+**[img. 여럿 생성된 인코딩 벡터]**
+
+- 이를 통해 여러개(예시에선 8개)의 인코딩 벡터(z0~z7)를 생성하게 된다
+- 이 8개를 합쳐서 다음 layer에 input 되어야 한다.
+
+![image-20210214014854687](DLBasic.assets/image-20210214014854687.png)
+
+**[img. learnable linear map을 통해 통합된 차원의 벡터(Z)로 생성]**
+
+- input된 단어, embedding vector와 output 인코딩 벡터(z)들의 차원이 같아야한다.
+- 그러므로 Learnable Linear amp을 이용해 교육시킨 W^o^값을 곱해서 차원을 맞춰준다.
+
+![image-20210214015143739](DLBasic.assets/image-20210214015143739.png)
+
+**[img. 전체적인 MHA의 동작]**
+
+- 실제로는 위의 방법보다는 input의 embdding vector를 n개로 나눈 뒤, 나눠진 일부들로 attention을 만든 뒤, 다시 concatenate 한다. 
+  - ex) 100차원 input -> 10개로 나누어 10차원 z0~z10 10개 생성 -> 100차원 output
+    (Z)으로 합침
+
+3. (위의 n개의 동시 처리 예제에서 output을 구한 뒤 부터 이어짐) attention을 하기 이전에 embedding vector에 POSITIONAL ENCODDING 이라는 벡터를 더해준다.
+
+   ![image-20210214015901821](DLBasic.assets/image-20210214015901821.png)
+
+   **[img. positional encdoding의 합]**
+
+   - 일종의 bias와 비슷하며, 위 attention 과정을 보면 data의 sequence와 independent 하기 때문에(즉, 단어의 순서가 뒤바껴도 같은 값이 나오게 되어있다.) 이를 방지하기 위해 더해준다.	 
+
+   ![image-20210214020050099](DLBasic.assets/image-20210214020050099.png)
+
+**[img. 512-dimensional 일시, positioinal encoding 벡터 구하는 법1]**
+
+![image-20210214020449236](DLBasic.assets/image-20210214020449236.png)
+
+**[img. 최신 방법의 Positional encoding 구하는 법 2]**
+
+- 포지션별로 특정 그래프의 값을 가져와 더해주면 된다.(predefined)
+
+![image-20210214021139815](DLBasic.assets/image-20210214021139815.png)
+
+**[전체적인 encoder의 과정]**
+
+#### decoder와 encoder 사이에는 어떤 정보가 교환되는가?
+
+![image-20210214023616878](DLBasic.assets/image-20210214023616878.png)
+
+**[img. encoder와 decoder 사이의 정보교환 그림]**
+
+- decoder에서는 주어진 vector로 유의미한 결과를 만드는 역할을 한다.
+
+![image-20210214023616878](DLBasic.assets/transformer_decoding_1.gif)
+
+**[gif. encoder decoder 통신 애니메이션1]**
+
+![image-20210214023616878](DLBasic.assets/transformer_decoding_2.gif)
+
+**[gif. encoder decoder 통신 애니메이션2]**
+
+- 가장 상위 layer의 encoder의 결과값(z) 벡터의  key와 value, 두 벡터를  decoder layer들로 보낸다.
+
+#### decoder는 어떻게 결과값을 만들어 내는가?
+- 이후 decoder에 들어가는 Query vector와 k, v 벡터로 auto regressive 하게 결과물을 출력한다.
+
+![image-20210214024918909](DLBasic.assets/image-20210214024918909.png)![image-20210214024933899](DLBasic.assets/image-20210214024933899.png)
+
+**[img. decoder 학습 과정]**
+
+- 이후,  decoder의 slef-attention layer에서 masking을 통하여 생성하려는 단어와 그 뒤 생성해야할 단어들을 가린 뒤, 앞에서 이미 생성한 단어에 의존해서 학습하게 만든다.
+- 또, Encoder-Decoder attention layer에서 encoder에서 준 벡터 둘을 받아서 학습시킨다.
+
+![image-20210214031228131](DLBasic.assets/image-20210214031228131.png)
+
+**[img. decoder 학습의 최종 과정]**
+
+- 마지막 층에서는 단어들의 배열에서 단어를 샘플링해서 결과 값을 낸다.
+
+### Transform 모델의 근황
+
+![image-20210214032425814](DLBasic.assets/image-20210214032425814.png)
+
+**[img. encoder만 활용하여 이미지 class 구분하는 모델]**
+
+- 단순히 단어나 다른 sequential data 뿐만아니라 vision 영역에도 활용되고 있다.
+- openAI의 DALL-E에서 문장을 통해 이미지를 생성하는 연구 또한 Transformer의 decoder를 활용하여 진행했다.
+
+## Generative Models(생성 모델)
+
+### Introduction
+
+- Generative Model이란, 이미지 등을 생성하거나, 확률 밀도를 탐색하거나 비지도 특색 학습에 사용되는 모델을 의미한다.
+  - Generation: 이미지 생성 등(sampling)
+  - Density estimation: 이미지가 강아지 같은가? 고양이 같은가? (anomaly detection), classify 모델을 포함하고 있음. (explicit 모델, <=> inplicit model: 생성 위주가 가능한 모델)
+  - Unsupervised representation learning:  이미지 내부의 특색 탐색 (feature learning)
+
+### Basic Discrete Distributions
+
+1. Bernoulli distribution : 동전 던지기 처럼 0 또는 1이 나오는 형태
+   - $D=\{Heads, Tails\}$
+   - Specify P(X = Heads)=p. Then P(X=Tails) = 1-p. 
+     - 예를 들어 앞면이 p 면 뒷면이 나올 확률은 1-p다.
+   - Write: X ~ Ber(p).
+2. Categorical distribution: 주사위 던지기 같이 구분되는(discrete) 여러 결과값이 나오는 형태(1~6)
+
+- $D=\{1,\dots,m\}$
+- Specify P(Y = i) = pi, such that $\sum^m_{i=1}p_i=1$.
+  - 모든 확률을 합해서 1
+- Write: Y ~ Cat(p~1~, ..., p~m~)
+
+3. 예시
+
+- RGB pixel이 가지는 경우의 수는 256 \* 256 \*256이며, 필요한 파라미터의 수는 255\*255\*255.
+
+### Structure Through Independence & Conditional Independence
+
+- binary pixel의 수가 100개 라고하면 가능한 파라미터는 2^100^-1개가 되고, 이는 너무 많다. 
+
+- 만약 모든 Pixel이 서로 independent 한다고 가정하면 경우의 수는 같지만, 파라미터의 수는 n(=100)개로 줄일 수 있다.
+
+- 하지만 실제로 independent 하지 않으므로 너무 말이 안되는 가정이다.
+- 이 둘 사이의 타협점을 찾기위한 것이 Conditional independence 이다.
+
+$$
+Chain\ Rule:\ p(x_1,\dots,x_n)=p(x_1)p(x_2|x_1)p(x_3|x_1,x_2)\dots p(x_n|x_1,\dots,x_{n-1})\\
+Bayes'\ rule:\ p(x|y)=\frac {p(x,y)}{p(y)}=\frac {p(y|x)p(x)}{p(y)}\\
+Conditional\ independence:\ if\ x\perp y | z,\ then\ p(x|y,z)=p(x|z)
+$$
+
+**[math. Conditional independence의 세가지 룰]**
+
+- conditional independence: z가 주워 졌을때, x,y가 independence라고 가정하면 성립, 이를 chain rule과 섞으면 좋은 타협점을 가진 모델을 생성할 수 있다.
+
+$$
+Chain\ Rule:\ p(x_1,\dots,x_n)=p(x_1)p(x_2|x_1)p(x_3|x_1,x_2)\dots p(x_n|x_1,\dots,x_{n-1})\\\\
+if\ assume\ \ X_{i+1}\perp X_1,\dots,X_{i-1}|X_i (Markov\ assumption)\\
+become\ \ \ p(x_1,\dots,x_n) =p(x_1)p(x_2|x_1)p(x_3|x_2)\dots p(x_n|x_{n-1})
+$$
+
+**[math. chain rule과 conditional indepence의 조합]**
+
+- Markov assumption을 이용하면 parameter 수가 기존의 2^n^-1 에서 2n -1로 변한다.
+- 이러한 conditional indepency 방법으로 생성한 모델을 Auto-regressive model이라고 한다.
+
+### Auto-regressive Model
+
+- 28 X 28 binary pixel 이미지의 경우 우리는 p(x)를 구하기 위해 autoregressive model로 만들 수 있다.
+- pixel의 order 순서에 따라 모델과 방법론이 달라지기도 한다.(아래 Pixel RNN 참조)
+
+1. NADE(Neural Autoregressive Density Estimator) 모델
+
+![image-20210214121944653](DLBasic.assets/image-20210214121944653.png)
+
+**[img. NADE 모델]**
+
+- i 번째 픽셀을 첫번째 부터 i-1번째 픽셀에 dependent하게 생성(dense layer)
+  - 즉, $p(x_i|x_{1:i-1}) = \sigma(\alpha_ih_i+b_i)\ where\ h_i=\sigma(W_{<i}x_{1:i-1}+c)$ 이다.
+
+- 입력 차원이 점점 더 커지게 된다.
+- explicit 모델이며 확률분포를 구할 수 있다.
+
+$$
+p(x_1,\dots,x_{784})=p(x_1)p(x_2|x_1)\dots p(x_{784}|x_{1:783}) \\
+where\ each\ conditional\ probability\ p(x_i|x_{1:i-1})\ is\ computed\ independently
+$$
+
+**[math. chaine rule을 통한 joint probability ]**
+
+- 연속적인 분포(continuous random variables)일 경우 a mixture of gaussian을 사용해 표현 가능
+
+2. Pixel RNN
+
+- 이미지 내의 pixel 생성하는 auto-regressive 모델
+
+$$
+p(x)=\prod^{n^2}_{i=1}p(x_{i,R}|x_{<i})p(x_{i,G}|x_{<i},x_{i,R})p(x_{i,B}|x_{<i},x_{i,R},X_{i,G})
+$$
+
+**[math.nXn RGB image 생성]**
+
+- ordering에 따라 Row LSTM, Diagonal BiLSTM으로 나눠짐
+
+### ![image-20210214123411474](DLBasic.assets/image-20210214123411474.png)
+
+**[img. 빨간 색이 생성할 pixel, 파란 색이 참조할 pixel이다.]**
+
+### Latent Variable Models
+
+#### Variational Auto-encoder
+
+- Variational inference(VI, 변분 추론)
+
+  - VI의 목적은 복잡한 posterior distribution(사후확률 분포)을 variational distribution(변분 분포)으로 최적화하는 것이다.
+    - Posterior distribution($p_\theta(z|x)$):  관심있는 random variable의 확률 분포, 이것의 반대, $p_\theta(x|z)$는 likelihood라고 한다. z는 latent vector를 의미한다.
+    - Variational distribution($q_\theta(z|x)$): Posterior distribution을 알기 쉽게 근사하는 분포.
+  - KL divergence를 loss처럼 이용하여 Variational distribution과 Posterior distribution의 차이를 줄인다.
+
+  ![image-20210214163504048](DLBasic.assets/image-20210214163504048.png)
+
+  **[img. VI의 그림화]**
+
+- 하지만 우리는 posterior distribution에 근접한 variational distribution을 구하기 이전에, posterior distribution 자체를 모른다.
+
+- 이를 구하기 위해 ELBO(Evidence lower bound)를 최대로 키우면 반대로 objective 구간은 줄어들게 된다.
+
+  - objective 구간은 KL divegence를 포함하므로 작아질수록 loss가 작아지는 효과와 비슷하다. 
+
+![image-20210214163659637](DLBasic.assets/image-20210214163659637.png)
+
+**[img.이 방법을 Sandwitch method라고도 부른다.]**
+
+- Posterio distribution은 알 수 없지만, ELBO는 계산할 수 있다.
+
+![image-20210214164115555](DLBasic.assets/image-20210214164115555.png)
+
+**[img. ELBO가 가지고 있는 두개의 텀]**
+
+- ELBO는 두개의 텀을 가지고 있는데, 각각 Reconstruction Term과 Prior Fitting Term로 이루어져 있다.
+  - Reconstruction Term : encoder와 latent space를 거쳐 decoder로 돌아오는 reconstruction loss를 줄이는 부분
+  - Prior Fitting Term : latent space의 점들의 분포가 Prior distribution(사전 분포)와 비슷하게 만들어 줌
+- 위의 두 텀 때문에 Variational Auto-encoder는 generative model이 된다.
+  - 입력 -> latent space -> 분포 찾아서 샘플링-> decoder -> output image 생성
+  - 그냥 Auto-encoder에는 존재하지 않으므로 generative model이 아니다.
+
+- Variational Auto-encoder는 다음과 같은 단점을 가지고 있다.
+  - likelihood를 측정하기 힘듬(intractable model)
+  - prior fitting term의 KL divergence을 loss 처럼 사용하려면 SGD, Adam 등으로 최적화가 되어야하므로 미분 가능해야 함. 
+  - 따라서 보통 isotropic Gaussian을 loss funtion에 넣어서 이용함
+    - isotropic Gaussian: $D_{KL}(q_\phi(z|x)||\mathcal N(0,I))=\frac{1}{2}\sum^D_{i=1}(\sigma^2_{z_i}+\mu^2_{z_i}-ln(\sigma^2_{z_i})-1)$
+    - 모든 output dimension이 independent한 gaussian distribution을 의미함
+
+##### Adversarial Auto-encoder(AAE)
+
+![image-20210214190444468](DLBasic.assets/image-20210214190444468.png)
+
+**[img. AAE 구조]**
+
+- KL divergence라는 약점이있는 prior fitting term 대신에 GAN을 활용하여 latent distribution 사이의 분포를 맞춰줌
+- 샘플링 가능한 distribution 이라면 latent prior distribution으로 활용 가능하다.
+- 성능 또한 비교적 좋은 경우가 많다
+
+### Generative Adversarial Network(GAN)
+
+#### GAN 소개
+
+- GAN은 대략 2가지 단계로 이루어져 있는데, 샘플을 생성하는 모델(Generator)과, 샘플을 구별하는 모델(discriminator)로 되어있다.
+- 새로운 샘플을 생성해서 구별 모델에 전달 :arrow_right: 실제 정보와 비교하여 샘플을 구별하여 생성 모델에 전달하고 학습 :arrow_right: 구별한 결과를 학습하여 더 나은 샘플을 생성해서 전달 :arrow_right: 무한 반복 
+- 마치 두 모델이 서로 싸우는 형식의 모델이다.
+
+![image-20210214211140677](DLBasic.assets/image-20210214211140677.png)
+
+**[img. VA vs GAN 비교]**
+
+- VA의 경우, X의 이미지가 들어오면 인코더, latent vector(z), 디코더를 통과하는 학습을 거친 뒤, generation 단계에서는 p(z)(latent distribution)에서 샘플링한 z를 decoder에 통과시킨 뒤, 그 결과값이 생성된 샘플이다.
+- GAN의 경우, z(latent distribution)을 통해서 Generator에서 Fake 이미지를 만들고, Real 이미지와 Fake 이미지를 Discriminator가 구별,학습해서 그 결과를 Generator에게 보내 학습 시킨다.
+
+- 이를 수학적으로 표현하면 이와 같다.   (implicity 모델이다.)
+  - Discriminator 입장
+	$$
+	\stackrel {max}{D}\ V(D,G)=\mathbb E_{x\sim p_{data}(x)}[logD(x)] + 	\mathbb E_{z\sim p_z(z)}[log(1-D(G(z)))]\\
+	where\ optimal\ discriminator\ is\ D^*_G(x)=\frac{p_{data}(x)}{p_{data}(x)+p_G(x)}
+  $$
+  - Generator 입장 
+  
+  $$
+  \stackrel {min}{G}\ V(D,G)=\mathbb E_{x\sim p_{data}(x)}[logD(x)] + \mathbb E_{z\sim p_z(z)}[log(1-D(G(z)))]
+  $$
+  
+  - optimal discriminator(=최적의 discriminator  일시 값) 적용시
+  
+  $$
+  V(G,D^*_G(x)) = E_{x\sim p_{data}}\left[log\frac{p_{data}(x)}{p_{data}(x)+p_G(x)}\right]+E_{x\sim p_G}\left[log\frac{p_G(x)}{p_{data}(x)+p_G(x)}\right] \\= E_{x\sim p_{data}}\left[log\frac{p_{data}(x)}{\frac{p_{data}(x)+p_G(x)}{2}}\right]+E_{x\sim p_G}\left[log\frac{p_G(x)}{\frac{p_{data}(x)+p_G(x)}{2}}\right] - log4 \\
+   = D_{KL}\left[p_{data},\frac{p_{data}+p_G}{2}\right]+D_{KL}\left[P_G,\frac {p_{data}+p_G}{2}\right]-log4
+  $$
+  
+  - 여기서, 
+  
+  $$
+  D_{KL}\left[p_{data},\frac{p_{data}+p_G}{2}\right]+D_{KL}\left[P_G,\frac {p_{data}+p_G}{2}\right] = \\ 2 \times Jenson-Shannon\ Divergence\ (JSD) = 2D_{JSD}[p_{data},p_{G}]
+  $$
+  
+  - 이며, 최종적으로
+  
+  $$
+  V(G,D^*_G(x)) = 2D_{JSD}[p_{data},p_{G}] - log4
+  $$
+  
+  - 이는 이론상 최적의 discrimniator 일시, 최소화 해야할 generator 값이다.
+
+#### 여러 GAN 모델들
+
+![image-20210214231701051](DLBasic.assets/image-20210214231701051.png)
+
+**[img. DCGAN 모델]**
+
+- 이미지 생성하는 GAN 모델
+
+![image-20210214231738609](DLBasic.assets/image-20210214231738609.png)
+
+**[img. Info-GAN]**
+
+- class를 추가로 인풋으로 넣어줌
+
+![image-20210214231937794](DLBasic.assets/image-20210214231937794.png)
+
+**[img. 주어진 문장에 맞는 이미지를 만들어주는 Text2Image]**
+
+- DALL-E와 비슷함
+
+![image-20210214232019681](DLBasic.assets/image-20210214232019681.png)
+
+**[img. Puzzle-GAN]**
+
+- 원래 이미지를 복원하는 모델
+
+![image-20210214232103984](DLBasic.assets/image-20210214232103984.png)
+
+**[img. CycleGAN]**
+
+- 이미지 내부의 도메인을 바꿔주는 모델
+
+![image-20210214232150633](DLBasic.assets/image-20210214232150633.png)
+
+**[img. Cycle-consistency loss]**
+
+- GAN 구조가 2개 들어있는 형식
+
+![image-20210214232229519](DLBasic.assets/image-20210214232229519.png)
+
+**[img. Star-GAN]**
+
+- 이미지를 컨트롤할 수 있게 해줌
+
+![image-20210214232421048](DLBasic.assets/image-20210214232421048.png)
+
+**[img. Progressive-GAN]**
+
+- 고해상도의 이미지 생성하는 모델
