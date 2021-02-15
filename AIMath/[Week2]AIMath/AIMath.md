@@ -1028,7 +1028,7 @@ $$
 
 **[img 14-4. 3차원 Convolution 연산 그래픽적 이해]**
 
-- 3차원의 경우 2차원 Convolution을 3번 적용하는 것이다.
+- 3차원의 경우 2차원 Convolution을 3번 적용하는 것이s다.
   - 커널의 갯수도 늘어남
 - 3차원 부터는 입력을 텐서라고 말한다.
 
@@ -1079,34 +1079,54 @@ $$
   - 시퀀스 데이터를 다루기 위해선 길이가 가변적인 데이터를 다룰 수 있어야 한다.
   - 예를 들어, 시퀀스 데이터 $X_t$ 예측 시 전부가 아닌, $X_{t-1}\sim X_{t-\tau}$개 만큼만 사용하는 모델을 AR($\tau$), 즉 자기 회귀 모델(Autoregressive Model)이라고 부름.
 
-- 위의 자기 회귀 모델의 경우 $\tau$를 파라메터로 하는데 이 값을 짐작하기 힘들거나 $\tau$이상의 과거 정보가 필요할지도 모른다.
+- 위의 자기 회귀 모델의 경우 $\tau$를 파라메터로 하는데 이 값을 짐작하기 힘들거나 $\tau$ 이상의 과거 정보가 필요할지도 모른다.
 
-  - 이를 보완하기 위한 모델이 잠재 자기 회귀 모델(Latent regressive Model)이라고 부르며 RNN의 기본 모델이다.
+  - 이를 보완하기 위한 모델이 잠재 자기 회귀 모델(Latent autoregressive Model, 잠재 AR 모델)이라고 부르며 RNN의 기본 모델이다.
 
     
 
 $$
 X_t \sim P(X_t|X_{t-1},H_t), \\
 X_{t+1} \sim P(x_{t+1}|X_t,X_{t-1},H_{t+1})\\
-잠재변수\ H_t=Net_\theta(H_{t-1},X_{t-1})
+잠재변수\ H_t=X_{t-2},\dots,X_{1}=Net_\theta(H_{t-1},X_{t-1})
 $$
 
-**[math. ]**
+**[math. 잠재변수 H~t~를 신경망을 통해 반복 사용해 시퀀스 데이터의 패턴을 학습하는 것이 RNN]**
 
 ### RNN의 이해와 BPTT
 
+![image-20210213105548929](AIMath.assets/image-20210213105548929.png)
+
+**[img. 기본 RNN 모형, 순전파와 역전파 화살표 포함]**
+
+- 기본적인 RNN 모형은 Multi Layer Perceptron과 유사하다.
+- 이전 순서의 잠재변수와 현재의 입력을 활용하여 모델링
+
 $$
-O = HW^{(2)}+b^{(2)}\\
-H = \sigma(X_tW^{(1)}+b^{(1)})=\sigma(X_tW_X^{(1)}+H_{t-1}W^{(1)}_H+b^{(1)})\\
-H_t=잠재변수,\ \sigma=활성화함수,\ X_tW^{(1)}=가중치행렬,\ b^{(1)}=bias
+O_t = HW^{(2)}+b^{(2)}\\
+H_t = \sigma(X_tW_X^{(1)}+H_{t-1}W^{(1)}_H+b^{(1)})\\
+O_t = 출력,\ H_t=잠재변수,\ \sigma=활성화함수,\ X_tW^{(1)}=가중치행렬,\ b^{(1)}=bias\\
+O,H와\ 달리\ 가중치\ 행렬\ W\ 들은\ t(시간)에\ 따라\ 변하지\ 않음.
 $$
 
-**[math. ]**
+**[math. 잠재변수 H~t~의 생성에서 이전 잠재변수인 H~t-1~ 활용]**
+
+- RNN의 역전파는 잠재변수의 연결 그래프에 따라 순차적으로 계산되며 이를 Backpropagtion Through Time(BPTT)라고 한다.
+
 $$
 L(x,y,w_h,w_o)=\sum^T_{t=1}l(y_t,o_t)\\
 \partial_{w_h}L(x,y,w_h,w_o)=\sum^T_{t=1}\partial_{w_h}l(y_t,o_t)=\sum^T_{t=1}\partial_{o_t}l(y_t,o_t)\part_{h_t}g(h_t,w_h)[\part_{w_h}h_t],\\
 \part_{w_h}h_t=\part_{w_h}f(x_t,h_{t-1},w_h)+\sum^{t-1}_{i=1}\left(\prod^t_{j=t+1}\part_{h_{j-1}}f(x_j,h_{j-1},w_h)\right)\part_{w_h}f(x_i,h_{i-1},w_h)\\
 while\ h_t=f(x_t,h_{t-1},w_h)\ and\ o_t =g(h_t,w_o).
 $$
-**[math. ]**
+**[math. BPTT 역전파 계산 과정]**
 
+- RNN의 가중치행렬의 미분을 계산해보면 미분의 곱으로 이루어진 항이 계산됨.
+  - 이 미분의 곱은 시퀀스의 길이가 길어질 수록 값이 불안정해진다.(무한대로 수렴 또는 0으로, 값이 크게 바뀜 등)
+  - 이를 막기 위해 적절한 길이 시점에서 끊어 준다.(truncated BPTT 기술)
+
+![image-20210213113745291](AIMath.assets/image-20210213113745291.png)
+
+**[img. LSTM과 GPU 그림]**
+
+- 최근에는 길이가 긴 시퀀스를 처리하기 위해 다른 RNN unit을 사용함.
