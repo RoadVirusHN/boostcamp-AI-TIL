@@ -1,3 +1,5 @@
+[TOC]
+
 # NLP
 
 ## Intro to Natural Language Processing(NLP)
@@ -124,7 +126,95 @@ $$
 
 #### Word2Vec
 
+![image-20210215225944488](NLP.assets/image-20210215225944488.png)
 
+**[img. Word2Vec 의 예시]**
 
-#### Glove: Another Word Embedding Model
+- 같은 문장에 자주 포함되는 단어들은 관련성이 많다는 가정 하에  Word Embedding을 진행하는 알고리즘
+  - 예를 들어 "The furry cat hunts mice." 에서 cat은 furry하고 mice를 hunts 하므로 연관이 있다.
 
+- 문장 내의 단어 w가 나타날 때, 그 주위에 각각의 단어가 나타날 확률분포를 구하여 이용한다.
+- Skipgram 방법과 CBOW 방법 두가지로 나뉨 (실습 2_word2vec.ipynb) 참조
+
+##### Word2Vec Algorithm과 예제
+
+1. 주어진 문장을 Tokenization한 후, 사전(Vocabulary) 생성하고 단어별 one-hot 벡터 생성
+   - Sentence: "I study math."
+   - Vocabulary: {"I", "study", "math"}
+   - Input: "study" [0, 1, 0]
+   - Output: "math" [0, 0, 1]
+2. Sliding Window 기법을 이용해 앞 뒤로 나타난 단어들의 쌍들로 학습 데이터 구성.
+
+![image-20210216024706818](NLP.assets/image-20210216024706818.png)
+
+**[img. Window size가 1인 Sliding Window 기법의 그림]**
+
+3. 2 layer 구성의 심층 신경망을 통해 word embedding 한다.
+
+   - Input layer, output layer 차원 수 : vocabulary 단어 수(one-hot vector 차원)
+
+   - hidden layer 차원 수 : hyper parameter(word embedding 차원 수)
+
+   ![image-20210216005047259](NLP.assets/image-20210216005047259.png)
+
+   **[img. 2 layer 신경망의 word embedding 원리]**
+
+   - input vector "study"의 경우, [0,1,0]의 벡터를 가지고 있으며, hidden layer의 차원수가 2라고 가정할 때.
+   - linear transform matrix W~1~의 경우 3차원의 벡터를 2차원의 벡터로 바꿔야 하므로 2X3 차원을 가진다.
+     - W~1~의 input vector가 one-hot vector 이므로 내적을 구하기 보단 one-hot vector의 인덱스에 해당하는 W~1~의 Column을 가져오는 형식으로 계산한다.
+   - linear transform matrix W~2~의 경우 다시 3차원의 벡터를 가져야 하므로 3X2 차원을 가진다.
+     - softmax 함수를 통과시키기 전의 이상적인 logic값은 ground-truth의 내적값은 $\infin$, 그 이외의 내적 값은 $-\infin$이 되어야 결과값도 one-hot vector의 형태로 나온다. 
+
+4. softmax 함수를 통과시켜 word embedding 값을 가져온다.
+
+****
+
+- 이를 통하여 의미론적 관점에서 단어간의 유사도를 알 수 있는 word vector를 구할 수 있다.
+
+![image-20210216020142926](NLP.assets/image-20210216020142926.png)
+
+**[img. 단어 간의 관계가 비슷하면 두 단어의 벡터의 방향도 유사하다.]**
+
+- https://ronxin.github.io/wevi/ 에서 Word2Vec을 시연해볼 수 있다.
+- https://word2vec.kr/search/ 에서 한국어 Word2Vec 결과값을 알아볼 수 있다.
+- Word2Vec으로 문맥에 어색한 단어를  찾아내는 Intrusion Detection 또한 가능하다.
+- Word2Vec을 이용해 다음과 같은 분야에 활용해 성능을 향상시킬 수 있다.
+  - 기계번역
+  - PoS tagging
+  - 고유명사 태깅
+  - 감정 분석
+  - Image Captioning
+  - 기타 등등
+
+#### GloVe: Another Word Embedding Model
+
+- Global Vectors for Word Representation
+
+- Word2Vec과 함께 많이 쓰이는 Word Embedding 방법
+- 카운트 기반 방법론(LSA)과 예측 기반의 방법론(Word2Vec) 두 가지를 모두 사용하는 방법론
+  - (입력어의 임베딩 벡터와 출력어의 임베딩 벡터의 내적값)과 (윈도우에서 두 단어 i, j의 동시 출연 빈도에 log를 씌운 것)을 loss 함수로써 fitting하여 word embedding 값을 구하는 방식
+  - $u_i$: 입력어의 임베딩 벡터, $v_j$: 출력어의 임베딩 벡터, $P_{ij}$: 윈도우 기반 두 단어 i, j의 동시 등장 빈도
+
+$$
+J(\theta)=\frac{1}{2}\sum^w_{i,j=1}f(P_{ij})(u_{i}^Tv_j-logP_{ij})^2
+$$
+
+​		**[math. GloVe의 손실함수]**
+
+- 윈도우 기반 동시 등장 빈도($P_{ij}$)는 전체 단어 집합 들의 단어들이 윈도우 크기 내에서 단어가 등장한 횟수를 의미하며, 보통 전체 단어들의 등장 빈도를 행렬로 다음과 같이 표현한다.
+  - "I like deep learning", "I like NLP", "I enjoy flying" 세 문장이 주어지고 윈도우 크기가 1일 때,
+
+| 카운트   | I    | like | enjoy | deep | learning | NLP  | flying |
+| :------- | :--- | :--- | :---- | :--- | :------- | :--- | :----- |
+| I        | 0    | 2    | 1     | 0    | 0        | 0    | 0      |
+| like     | 2    | 0    | 0     | 1    | 0        | 1    | 0      |
+| enjoy    | 1    | 0    | 0     | 0    | 0        | 0    | 1      |
+| deep     | 0    | 1    | 0     | 0    | 1        | 0    | 0      |
+| learning | 0    | 0    | 0     | 1    | 0        | 0    | 0      |
+| NLP      | 0    | 1    | 0     | 0    | 0        | 0    | 0      |
+| flying   | 0    | 0    | 1     | 0    | 0        | 0    | 0      |
+
+**[fig. 예제의 윈도우 기반 동시 등장 행렬(Window based Co-occurrence Matrix) https://wikidocs.net/22885]**
+
+- 중복 되는 계산이 적어 상대적으로 빠를 수 있고, 적은 데이터로도 성능이 좋다.(실제 성능은 비등비등)
+- https://nlp.stanford.edu/projects/glove/ 오픈소스 glove 모델
