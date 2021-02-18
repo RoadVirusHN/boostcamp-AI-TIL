@@ -458,7 +458,7 @@ $$
 **[fig. Output gate의 수식과 그림]**
 
 - 생성한 Output gate의 결과를 tanh함수를 통과시켜, 현재 필요한 정보만 filtering한 뒤, 현재 Cell state와 곱하여  Hidden state를 만든다.
-- tanh 함수를 미분할 시 미분값이 sigmod에 비해 커서 vanishing/exploding gradient problem을 해결할 수 있다.
+- tanh 함수를 미분할 시 미분값이 sigmoid에 비해 커서 vanishing/exploding gradient problem을 해결할 수 있다.
 
 #### Gated Recurrent Unit(GRU)
 
@@ -494,4 +494,286 @@ $$
 - RNN은 다양한 길이를 가질 수 있는 Sequence data에 특화된 유연한 형태의 딥러닝 모델 구조
 - Vanilla RNN은 간단한 구조지만 학습시 문제가 많고 학습이 잘 안된다.
 - LSTM과 GRU는 long term problem과 vanishing\exploding gradient 문제를 해결했음
-- LSTM과 GRU는 덧셈 기반 학습? BPTT
+- 중첩되는 가중치를 곱셈이 아닌 덧셈으로 처리하여 문제 해결
+
+## Sequence to Sequence with Attention
+
+### Seq2Seq & Encoder-decoder & attention
+
+#### Sequence to Sequence & Encoder-decode
+
+Sequence to Sequence는 Sequence data를 입력으로 받은 후 Sequence data를 출력하는 many to many 모델을 말한다.
+
+자연어 처리, 기계 번역 등이 이에 해당한다.
+
+![image-20210218082530068](NLP.assets/image-20210218082530068.png)
+
+**[img. 챗봇의 LSTM Encoder Decoder 예시 ]**
+
+Encoder-Decoder 모델이 대표적이며, Encoder는 입력 문장을 받아 처리하는 모델이며, Decoder는 출력 문장을 처리하며, 서로 가중치를 공유하지 않는다.
+
+Encoder의 입력 처리 정보가 담긴 마지막 $h_t$(hidden state)는 Decoder 모델의 첫번째 Input $h_t$(hidden state) vector가 된다.
+
+Decoder는 첫번째 Input으로 Start Token(미리 정의된 특수 문자, <SoS>)과 마지막 hidden state을 입력 받은 뒤, 순차적으로 결과를 출력하고 해당 결과들Output Token, $h_t$)은 다음 Time step의 Input이 된다.
+
+Decoder의 출력이 끝나면 End Token(미리 정의된 특수 문자2, <EoS>)을 내보내게 된다.
+
+#### Attention
+
+기존의 Seq2Seq model의 단점은 다음과 같다.
+
+- Hidden state($h_t$)의 차원이 고정되어 있어, 여러 정보를 우겨넣어야 하는 점
+- Time step이 지나갈 수록 내포하고 있는 정보가 소실 되거나 유실되는 점
+
+이러한 문제를 해결하기 위해 Input Sequence를 거꾸로 주는 방법 등이 제시되었다.
+
+이를 해결하기 위해 Attention 모듈의 아이디어는
+
+​	마지막 Hidden state($h_t$) 하나만 전달해주는 것이 아니라, 매 Time step에서 계산한 $h_0\dots h_t$까지 전체적으로 Decoder에 전해준 뒤, Decoder의 각 Time step에서 선별적으로 필요한 Hidden state를 가져간다.
+
+![nmt-model-fast](NLP.assets/nmt-model-fast.gif)
+
+**[img. Attention 모듈 동작 과정]**
+
+##### 자세한 Attention 모듈 동작 과정
+
+기계번역 예시를 통해 Attention 모듈 동작 과정을 알아보자.
+
+![image-20210218110702268](NLP.assets/image-20210218110702268.png)
+
+**[img. Attention 모듈 예시 1~5 ]**
+
+1. Encoder 모듈이 모든 과정을 끝내고 마지막 Hidden state와 Start Token을 Decoder의 첫번째 모듈이 Input으로 받는다, 이때, Encoder 각 Time step에서의 hidden state($h_0,\dots,h_{t-1}$)들 또한 기억되어 있다.
+2. 첫번째 Decoder Hidden state의 결과값 $h_{y0}$를 Encoder의 각 Time step의 Hidden state들과 내적하여 Attention scores를 구한다.
+   -  예시를 들자면 무작위의 정수 값이 나온다.{7,1,-1,2}
+   - 이때 Attention scores를 구하는 방법은 내적뿐만 아니라 다른 방법도 있다. 아래의 Attention Mechanism 참조
+3. 해당 Attention Scores를 softmax 함수를 통과시켜 Attention distribution으로 바꿔준다.
+   - 합이 1인 같은 차원의 결과값이 나온다. {0.83,0.05,0.02,0.1}
+   - 이 값은 일종의 어떤 가중치이며, 어느 시점의 hidden state를 얼만큼 참조해야하는가? 의 의미를 가진다.
+4. Attention distribution의 가중 평균을 구하여 하나의 Encoder Hidden state vector, Attention output을 구한다.
+   - Attention output은 Attention distribution 만큼 정보를 사용해 만든 정보이며, Context vector라고도 부른다.
+   - 2번부터 4번까지 과정을 실시하는 부분을 Attention module이라 부른다.
+5. 이렇게 나온 Attention Output과 원본 Output를 Concatenation하여 예측 값($\hat{y_1}$)을 출력한다.
+
+![image-20210218110721135](NLP.assets/image-20210218110721135.png)
+
+**[img. Input을 이전 예측값이 아니라 실제값에서 가져오면 Teacher forcing이다. ]**
+
+6. 1번부터 5번까지의 과정을 다음 Time step에서도 반복한다.
+   - 이때, 이전 예측 결과값을 Input으로 넣어주지 않고, Ground Truth에서 가져온 실제값을 넣어주는 사진에서의 방식을 Teacher forcing이라고 한다.
+   - 첫 예측부터 틀리고, 틀린 예측 값을 다음 Input으로 넣어주면 무더기로 틀리면서 시간낭비를 하기 때문에 보통은 초반 학습에는 Teacher forcing을 이용하고, 예측 정확도가 올라가면 이전 예측값을 넣어주는 원래 방식으로 돌린다. 
+
+##### 다양한 Attention 메커니즘
+
+$$
+score(h_t,\overline{h}_s)=\begin{cases}h_t^\top \overline{h}_s&dot\\h_t^\top W_a\overline{h}_s&general\\v_a^\top \tanh(W_a[h_t;\overline{h}_s]) & concat\end{cases}\\\overline{h}_s : Encoder에서의\ Hidden\ state,\\ h_t^\top: Decoder\ Hidden\ state가\ 행렬\ 연산을\ 위해\ 행과\ 열이\ 뒤바뀐\ 형태\\ (a \times b \rightarrow b \times a)
+$$
+
+**[math. attention의 score를 구하는 3가지 방법 ]**
+
+- Dot ($h_t^\top \overline{h}_s$)
+  - 기본적인 방식, 두 Hidden state를 내적한다.
+
+- General($h_t^\top W_a\overline{h}_s$)
+  - 학습가능한 파라미터 $W_a$를 넣어 score 계산 방법 또한 Back propagation을 통해 학습되게 한다.
+- Concat($v_a^\top \tanh(W_a[h_t;\overline{h}_s])$)
+  - 두 벡터를 Concatenation하여 하나의 벡터로 만들고, $W_a$와 tanh 함수, Scalar 값으로 바꿔줄 벡터 $v_a^\top$을 통하여 작은 Multi Layer Network를 만들어 학습되게 한다.
+
+General이나 Concat 방식 처럼 학습 가능한 파라미터가 포함되면 다음 그림과 같은 Propagation을 진행되게 된다.
+
+![image-20210218125206543](NLP.assets/image-20210218125206543.png)
+
+**[img. Attention 모듈이 포함된 model의 propagation 진행]**
+
+##### Attention의 장점
+
+1. hidden기계 번역 분야(NMT)에서 성능 향상
+2. bottleneck(병목) 문제 해결
+   - Bottleneck 현상: 고정된 크기의 벡터에 너무 많은 벡터 정보를 압축시키면서 정보가 손실, 변형 되며 성능이 악화되는 현상
+3. Vanishing gradient Problem 완화
+   - Back Propagation 시, 먼 거리를 거치지 않고, 특정 Time step에 도달하므로 가중치 중첩이 적다. 
+4. 가중치의 변경 해석을 통해 예측방법을 해석할 수 있게 해줌.
+
+![image-20210218125835278](NLP.assets/image-20210218125835278.png)
+
+**[img. x축 프랑스 단어, y축 해석한 영단어를 토대로 얼마나 정보를 참조했는 가를 그래프로 표현 가능]**
+
+### Beam search
+
+- 자연어 처리를 위한 Seq2Seq 모델의 Test에서 더욱 좋은 성능을 나오게 하는 알고리즘 
+
+#### Decoding 결과값 예측 방법 및 문제점
+
+Decoder가 예측값을 생성할 때, 3가지 방법이 있다.
+
+1. Greedy algorithm(탐욕 알고리즘)
+
+가장 확률이 높은 예측을 예측값으로 바로 내보내는 방법이다.
+
+가장 빠르다는 장점이 있지만, 한번 예측이 틀리면 그 뒤로 정정할 방법이 없다.
+
+즉, 가장 높은 확률의 단어 뒤로는 가장 낮은 확률인 틀린 단어 들만 존재할 경우를 방지할 수 없다.
+
+2. Exhaustive search(완전 탐색)
+
+레퍼런스 길이가 T인 문장에 단어들의 정답 확률을 $y_0,\dots,y_{t-1}$이라 할 때, 
+$$
+P(y|x)=P(y_1|x)P(y_2|y_1,x)P(y_3|y_2,y_1,x)\dots P(y_T|y_1,\dots,y_{T-1},x)=\prod^T_1P(y_t|y_1,\dots,y_{t-1},x)
+$$
+
+**[math. 레퍼런스 길이가 T인 문장의 정답 확률  ]**
+
+$P(y|x)$가 가장 높은 값이 되도록 하기위해, 가능한 모든 단어쌍을 확인해보는 방법이 있다.
+
+하지만 이 방법의 경우 사전(Vocabulary size)가 V이고, 문장의 길이가 t라고 할때 무려 $O(V^t)$의 시간이 걸리며, 성능상 불가능한 경우가 많다.
+
+*****
+
+위 두가지 방법을 절충안 방안이 세번째 방안인
+
+3. Beam search
+
+가장 확률이 높은 beam size k개 만큼의 가지치기를 하여 가장 확률이 높은 단어(또는 hypothese)을 선택하는 방법이다.
+$$
+score(y_1,\dots,y_t)=logP_{LM}(y_1,\dots,y_t|x)=\sum_{i=1}^tlogP_{LM}(y_i|y_1,\dots,y_{i-1},x)
+$$
+
+**[math. 가치치기로 생성된 경우의 수의 확률을 구하는 수식]**
+
+- 0~1 사이인 확률 값에 log 함수를 씌워 덧셈으로 계산하게 하여 계산 용이 + 너무 작은 수로 수렴하는 것 막음
+- 또한 hypothesis의 확률 값이 0~1사이 이므로 음수들이 나오게 되며, 이값들의 합이 가장 큰 값이 가장 좋은 값이다.
+
+beam size인 k를 조절하여 원하는 성능에 타협할 수 있다는 장점이 있지만, 이 방법은 최적의 결과를 보장하지 않는다는 단점이 있다.
+
+#### Beam search의 예시
+
+k가 2일 때, Reference가 "<SoS> he hit me with a pie<EoS>" 인 문장의 경우
+
+![image-20210218141434736](NLP.assets/image-20210218141434736.png)
+
+**[img. Beam Searching 과정]**
+
+- [he, hit, me]까지 진행한 -2.5가 최고 점수임을 확인할 수 있다.
+
+#### Beam search의 종료와 점수 평가
+
+Greedy Algorithm의 경우 <END> 토큰이 나올 경우, 예측의 종료임을 알 수 있었다.
+
+하지만 beam search의 경우, k가 1 초과일 경우, 가지치기로 <END>가 나오지 않는 가지(hypothesis)가 계속 뻗게 된다. 
+
+그러므로, 예측의 종료를 위해 최대 Time step(또는 문장의 길이) T를 정하고, 그 이상 부터는 예측 하지 않거나, 또는 n개의 종료된 가지(hypothesis), 즉 n개의 <END> 토큰이 나올때 까지만 예측을 진행하게 한다.
+
+- 여기서 T와 n은 predefined, 즉 미리 정의해 줘야한다.
+- 종료될 때까지, <END> 토큰이 나와 종료된 가지는 따로 마련한 저장공간에 점수와 내용을 저장해 놓고, 종료된 후, 점수를 비교하게 된다.
+
+이때, 그저 점수를 비교하면, 상대적으로 문장의 길이가 짧은 경우가 유리하게 되므로, 문장의 길이로 나누어 주어, 전체 단어의 평균 확률이 높은 가지를 고르게 한다.
+
+$$
+score(y_1,\dots,y_t)=\frac{1}{t}\sum_{i=1}^tlogP_{LM}(y_i|y_1,\dots,y_{i-1},x)\\where\ t = number\ of\ hypothese
+$$
+**[math. 길이 Normalize가 적용된 score 계산법]**
+
+### BLEU score
+
+- 자연어 생성 결과의 품질의 척도를 구하는 방법에 대해 알아보자.
+
+단순히 문장의 Index끼리 비교를 하면, 문장의 길이가 다를 경우 0점으로 평가될 수 있다.
+
+|           | 문장                                          |
+| --------- | --------------------------------------------- |
+| Reference | I love you baby, and it's a quite alright     |
+| Predicted | oh, I love you baby, and it's a quite alright |
+
+**[fig. "oh" 한 단어가 들어가 Index가 뒤로 밀린 경우의 문장]**
+
+이를 위해 단순비교 이외의 평가방법들을 사용해야 한다.
+
+#### 정밀도(precision), 재현율(recall), 조화평균(F-measure)
+
+주어진 문장이
+
+```
+Reference: Half of my heart is in Havana ooh na na
+
+Predicted: Half as my heart is in Obama ooh na, 
+```
+
+일때,
+$$
+precision=\frac{\#(correct\ words)}{length\_of\_prediction}=\frac{7}{9}=78\%\\
+recall=\frac{\#(correct\ words)}{length\_of\_reference}=\frac{7}{10}=70\%\\
+F-measure=\frac{precision\times recall}{\frac{1}{2}(precision+recall)}=\frac{0.78\times0.7}{0.5\times(0.78+0.7)}=73.78\%
+$$
+**[math. 주어진 문장에 대한 정밀도, 재현율, 조화평균 ]**
+
+- **정밀도(precision)**는 검색된 결과들 중 관련 있는 것으로 분류된 결과물의 비율이고, **재현율(recall)**은 관련 있는 것으로 분류된 항목들 중 실제 검색된 항목들의 비율이다.
+- 산술 평균 $\geq$ 기하 평균 $\geq$ 조화 평균이 성립하므로, 오류에 좀더 가중을 주기 위해 조화평균을 사용한다.
+  - 산술 평균 : (a + b) / 2
+  - 기하 평균: $(a*b)^\frac{1}{2}$
+  - 조화 평균: $\frac{1}{\frac{\frac{1}{a}+\frac{1}{b}}{2}}$
+
+하지만 이 척도는 Sequence data의 순서의 오류를 고려하지 않아 부적절하다.
+
+예를 들자면, 주어진 문장이
+
+```
+Reference: Half of my heart is in Havana ooh na na
+
+Model 1 Predicted: Half as my heart is in Obama ooh na, 
+
+Model 2 Predicted: Havana na in heart my is Half ooh of na, 
+```
+
+일때,
+
+| Metric    | Model 1 | Model 2 |
+| --------- | ------- | ------- |
+| Precision | 78%     | 100%    |
+| Recall    | 70%     | 100%    |
+| F-measure | 73.78%  | 100%    |
+
+**[fig. 세가지 척도로 평가 시 잘못되는 예시]**
+
+적절하지 못한 결과를 보여줌을 알 수 있다.
+
+#### BLEU score 
+
+BiLingual Evaluation understudy(BLEU)는 자연어 처리 결과를 평가하기 위해 만들어졌다.
+
+
+
+$$
+BLEU=min(1,\frac{length\_of\_prediction}{length\_of\_reference})(\prod^4_{i=1}precision_i)^\frac{1}{4}
+$$
+**[math.  BLEU 계산 수식]**
+
+- 기하평균을 이용하여 조화평균 보다는 오류에 관대하게 하였다.
+- N-gram overlap을 이용하여 단어의 순서 또한 평가에 반영하게 하였다.
+-  recall 대신 precision을 평가에 사용하는 이유는, 기계 번역 등에서는  단어의 수, 문장의 길이 등이 정확히 맞지 않아도 올바른 결과인 경우가 있기 때문에, reference의 길이에 강요받지 않기 위해서 이다. 
+  - ex) 나는 정말 니가 많이 좋아 , 난 정말 니가  좋아 :arrow_right: 길이가 다르지만 둘다 옳은 번역이다.
+- 문장의 길이가 짧은 경우 의미를 모두 담지 않은 경우가 있으므로 brevity penalty를 주지만, 그렇다고 해서 결과값이 길수록 점수가 높아지는 것을 막기위해 min 함수를 씌워 1이 최대값으로 주게 하였다.
+
+#### BLEU 계산 예시
+
+주어진 문장이
+```
+Reference: Half of my heart is in Havana ooh na na
+
+Model 1 Predicted: Half as my heart is in Obama ooh na, 
+
+Model 2 Predicted: Havana na in heart my is Half ooh of na, 
+```
+
+일때,
+
+| Metric             | Model 1                                       | Model 2 |
+| ------------------ | --------------------------------------------- | ------- |
+| Precision (1-gram) | 7/9                                           | 10/10   |
+| Precision (2-gram) | 4/8                                           | 0/9     |
+| Precision (3-gram) | 2/7                                           | 0/8     |
+| Precision (4-gram) | 1/6                                           | 0/7     |
+| Brevity penalty    | 9/10                                          | 10/10   |
+| BLEU               | $0.9\times (1/54)^{\frac{1}{4}} \approx 33\%$ | 0       |
+
+**[fig. BLEU 계산 예시]**
+
