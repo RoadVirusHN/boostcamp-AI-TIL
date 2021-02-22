@@ -1042,6 +1042,23 @@ Decoder 부분에서는 2번의 Self-Attention을 진행하게된다.
 낮은 성능처럼 보이지만 BLEU 기준의 결과이므로, 비슷한 결과물들 또한 점수가 낮게 나오므로 실제로는 상용으로 쓰는 수준의 성능이다.
 
 ## Self-supervised Pre-training Models
+
+Self-supervised(자기지도 학습) 
+
+- Task를 풀기 위해 자동으로 데이터를 라벨링하는 학습
+
+Pre-training(사전훈련)
+
+- 여러 Task로 Transfer Learning 될 수 있도록, 하나의 Task로 모델의 Parameter를 훈련시키는 것, 
+
+Fine Tuning(미세 조정)
+
+- 미리 개발, 훈련된 모델을 용도에 맞게 파리미터, Layer 구조 등을 변경하는 것
+
+Transfer Learning(전이 학습)
+
+- 미리 개발, 훈련된 모델을 용도에 맞게 나의 데이터셋 등으로 재학습시키는 과정
+
 ### Self-Supervised Pre-Training Models
 
 Transfer Learning, Self-supervised Learning, Transformer를 사용해 NLP에서 압도적인 성능을 보여준 두 모델을 알아보자.
@@ -1056,11 +1073,11 @@ Transfer Learning, Self-supervised Learning, Transformer를 사용해 NLP에서 
 
 **[img. GPT-1 모델]**
 
-Pretrained model의 시초격, OPEN-AI에서 개발.
+Pretrained model의 시초격, OPEN-AI에서 개발. Transformer 모델의 구조 특히 Decoder 구조를 따름
 
 다양한 special token을 통해 fine-tuning간의 transfer learning을 효율적으로 바꿈
 
-- Start 뿐만 아니라, Delimiter, Extranction Token 등을 통하여 여러 문제 해결 가능
+- Start 뿐만 아니라, Delimiter, Extranction Token 등 다양한 Special Token을 통하여 여러 문제 해결 가능
 
 여러 자연어 처리(classification, similarity,  entailment 등)를 큰 변화 없이 처리 가능한 통합적인 모델 
 
@@ -1074,7 +1091,7 @@ Pretrained model의 시초격, OPEN-AI에서 개발.
 
 #### BERT
 
-가장 널리 쓰이는 NLP Pre-trained 모델
+가장 널리 쓰이는 NLP Pre-trained 모델, Encoder 구조만 활용 
 
 GPT는 단방향의 Masked Attention 구조를 활용하는 반면, BERT는 아래의 MLM을 활용하여 양방향 Self-attention 구조이다.
 
@@ -1151,12 +1168,13 @@ INPUT SEQUENCE의 경우
 - Input Layer와 Output Layer을 달리하여 특정 Downstream Task를 위한 모델로 만들 수 있다.
 - Masked token의 prediction을 위한 Layer를 제거한 후, 우리 Task를 위한 Layer로 바꾼 뒤, 기학습된 Transfomer encoder의 parameter들은 작은 Learning rate를 사용하여 조금만 학습이 되게 한다.
 
-|                                         | BERT                                                    | GPT                    |
-| --------------------------------------- | ------------------------------------------------------- | ---------------------- |
-| Training-data size                      | BookCorpus + Wikipedia(2,500M words)                    | BookCorpus(800M words) |
-| Training special tokens during training | [SEP],[CLS], sentence A/B embedding during pre-training | -                      |
-| Batch size                              | 128,000 words                                           | 32,000 words           |
-| Task-specific fine-tuning               | task-specific fine-tuning learning rate(task 별로 다름) | 5e-5 고정              |
+|                                         | BERT                                                    | GPT                             |
+| --------------------------------------- | ------------------------------------------------------- | ------------------------------- |
+| Training-data size                      | BookCorpus + Wikipedia(2,500M words)                    | BookCorpus(800M words)          |
+| Training special tokens during training | [SEP],[CLS], sentence A/B embedding during pre-training | -                               |
+| Batch size                              | 128,000 words                                           | 32,000 words                    |
+| Task-specific fine-tuning               | task-specific fine-tuning learning rate(task 별로 다름) | 5e-5 고정                       |
+|                                         | Masked token를 통해 앞뒤 모든 단어 접근 가능            | 오직 이미 나온 단어만 접근 가능 |
 
 **[fig. BERT vs GPT]**
 
@@ -1217,6 +1235,7 @@ GPT-1과 구조가 크게 다르지 않으며, layer가 더 싶고 training data
 
 - Reddit이라는 커뮤니티에서 좋아요가 3개 이상인 외부링크의 document를 수집 
 - 전처리로 Bytpe pair encoding 적용, subword 수준의 word embedding.
+  - 구현 방법은 [NLP-Assignment]Byte_Pair_Encoding,ipynb 참조
 
 down-stream task에서 zero-shot setting, 추가 parameter나 구조 변경없이 사용 가능
 
@@ -1326,7 +1345,9 @@ Zero-shot setting으로도 충분히 downstream-task가 가능하지만 one-shot
 
 Efficiently Learning an Encoder that Classifies Token Replacements Accurately의 준말
 
-BERT, GPT의 학습 방식과 달리 Generoatr란 단어 복원기를 통해 Masking된 단어를 다시 복원한 뒤,  그 결과를 ELECTRA의 Discriminator를 통하여 원본과 비교하여, 복원된 단어인지, 원래 masking 안된 원본인지 구별하는 방법(GAN, +generative adversal network)이다.
+BERT, GPT의 학습 방식과 달리 Generoator란 단어 복원기를 통해 Masking된 단어를 다시 복원한 뒤,  그 결과를 ELECTRA의 Discriminator를 통하여 원본과 비교하여, 복원된 단어인지, 원래 masking 안된 원본인지 구별하는 방법(GAN, +generative adversal network)이다.
+
+학습은 Generator, Discriminaotr 둘다, 실제 test 에는 Discriminator만 사용
 
 ![image-20210221205934821](NLP.assets/image-20210221205934821.png)
 
