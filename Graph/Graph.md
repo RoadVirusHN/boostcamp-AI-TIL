@@ -1178,6 +1178,7 @@ $$
 1. 학습이 진행된 이후에 추가된 정점에 대해서는 임베딩을 얻을 수 없음
 2. 모든 정점에 대한 임베딩을 미리 계산하여 저장해야 함.
 3. 정점이 속성(Attribute) 정보를 가진 경우에 이를 활용 불가능
+   - 엄밀히 말하면 3번째는 변환식 임베딩의 한계가 아닌, 위에 소개된 방법들의 한계이다.
 
 이를 극복하기 위해 귀납식 임베딩 방법이 존재하며 대표적인 방법으로 그래프 신경망(Graph Neural Network)
 
@@ -1244,7 +1245,7 @@ $$
 
 단순히 사용자와 상품의 임베딩만으로 평점을 고려하는 것보다 더 현실적이고 오차가 적은 모형을 만들기 위해 두 가지를 추가로 고려하였다. 
 
-1. 편향과 평균
+1. 편향(bias)과 평균
 
 - 사용자의 편향은 해당 사용자의 평점 평균과 전체 평점 평균의 차
   - 나연의 평점이 4.0, 평균 평점이 3.7 이라면 나연의 사용자 편향은 0.3
@@ -1289,3 +1290,134 @@ $$
 ### Surprise 라이브러리와 잠재 인수 모형의 활용
 
 Lab의 [Graph-8]Latent_Factor_based_Recommendation_System.ipynb 참조
+
+## 그래프 신경망(Graph Neural Network) 기본
+
+귀납식 임베딩은 다음과 같은 장점을 가진다.
+
+1. 학습이 진행된 이후에 추가된 정점에 대해서도 임베딩 획득 가능
+2. 모든 정점에 대한 임베딩을 미리 계산하여 저장해둘 필요 없음
+3. 정점이 속성(Attribute) 정보를 가진 경우에 이를 활용할 수 있음
+
+$ENC(v) = 그래프\ 구조와\ 정점의\ 부가\ 정보를\ 활용하는\ 복잡한\ 함수$
+
+**[math. 귀납식 임베딩은 인코더 함수를 활용한다.]**
+
+### 그래프 신경망(Graph Neural Network)이란?
+
+그래프 신경망(Graph Neural Network) : 출력으로 인코더를 얻는 귀납식 임베딩의 대표적인 방법
+
+#### 그래프 신경망의 구조
+
+![image-20210226233731465](Graph.assets/image-20210226233731465.png)
+
+**[img. ]**
+$$
+h^0_v=x_v\\
+h^k_v=\sigma \left(W_k\sum_{u\in N(v)}\frac{h_u^{k-1}}{|N(v)|}+B_kh_v^{k-1} \right), \forall k\in\{1,\dots,K\}\\
+z_v=h_v^K
+$$
+
+$$
+h^0_v=x_v : 0번째\ 층에서의\ 임베딩=입력\ 속성\ 정보\\
+h^k_v=\sigma \left(W_k\sum_{u\in N(v)}\frac{h_u^{k-1}}{|N(v)|}+B_kh_v^{k-1} \right), \forall k\in\{1,\dots,K\}\\
+z_v=h_v^K : 마지막\ 층에서의\ 임베딩 = 출력\ 임베딩
+$$
+
+**[math.]**
+
+
+
+#### 그래프 신경망의 학습
+
+![image-20210226233708573](Graph.assets/image-20210226233708573.png)
+
+**[img.]**
+
+![image-20210226233927573](Graph.assets/image-20210226233927573.png)
+
+**[img.]**
+
+
+
+#### 그래프 신경망의 활용
+
+### 그래프 신경망 변형
+
+$$
+h_v^k = \sigma\left(W_k\sum_{u\in N(v)\cup v}\frac{h_u^{k-1}}{\sqrt{|N(u)||N(v)|}}\right)
+$$
+
+**[math.]**
+
+
+
+![image-20210226234636108](Graph.assets/image-20210226234636108.png)
+
+**[img.]**
+$$
+Mean:\ AGG = \sum_{u\in N(v)} \frac{h_u^{k-1}}{|N(v)|}\\
+Pool:\ AGG = \gamma(\{Qh_u^{k-1},\forall u \in N(v)\})\\
+LSTM:\ AGG = LSTM([h_u^{k-1},\forall u \in \pi(N(v))])
+$$
+**[math.]**
+
+### 합성곱 신경망과의 비교
+
+
+
+### DGL 라이브러리와 GraphSAGE를 이용한 정점 분류
+
+Lab의 [Graph-9]Using_GDL_Library-1.ipynb 참조
+
+## 그래프 신경망 심화
+
+### 그래프 신경망에서의 어텐션
+
+$$
+h^k_v=\sigma \left(W_k\sum_{u\in N(v)}\frac{h_u^{k-1}}{|N(v)|}+B_kh_v^{k-1} \right), \forall k\in\{1,\dots,K\}\\
+h_v^k = \sigma\left(W_k\sum_{u\in N(v)\cup v}\frac{h_u^{k-1}}{\sqrt{|N(u)||N(v)|}}\right)
+$$
+
+**[math.]**
+$$
+\tilde h_i=h_iW
+$$
+**[math.]**
+$$
+e_{ij}=a^\top[CONCAT(\tilde h_i,\tilde h_j)]
+$$
+**[math.]**
+
+
+$$
+a_{ij}=softmax_j(e_{ij})=\frac{\exp(e_{ij})}{\sum_{k\in \mathcal{N}_i \exp(e_{ik})}}
+$$
+**[math.]**
+
+
+$$
+{h}'_i=\underset{1\leq k\leq K}{CONCAT}\sigma\left(\sum_{j\in \mathcal{N}_i}a_{ij}^kh_jW_k\right)
+$$
+**[math.]**
+
+### 그래프 표현 학습과 그래프 풀링
+
+
+
+### 지나친 획일화 문제
+
+$$
+h_u^{(l+1)}=h_u^{(1+1)}+h_u^{(l)}
+$$
+
+**[math.]**
+
+### 그래프 데이터 증강
+
+
+
+### GraphSAGE의 집계 함수 구현
+
+Lab의 [Graph-10]Using_GDL_Library-2.ipynb 참조
+
