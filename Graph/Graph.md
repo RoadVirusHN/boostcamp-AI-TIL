@@ -1357,12 +1357,13 @@ $ENC(v) = 그래프\ 구조와\ 정점의\ 부가\ 정보를\ 활용하는\ 복�
 그래프 신경망의 학습을 위해 가장 먼저 손실 함수를 결정해야 하며, 정점간 거리를 보존하는 것이 목표이다.
 
 - 즉 임베딩 공간에서의 거리와 실제 그래프에서의 거리가 비슷한 것이 목표
+- 주로 비지도 학습에서의 목표임
 
 ![image-20210226233708573](Graph.assets/image-20210226233708573.png)
 
 **[img. 인접성 기반 유사도를 이용한 손실 함수 정의]**
 
-만약,  후속 과제(Downstream Task)가 있다면,
+만약,  지도 학습인 후속 과제(Downstream Task)가 있다면,
 
  *해당 후속과제의 손실함수를 이용하는 것*  또한 가능(*종단종(End-to-End) 학습*)
 
@@ -1465,48 +1466,152 @@ Lab의 [Graph-9]Using_GDL_Library-1.ipynb 참조
 
 ### 그래프 신경망에서의 어텐션
 
-$$
-h^k_v=\sigma \left(W_k\sum_{u\in N(v)}\frac{h_u^{k-1}}{|N(v)|}+B_kh_v^{k-1} \right), \forall k\in\{1,\dots,K\}\\
-h_v^k = \sigma\left(W_k\sum_{u\in N(v)\cup v}\frac{h_u^{k-1}}{\sqrt{|N(u)||N(v)|}}\right)
-$$
+이웃들의 정보를 동일한 가중치로 평균을 내는 기본 그래프 신경망과 연결성을 고려한 가중치로 평균을 내는 그래프 합성곱 신경망과 달리,
 
-**[math.]**
-$$
-\tilde h_i=h_iW
-$$
-**[math.]**
-$$
-e_{ij}=a^\top[CONCAT(\tilde h_i,\tilde h_j)]
-$$
-**[math.]**
+그래프 어텐션 신경망(Graph Attention Network, GAT)에서는 셀프-어텐션(Self-Attention)을 활용해 가중치 자체도 학습함.
+
+- 이를 통해 이웃 별로 미치는 영향을 다르게 줄 수 있음.
+
+![image-20210301194308339](Graph.assets/image-20210301194308339.png)
+
+**[img. 그래프에 셀프 어텐션 구조를 적용]**
+
+각 층에서 정점 i로부터 이웃 j로의 가중치 $a_{ij}$는 다음과 같은 과정을 통해 계산 됨
+
+| 단계 | 설명 | 수식 |
+| :--: | :--: | :--: |
+| 1    | 해당 층의 정점 i의 임베딩 $h_i$에 신경망 W를 곱해 새로운 임베딩을 얻습니다. |$\tilde h_i=h_iW$   |
+| 2    | 정점 i와 정점 j의 새로운 임베딩을 연결한 후, 어텐션 계수 a를 내적.<br />- 어텐션 계수 a는 모든 정점이 공유하는 학습 변수 | $e_{ij}=a^\top[CONCAT(\tilde h_i,\tilde h_j)]$ |
+| 3    | 2)의 결과에 소프트맥스(Softmax)를 적용 | $a_{ij}=softmax_j(e_{ij})=\frac{\exp(e_{ij})}{\sum_{k\in \mathcal{N}_i \exp(e_{ik})}}$ |
+
+**[fig. 그래프 어텐션 신경망 가중치 학습 단계]**
 
 
-$$
-a_{ij}=softmax_j(e_{ij})=\frac{\exp(e_{ij})}{\sum_{k\in \mathcal{N}_i \exp(e_{ik})}}
-$$
-**[math.]**
 
+또한, 여러 개의 어텐션을 동시에 학습하는 멀티 헤드 어텐션 또한 가능.
 
 $$
 {h}'_i=\underset{1\leq k\leq K}{CONCAT}\sigma\left(\sum_{j\in \mathcal{N}_i}a_{ij}^kh_jW_k\right)
 $$
-**[math.]**
+**[math. 멀티 헤드 어텐션에서의 정점 임베딩]**
+
+![image-20210301195051328](Graph.assets/image-20210301195051328.png)
+
+**[img. 세 개의 어텐션을 사용한 GAT]**
+
+
+
+![image-20210301195029937](Graph.assets/image-20210301195029937.png)
+
+**[img. 어텐션의 결과, 성능이 좋아짐]**
 
 ### 그래프 표현 학습과 그래프 풀링
 
+그래프 표현학습 또는 그래프 임베딩은 그래프 전체를 벡터의 형태로 표현하는 것
+
+- 그래프 임베딩은 벡터 형태로 표현된 그래프 자체를 의미하기도 함
+- 개별 정점이 아닌 그래프 자체를 벡터 형태로 표현한다는 점이 정점 임베딩과 다름
+- 그래프 분류, 화합물 분자 구조 특성 예측 등에 활용
 
 
-### 지나친 획일화 문제
 
+그래프 풀링(Graph Pooling) : 정점 임베딩들로부터 그래프 임베딩을 얻는 과정
+
+- 정점 간의 평균 같은 단순한 방법보다 좋은 성능을 보임
+- 그래프 풀링 방법 중 하나로 미분가능한 풀링(Differentiable Pooling, DiffPool)이 있다
+  - 군집을 임베딩 벡터로 바꾸어 가며 하나의 벡터로 바꾸는 방식 
+
+![image-20210301203502726](Graph.assets/image-20210301203502726.png)
+
+**[img. 미분가능한 풀링의 도식]**
+
+미분 가능한 그래프 풀링에서는 다음과 같은 3가지 목적을 위해 기존의 GNN의 사용함.
+
+1. 개별 정점 임베딩 얻기
+2. 정점들을 군집으로 묶기
+3. 군집들을 합산해서 더 큰 군집을 만들기
+
+### 지나친 획일화(Over-smoothing) 문제
+
+지나친 획일화(Over-Smoothing) 문제는 그래프 신경망의 측의 수가 증가하며 정점 임베딩이 서로 유사해지는 현상이다.
+
+- 정점 간의 거리가 생각보다 작기 때문에, 적은 수의 층만으로도 다수의 정점의 임베딩을 포함해 버리기 때문(작은 세상 효과)
+
+![image-20210301204612622](Graph.assets/image-20210301204612622.png)
+
+**[img. 지나친 획일화의 예시]**
+
+이로 인해 그래프 신경망의 층을 늘렸을 때, 오히려 성능이 감소하는 현상이 나타남
+
+- 실제로는 다른 특색을 가진 정점을 비슷한 정점이라고 오판단하기 때문
+
+- 보통 2~3개 층이 정확도가 가장 높음
+
+잔차항(Residual)을 넣으면 조금 효과가 있지만 제한적이다.
+
+![image-20210301210457132](Graph.assets/image-20210301210457132.png)
+
+**[img. 층 수에 따른 정확도 그래프]**
 $$
 h_u^{(l+1)}=h_u^{(1+1)}+h_u^{(l)}
 $$
 
-**[math.]**
+**[math. 잔차항(Residual)을 사용하는 방법]**
 
-### 그래프 데이터 증강
+지나친 획일화를 해결하기 위해 2가지 해결 방법에 대해 알아보자
 
+1. JK 네트워크(Jumping Knowledge Network)
 
+마지막 층에 모든 층의 임베딩을 더해주는 방식
+
+![image-20210301211634824](Graph.assets/image-20210301211634824.png)
+
+**[img. JK 네트워크 도식]**
+
+지나친 획일화를 완전이 해결하는 방법은 아니며, 조금 완화해준다.
+
+2. APPNP(Approximate personalized propagation of neural predictions)
+
+- 신경망 예측의 대략적인 개인화 전파? 
+- PPNP의 빠른 버전
+
+0번째 층에서만 신경망을 적용, 그 이외에 층은 단순화한 집계함수를 사용
+
+![image-20210301211756601](Graph.assets/image-20210301211756601.png)
+
+**[img. APPNP 도식]**
+$$
+Z^{(0)} = H = f_\theta(X)\\
+Z^{(k+1)} = (1 − \alpha)\tilde{\hat{A}}Z^{(k)} + \alpha H\\
+Z^{(K)} = softmax\left((1 − \alpha)\tilde{\hat{A}}Z^{(K-1)} + \alpha H\right)\\
+\alpha : teleport\ probability, H: prediction matrix, the teleport set,\\
+X : feature\ matrix, f_\theta = a\ neural\ network\ with\ parameter\ set\ \theta\\
+\tilde{\hat{A}}: the\ symmetrically\ normalized\ adjacency\ matrix\ with\ self-loops
+$$
+**[math. APPNP에서의 학습 과정]**
+
+- 정확히 말하면 PageRank 알고리즘 개선에 사용된 식이다.
+- https://arxiv.org/pdf/1810.05997.pdf
+
+층의 수가 늘어날 수록 성능 향상은 줄어들지만 층의 증가에 따른 정확도 감소 효과는 극복함.
+
+![image-20210301211951518](Graph.assets/image-20210301211951518.png)
+
+**[img. APPNP의 성능]**
+
+### 그래프 데이터 증강(Data Augmentation)
+
+그래프의 누락되거나 부정확한 간선을 보완하고, 임의 보행을 통해 정점간 유사도를 계산하여 유사도가 높은 정점 간의 간선을 추가하는 방법
+
+![image-20210301212428876](Graph.assets/image-20210301212428876.png)
+
+**[img. 데이터 증강의 예시]**
+
+AI비전의 이미지 증강 처럼, 그래프 데이터 증강을 통하여 정확도를 개선할 수 있다.
+
+![image-20210301212517360](Graph.assets/image-20210301212517360.png)
+
+**[img. 그래프 데이터 증강 효과]**
 
 ### GraphSAGE의 집계 함수 구현
 
