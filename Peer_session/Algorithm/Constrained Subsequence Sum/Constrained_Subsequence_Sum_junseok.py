@@ -1,4 +1,3 @@
-# wooooo! you suck!
 class Solution:
     def constrainedSubsetSum(self, nums, k: int) -> int:
         limit, result, minuses, maxVal = k-1, -1, [], -1
