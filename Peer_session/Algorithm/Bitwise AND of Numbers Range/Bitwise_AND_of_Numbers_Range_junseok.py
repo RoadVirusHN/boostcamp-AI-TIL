@@ -1,3 +1,4 @@
+
 class Solution:
     def rangeBitwiseAnd(self, m: int, n: int) -> int:
         n = format(n,f'#0b')[2:]

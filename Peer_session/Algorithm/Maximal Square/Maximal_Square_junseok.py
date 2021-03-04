@@ -1,5 +1,7 @@
+from typing import List
+
 class Solution:
-    def maximalSquare(self, matrix) -> int:
+    def maximalSquare(self, matrix: List[List[str]]) -> int:
         
         mati, matj = len(matrix), len(matrix[0])
 
@@ -25,7 +27,7 @@ class Solution:
         return maxVal**2
 
 a = Solution()
-# print(a.maximalSquare([["1","0","1","0","0"],["1","0","1","1","1"],["1","1","1","1","1"],["1","0","0","1","0"]]))
-# print(a.maximalSquare([["0","1"],["1","0"]]))
-# print(a.maximalSquare([["0"]]))
+print(a.maximalSquare([["1","0","1","0","0"],["1","0","1","1","1"],["1","1","1","1","1"],["1","0","0","1","0"]]))
+print(a.maximalSquare([["0","1"],["1","0"]]))
+print(a.maximalSquare([["0"]]))
 print(a.maximalSquare([["1","1","1","1","0"],["1","1","1","1","0"],["1","1","1","1","1"],["1","1","1","1","1"],["0","0","1","1","1"]]))
