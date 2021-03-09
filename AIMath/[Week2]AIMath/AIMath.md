@@ -985,9 +985,12 @@ $$
 - 사실 x-z, i-a가아니라 x+z, i+a 이며 cross-correlation 이다.
   - 전체 공간에서는 +,-가 차이가 크지않으므로 convolution이라 불러왔음
 
-![image-20210202223148091](AIMath.assets/image-20210202223148091.png)
+|                Convolution 연산 그래픽적 이해                |
+| :----------------------------------------------------------: |
+| ![Convolution_of_spiky_function_with_box2](AIMath.assets/Convolution_of_spiky_function_with_box2.gif) |
+| ![Convolution_of_box_signal_with_itself2](AIMath.assets/Convolution_of_box_signal_with_itself2.gif) |
 
-**[img 14-1. Convolution 연산 그래픽적 이해]**
+**[fig 14-1. Convolution 연산 그래픽적 이해]**
 
 - 커널은 정의역 내에서 움직여도 변하지 않고(translation invariant) 주어진 신호에 국소적(local)로 적용.
 

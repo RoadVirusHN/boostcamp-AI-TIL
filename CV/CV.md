@@ -159,7 +159,9 @@ nn.Linear(4096, 1000)
 
 Receptive field란?
 
-layer output 값을 만들기위해 Input에서 CNN layer가 참조한 공간, 클 수록 이미지의 많은 부분을 참조한 것이다.
+layer output 값을 만들기위해 Input image에서 CNN layer가 참조한 공간, 클 수록 이미지의 많은 부분을 참조한 것이다. 
+
+여러 층이 중첩되도 처음 image에서 확인한 부분이 Receptive field이다. 
 
 위 구조에서는 전체를 11x11 conv로 Input 이미지 전부를 Receptive field로 삼았다.
 
@@ -421,7 +423,7 @@ Student Loss의 경우, 실제 답과 student model의 정답을 비교
 
 1. lable된 데이터셋으로 Teacher model을 형성한다.
 2. 해당 Teacher model로 unlabled된 model을 Pseudo-labeled data로 만든다.
-3. lable된 데이터셋 +  pseudo-lable된 데이터셋을 augmentation 한 것을 통하여 새로운 Teacher model을 형성한다
+3. lable된 데이터셋 + pseudo-lable된 데이터셋을 augmentation 한 것을 통하여 새로운 Teacher model을 형성한다
    - 이때 주로 사용하는 augmentation  방법이 RandAugment
 4. 새로 형성된 Teacher 모델로 2번부터 4번까지 반복한다. 
 
@@ -429,3 +431,426 @@ Student Loss의 경우, 실제 답과 student model의 정답을 비교
 
 **[img. 압도적인 성능을 자랑하는 self-training 모델(빨간색)]**
 
+## Image classification 2
+
+### Problems with deeper layers
+
+성능 향상을 위해 딥러닝 layer의 층을 높게 쌓으면서 다음과 같은 문제가 생겼다
+
+1. Gradient vanishing/exploding 문제
+2. Computationaly complex
+3. 한때 overfitting 문제로 착각했던 Degradation problem
+
+![image-20210309100228831](CV.assets/image-20210309100228831.png)
+
+**[img. Vanishing gradient 문제의 도식]**
+
+### CNN architectures for image classification 2
+
+#### GoogLeNet
+
+2015년에 발표된 Inception 모듈을 활용한 CV 모델
+
+Inception module이란?
+
+- 이전 층에서의 결과값에 여러개의 필터를 적용한 뒤, Concatenate하는 layer
+
+  - 1x1, 3x3, 5x5 Convolution filter, 3x3 max pooling layer를 적용
+
+  
+
+![image-20210309112126930](CV.assets/image-20210309112126930.png)
+
+**[img. Inception module의 예시]**
+
+이때, 여러 필터의 적용에 의해 parameter수가 증가하자, 1x1 convolution layer(Bottleneck layer)을 추가하여 파라미터 수를 줄이는 시도를 함
+
+- 우측의 Dimension Reduced version에 추가된 1x1 convolution layer를 의미
+
+![image-20210309112308655](CV.assets/image-20210309112308655.png)
+
+**[img. 1x1 convolution layer의 연산 결과]**
+
+GoogLeNet의 전체적인 구조를 살펴보면 다음과 같다.
+
+1. Stem network: 기본적인 convolution network
+
+![image-20210309115934238](CV.assets/image-20210309115934238.png)
+
+**[img. Stem network 부분]**
+
+2. Stacked inception modules: 위에 설명한 Inception 모듈을 쌓아놓은 부분
+
+![image-20210309120018533](CV.assets/image-20210309120018533.png)
+
+**[img. Stacked inception modules 부분]**
+
+3. Auxiliary classifiers 
+
+- Vanishing gradient 문제를 해결하기 위한 부분
+- 중간의 결과값을 한번 예측값으로 삼고, loss 값을 계산하여 중간부터 backpropagation을 진행한다
+- training에서만 사용하고 testing 단계에서는 사용하지 않는다.
+
+![image-20210309120037565](CV.assets/image-20210309120037565.png)
+
+**[img. Auxiliary classifiers 부분]**
+
+![image-20210309120621091](CV.assets/image-20210309120621091.png)
+
+**[img. 더욱 자세한 Auxiliary classifier]**
+
+#### ResNet
+
+현재까지 기본 backbone으로 쓰이곤 하는 좋은 모델
+
+- 최초로 인간 보다 나은 성능을 달성(에러율 기준)
+- 기존의 모델보다 압도적으로 깊은 층의 갯수(152 Layer)
+
+기존의 연구에서는 층이 깊을 수록 오히려 성능이 떨어지는 문제를 Overfitting 문제라고 오판하였다.
+
+![image-20210309122016623](CV.assets/image-20210309122016623.png)
+
+**[img. 층의 갯수에 따른 에러율, 높을 수록 안좋음]**
+
+Overfitting의 문제였다면, training error는 점점 나아져야하고, test error가 나빠져야 하지만, 둘다 성능이 나빠졌기 때문이다.
+
+따라서 Resnet에서는 이를 Overfitting이 아닌 Optimization(최적화)의 문제라고 보았다.
+
+ResNet의 연구 가설은 다음과 같다.
+
+![image-20210309123313947](CV.assets/image-20210309123313947.png)
+
+**[img. Residual block과 Plain layer의 차이]**
+
+기존의 Plain layer의 경우 층이 깊어질 수록 복잡해진 H(x)에 X를 보존하면서 학습하기 힘들었다.
+
+하지만 Residual block에서는 identity X를 F(X)에 더한 것을 H(X)로 삼으면서, X의 정체성이 뚜렷히 남은 상태에서, 분할정복 통해 최적화된 학습을 할 수 있다.
+
+- 분할정복-> (F(x), X의 weight를 따로 구해서 더하면 되니까?)
+- Target function : $H(x)=F(x)+x$
+- Residual function : $F(x)=H(x)-x$ 
+
+이를 위해 *Shortcut connection 또는 Skip connection*을 통해 x를 layer을 넘어 더해주어 Backpropagation 시 뛰어넘어 gradeint를 구할 수 있게 하였다.
+
+- 이를 통해 Gradient vanishing 문제를 해결함
+
+|                        Residual 구조                         |                      경로를 풀어본 구조                      |
+| :----------------------------------------------------------: | :----------------------------------------------------------: |
+| ![image-20210309124015987](CV.assets/image-20210309124015987.png) | ![image-20210309124032924](CV.assets/image-20210309124032924.png) |
+
+**[img. 같은 Residual 구조의 경로 풀이]**
+
+이론상, Residual 구조를 통하여 생기는 경로는 층이 깊이 n에 따라 $O(2^n)$개 만큼 증가한다.
+
+이 경로를 통해 backpropagation이 가능하므로 복잡한 학습을 해결 가능하다.
+
+ResNet의 전체적인 구조는 다음과 같다.
+
+1. He initialization conv layer
+
+![image-20210309130058413](CV.assets/image-20210309130058413.png)
+
+**[img. Resnet의 첫 시작 부분]**
+
+- 첫 layer의 output은 앞으로 계속 identity connection을 통하여 더해질 것이므로, 최적화를 위해 단순하고 작은 크기의 output을 내놓아야 한다.
+- 따라서 He initialization이라는 간단하고 ResNet을 위해 고안된 initialization을 이용한다.
+
+2. Stacked residual blocks 부분
+
+![image-20210309130304826](CV.assets/image-20210309130304826.png)
+
+**[img. Stack residual blocks]**
+
+- 모두 3x3 conv layer로 이루어져 있으며, Batch normalization이 매 layer 끝에 이루어진다
+- 일정 블록 이후(색이 바뀌는 부분), 채널 수는 2배로 늘리고, 채널 해상도는 stride를 2로 잡아 줄이는 구간이 존재함
+
+3. Output FC layer
+
+![image-20210309130815026](CV.assets/image-20210309130815026.png)
+
+**[img. Sing FC layer]**
+
+- 하나의 average pooling과  Fully connected layer을 통하여 classfication을 진행
+
+**ResNet 코드**
+
+![image-20210309214256499](CV.assets/image-20210309214256499.png)
+
+**[img. ResNet code stack 수 정의 부분 ]**
+
+![image-20210309214240250](CV.assets/image-20210309214240250.png)
+
+**[img. ResNet code 첫시작, He initialization 부분 ]**
+
+![image-20210309214221377](CV.assets/image-20210309214221377.png)
+
+**[img. ResNet code, stacked residual 부분 ]**
+
+![image-20210309214208739](CV.assets/image-20210309214208739.png)
+
+**[img. ResNet code, Layer 생성 코드]**
+
+![image-20210309214151827](CV.assets/image-20210309214151827.png)
+
+**[img. ResNet code, 마지막 FC층 부분]**
+
+#### Beyond ResNets
+
+1. DenseNet
+
+![image-20210309135815464](CV.assets/image-20210309135815464.png)
+
+**[img. DenseNet 이미지]**
+
+- ResNet과 달리 layer의 output이 이후의 모든 layer의 결과값에 Channel 축을 중심으로 Concatenate되서 합해진다.
+- Cocatenate하므로 기존의 값들이 보존된다
+2. SENet
+- Activation의 결과가 명확해지도록 ouput의 채널축에 가중치를 주는 Attention across channel 방식
+- feature의 중요도와 관계가 명확해짐
+- Squeeze: global average pooling을 통하여 채널의 공간정보를 없애고(축의 정보 등) 분포를 구함
+- Excitation: FC layer 하나로 채널간의 연관성(Weight=attention score)를 구함
+- 중요도가 떨어지면 0에 가깝게 중요한 것은 크게 하여 feature의 강조와 무시를 함
+3. EfficientNet
+- 기존의 Network 알고리즘을 정리함
+
+| 기본 Network                                                 | Width Scailing                                               | Depth Scailing                                               | Resolution Scaling                                           | Compound Scailing                                            |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ![image-20210309140728124](CV.assets/image-20210309140728124.png) | ![image-20210309140741008](CV.assets/image-20210309140741008.png) | ![image-20210309140753841](CV.assets/image-20210309140753841.png) | ![image-20210309140806358](CV.assets/image-20210309140806358.png) | ![image-20210309140821739](CV.assets/image-20210309140821739.png) |
+| 기준                                                         | 채널의 수를 늘리는 방식                                      | 층의 수를 늘리는 방식                                        | Input의 해상도를 높게 주는 방식                              | 앞의 방법들을 복합한 방식                                    |
+|                                                              | GoogLeNet 등                                                 | DenseNet 등                                                  |                                                              | EfficientNet                                                 |
+
+**[table. 기존의 Network의 분류]**
+
+- 각 Scailing들은 파라미터 수, 학습 epoch, 데이터셋의 수에 따라 성능이 오르지않는 구간이 나오는데, 이를 모두 변수(팩터, 어느 정도 비율로 복합하는가)를 주고 복합하여 성능을 크게 상승시킴
+
+- 사람이 찾은 효율적인 다른 구조들, NAS 알고리즘 구조(Neural Architecture Search, 컴퓨터가 효율적인 구조를 찾는 알고리즘)보다 성능이 압도적으로 좋다.
+
+![image-20210309141007253](CV.assets/image-20210309141007253.png)
+
+- 적은 연산으로도 성능이 크게 올라 EfficientNet이다.
+
+4. Deformable convolution
+
+![image-20210309141016999](CV.assets/image-20210309141016999.png)
+
+- 동물, 사람, 등의 형태가 변할 수 있는 사물에 효율적인 구조
+- feature를 나타내는 weight와, 이 weight의 위치를 어떠한 방향으로, 어떻게 변형시킬 지 결정하는 offsets를 학습하는 형식
+- 기존의 정사각형 형태의 Receptive field와 달리 물체의 형태에 따라서 Receptive field 모양이 변함
+
+### Summary of image classification
+
+![image-20210309142638948](CV.assets/image-20210309142638948.png)
+
+**[img. 앞서 배운 모델들의 비교, 면적은 모델의 크기]**
+
+- AlexNet은 심플하지만 메모리 사용량이 크고 성능이 좋지 않다
+- VGGNet은 성능이 낫지만 메모리와 연산을 많이 잡아 먹는다
+- GoogLeNet의 최신 구조는 크기도 적고 성능도 좋지만, 구조가 복잡하다
+- ResNet은 특출난 것이 없다
+- GoogLeNet이 여러모로 좋지만 구조가 너무 복잡하여 VGGNet, ResNet을 기본 모델로 많이 사용한다.
+
+
+
+## Semantic segmentation
+
+### Semantic segmentation
+
+이미지 각 픽셀의 어떠한 category에 속하는지 구분하는 문제(ex) 사람 영역, 자동차 영역)
+
+같은 class의 다른 instance에는 관계가 없으며 이를 위한 instance segmentation가 있다.
+
+![image-20210309155939051](CV.assets/image-20210309155939051.png)
+**[img. Semantic segmentation의 예시]**
+
+| ![image-20210309155947015](CV.assets/image-20210309155947015.png) |
+| :----------------------------------------------------------: |
+| ![image-20210309155953911](CV.assets/image-20210309155953911.png) |
+
+**[table. 의료 사진, 자율 주행, 영상 합성 등에서 활용]**
+
+### Semantic segmentation architectures
+
+#### Fully Convolutional Networks(FCN)
+
+Semantic segmentation을 위한 첫 End-to-End architecture
+
+![image-20210309160418715](CV.assets/image-20210309160418715.png)
+
+**[img. FCN 구조]**
+
+- End-to-End 구조: 입력층부터 출력층까지 모두 미분가능하여 입력과 출력 pair만 있으면 모델을 학습할 수 있는 구조를 의미. 입력 사이즈 등의 제한이 없음
+- 이전에는 완전학습 하기에 제한이 있었음
+  - ex) AlexNet을 이용한 semantic segmentation의 경우, 학습 시의 이미지 해상도와 test 시의 이미지 해상도가 다르면 안됬음.
+
+![image-20210309200905809](CV.assets/image-20210309200905809.png)
+
+**[img. Fully connected layer vs Fully convolutional layer 구조 비교]**
+
+| Fully connected layer(FCL)                                   | Fully convolutional layer                                    |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ![image-20210309201512441](CV.assets/image-20210309201512441.png)<br />공간 정보를 고려하지 않는 모습 | ![image-20210309201522327](CV.assets/image-20210309201522327.png) |
+| fixed dimensional vector를 받아 fixed dimensional vector 출력, 보통 하나로 정해진 feature vector를 출력 | activation map을 받아 activation map 출력, 보통 1x1 conv layer로 구현하며, feature vector들이 포함된 convolutional feature map 출력 |
+
+**[table. Fully connected layer vs Fully convolutional layer 세부 비교]**
+
+다만 Receptive field를 살핀 뒤 feature를 찾아 작은 크기의 결과를 내는 conv layer와 pooling layer로 인해 출력 이미지의 해상도가 작아짐 => 이를 해결하기 위해 Upsampling layer가 나타남
+
+Upsampling layer이란?
+
+![image-20210309202323525](CV.assets/image-20210309202323525.png)
+
+**[img Upsampling이 추가된 FCN]**
+
+작아진 결과물을 크게 만들어주기 위해 Upsampling layer을 사용
+
+3가지 방법 중 Unpooling 방법을 제외하고 2가지 방법이 이용됨
+
+1. Transposed convolution
+
+![image-20210309202812424](CV.assets/image-20210309202812424.png)
+
+**[img. Transpose convolution의 원리]**
+
+줄어든 이미지의 픽셀을 필터만큼 곱한 뒤, kernel 사이즈와 strider 크기에 따라 곱연산하여 더한다, 중첩 되는 부분은 덧셈연산이 일어난다.
+
+![image-20210309203617778](CV.assets/image-20210309203617778.png)
+
+**[img. Transpose convolution의 문제점]**
+
+kernel 사이즈와 strider 크기에 주의하지 않으면, 겹쳐서 덧셈이 일어나는 부분에 의해 checker 무늬가 나타나게 된다.
+
+2. Upsample and convolution
+
+위 문제를 해결하기 위해 upsampling과 convolution을 같이 사용하여 중첩하는 부분뿐만 아니라 골고루 영향을 받게 해준다.
+
+Transpose와 달리 layer을 하나가 아닌 2개로 분리하여 주로 영상처리에 사용하는interpolation 알고리즘(Nearest-neighbor(NN), Bilinear 등)을 사용하고 convolution을 이용하여 학습 가능하게 만든다.
+
+![image-20210309202959708](CV.assets/image-20210309202959708.png)
+
+**[img. 개선된 convolution]**
+
+
+
+해상도를 낮추며 진행되는 conv layer 특성상, 층의 깊에 따른 특성은 다음과 같다. 
+
+| 낮은 레이어층, 해상도 높음, Receptive field 작음 <====> 높은 레이어층, 해상도 낮음, Receptive field 큼 |
+| :----------------------------------------------------------: |
+| ![image-20210309204744193](CV.assets/image-20210309204744193.png) |
+| **디테일, 로컬 변화에 민감<====>전반적 의미적 정보를 포함**  |
+
+**[table. 층의 깊이에 따른 output 값의 특징]**
+
+결국 우리가 필요한건 구조의 깊은 부분의 의미적 부분(classify 해야하므로)과 구조의 얕은 부분의 디테일한 부분(고해상도로 픽셀을 선정해야 하므로)이 둘다 필요하므로 다음과 같은 방법으로 해결하였다.
+
+![image-20210309211324579](CV.assets/image-20210309211324579.png)
+
+**[img. FCN-Ns 모델들의 비교]**
+
+마치 DenseNet이나 ResNet 처럼, 
+
+1. 중간의 결과 값을 upsampling 한 뒤, 
+2. 최종결과물을 upsampling한 것들을 
+3. Concatenate하여 출력하면 좋은 결과가 나오며,
+
+ 얼마나 많은 층에서 결과값을 가져오느냐에 따라 FCN-32s, FCN-16s, FCN-8s 모델로 나누어진다.
+
+- 숫자가 작아질 수록 더 많은 층의 결과값을 가져온 모델
+
+![image-20210309211534377](CV.assets/image-20210309211534377.png)
+
+**[img. FCN-Ns 모델들의 비교, 중간값을 많이 가져온 모델일 수록 정확한 결과가 나옴]**
+
+#### Hypercolumns for object segmentation
+
+| ![image-20210309211717755](CV.assets/image-20210309211717755.png) | ![image-20210309211729381](CV.assets/image-20210309211729381.png) |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| HyperColumn이라는 모든 Conv layer의 결과값을 각 픽셀 별로 쌓아 만든 vecotr를 이용함 | 물체의 bounding box를 추출하고 사용한다는 점이 다름          |
+
+**[table. FCN과 비슷한 내용을 담은 HyperColumn 논문]**
+
+#### U-Net
+
+영상의 일부분만 쓰는 관련된 TASK의 경우 아직도 많이 활용되는 network
+
+Fullay convolutional network가 기반이며, skip connection을 통하여 앞선 network 보다 더욱 정교한 결과를 만들 수 있음
+
+![image-20210309212400739](CV.assets/image-20210309212400739.png)
+
+**[img. U자 모양이라 U-Net]**
+
+크게 2가지 부분으로 나뉜다.
+
+1.  Contracting path 부분
+
+- 입력 영상을 3x3 convolution을 이용해 max pool을 이용해 해상도를 낮추고 대신 2배씩 feature channel을 늘림
+- 이를 통해 전체적인 의미, 문맥(holistic context)를 확보하는 부분이며 일반적인 FCN과 다를바 없음
+
+2. Expanding(Upsampling, decoding) path 부분
+
+- 2x2 up-convolution을 통하여 반대로 점진적으로 채널 수는 절반으로, 해상도는 2배로 늘림
+
+- 추가로 이전 낮은 층의 layer의 activation map을 Skip connection으로 가져와 concatenating하여 사용함
+
+  - 이를 통해 detail하고 local한 feature map을 받아 사용할 수 있음
+
+  - 이때 concatenate하려면 해상도가 맞아야 하는데, 홀수이면, Downsample시, 일부 값을 버리게 되며, 다시 Upsample시 해상도가 달라지므로 해상도 크기가 홀수가 안되게 해야함.
+    - ex) 7x7 =DownSample(divide 2)=> 3x3 (1은 버림) =UpSample(multiple 2)=> 6x6
+    - 7x7과 6x6 해상도가 맞지 않아 Concatenate 불가
+
+**U-Net Pytorch 코드**
+
+![image-20210309213848432](CV.assets/image-20210309213848432.png)
+
+**[img. U-Net Contracting Path code]**
+
+![image-20210309213905013](CV.assets/image-20210309213905013.png)
+
+**[img. U-Net Expanding Path code]**
+
+#### DeepLab
+
+널리 사용되는 CRFs, Atrous Convolution의 사용이 특징인 network, Deeplab v3+가 최신.
+
+**CRFs(Conditional Random Fields)**
+
+후처리로 사용됨, 픽셀 간의 관계를 그래프로 표현한 뒤, 최적화하여 경계를 찾는 원리
+
+score map과 경계선이 맞도록 경계선 내외부의 확산을 반복한다.
+
+![image-20210309221417567](CV.assets/image-20210309221417567.png)
+
+**[img. CRFs 예시]**
+
+**Atrous convolution(또는 Dilated convolution)**
+
+커널크기를 정하고, 정의한 Dilation factor 만큼 커널을 띄어 계산하는 Convolution 방법
+
+같은 parameter 수와 연산량으로 더욱 큰 Receptive size를 얻을 수 있다.
+
+![image-20210309221856422](CV.assets/image-20210309221856422.png)
+
+**[img. 좌측이 기존의 conv, 우측이 astrous conv]**
+
+**Depthwise separable convolution**
+
+입력 이미지 해상도가 클 경우, 너무 처리가 오래 걸리자, Dilated convolution + Depthwise separable convolution = Astrous separable convolution을 이용한다.
+
+Depthwise separable convolution는 일반 convoution을 2개의 절차로 나누어 진행한다.
+
+![image-20210309223426502](CV.assets/image-20210309223426502.png)
+
+**[img.Standard vs Depthwise separable convolution의 차이]**
+
+이로 인해 파라미터 수가 $D_k^2MND_F^2$에서 $D_k^2MD_F^2+ MND_F^2$로 감소하였다.
+
+**DeepLab v3+의 구조**
+
+![image-20210309223952659](CV.assets/image-20210309223952659.png)
+
+**[img. 최신 DeepLab v3+의 구조 ]**
+
+1. DCNN 부분에서 Dilated convolution을 통하여 feature map을 구함
+2. Encdoer 중간 부분에 있는 Astrous spatial pyramid pooling을 이용해 다양한 scale의 정보를 Dilated conv로 여러 feature를 추출한 후 하나로 합쳐 1x1convolution으로 하나로 합친다. 
+3. Decoder 부분에서 Low-Level Features와 Upsampling한 Pyramid pooling feature를 Concat한 뒤, 결과값을 낸다.
+
+Semantic segmentation 뿐만 아니라, instance segmentation(class 뿐만 아니라 객체 또한 탐지), panoptic segmentation(배경 정보+ instance segmentation)으로 성장하고 있다.

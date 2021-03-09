@@ -16,7 +16,6 @@ for i in range(5):
             if nums[numidx][i][j] == '.':
                 noSharps[i][j].append(numidx)
 
-
 numCount = int(input())
 display = [input().rstrip('\n') for _ in range(5)]
 display = [[display[j][i*4:i*4+3] for j in range(5)] for i in range(numCount)]
