@@ -256,4 +256,20 @@ w.grad # tensor(8. ), 4(2w^2의 미분값) * w(tensor(2.0))의 결과
 ## PyTorch Dataset
 
 ## torch.autograd
+Automatic gradient의 약자, pytorch의 gradient calculating API
+
+- Automatic gradent == Automatic differentiation
+- forward와 backward passe가 가능, 보통의 행렬 계산 Library와 딥러닝 Library의 차이가 됨
+
+일일이 수작업으로 gradient를 구했던 과거와 달리 Computational graph를 기반으로 자동으로 구함
+
+딥러닝의 접근성을 크게 늘려줌
+
+![image-20210310234552951](Pytorch.assets/image-20210310234552951.png)
+
+**[img. Autograd의 원리]**
+
+Backpropagation을 진행하면서 Chain rule을 위해 gradient 값들의 graph을 저장함
+
+실습은 torch.autograd.ipynb 파일 참조
 
