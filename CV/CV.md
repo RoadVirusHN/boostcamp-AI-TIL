@@ -617,11 +617,11 @@ ResNet의 전체적인 구조는 다음과 같다.
 | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | ![image-20210309140728124](CV.assets/image-20210309140728124.png) | ![image-20210309140741008](CV.assets/image-20210309140741008.png) | ![image-20210309140753841](CV.assets/image-20210309140753841.png) | ![image-20210309140806358](CV.assets/image-20210309140806358.png) | ![image-20210309140821739](CV.assets/image-20210309140821739.png) |
 | 기준                                                         | 채널의 수를 늘리는 방식                                      | 층의 수를 늘리는 방식                                        | Input의 해상도를 높게 주는 방식                              | 앞의 방법들을 복합한 방식                                    |
-|                                                              | GoogLeNet 등                                                 | DenseNet 등                                                  |                                                              | EfficientNet                                                 |
+| _                                                            | GoogLeNet 등                                                 | DenseNet 등                                                  | _                                                            | EfficientNet                                                 |
 
 **[table. 기존의 Network의 분류]**
 
-- 각 Scailing들은 파라미터 수, 학습 epoch, 데이터셋의 수에 따라 성능이 오르지않는 구간이 나오는데, 이를 모두 변수(팩터, 어느 정도 비율로 복합하는가)를 주고 복합하여 성능을 크게 상승시킴
+- 각 Scailing들은 파라미터 수, 학습 epoch, 데이터셋의 수에 따라 성능이 오르지않는 구간이 나오는데(saturation), 이를 모두 팩터(어느 정도 비율로 복합하는가)를 주고 복합하여 성능을 크게 상승시킴
 
 - 사람이 찾은 효율적인 다른 구조들, NAS 알고리즘 구조(Neural Architecture Search, 컴퓨터가 효율적인 구조를 찾는 알고리즘)보다 성능이 압도적으로 좋다.
 
@@ -853,4 +853,616 @@ Depthwise separable convolution는 일반 convoution을 2개의 절차로 나누
 2. Encdoer 중간 부분에 있는 Astrous spatial pyramid pooling을 이용해 다양한 scale의 정보를 Dilated conv로 여러 feature를 추출한 후 하나로 합쳐 1x1convolution으로 하나로 합친다. 
 3. Decoder 부분에서 Low-Level Features와 Upsampling한 Pyramid pooling feature를 Concat한 뒤, 결과값을 낸다.
 
-Semantic segmentation 뿐만 아니라, instance segmentation(class 뿐만 아니라 객체 또한 탐지), panoptic segmentation(배경 정보+ instance segmentation)으로 성장하고 있다.
+Semantic segmentation 뿐만 아니라, instance segmentation(Class 뿐만 아니라 객체 또한 탐지), panoptic segmentation(배경 정보+ instance segmentation)으로 성장하고 있다.
+
+| ![image-20210310094300040](CV.assets/image-20210310094300040.png)<br />Original Image | ![image-20210310094309340](CV.assets/image-20210310094309340.png)<br />Semantic segmentation |
+| :----------------------------------------------------------: | :----------------------------------------------------------: |
+| ![image-20210310094320216](CV.assets/image-20210310094320216.png)<br />**Instance segmentation** | ![image-20210310094328026](CV.assets/image-20210310094328026.png)<br />**Panoptic segmentation** |
+
+**[table. Image 인식 Tasks]**
+
+## Object detection
+
+### Object detection
+
+![image-20210310095403945](CV.assets/image-20210310095403945.png)
+
+**[img. Object detection의 예시]**
+
+Classification + Box localization의 Task
+
+즉, 바운딩 박스의 위치 + 물체의 소속까지 예측해야함, 고수준의 문제
+
+![image-20210310095559874](CV.assets/image-20210310095559874.png)
+
+![image-20210310095638069](CV.assets/image-20210310095638069.png)
+
+**[imgs. 자율 주행, OCR 등의 산업에 사용됨]**
+
+### Two-stage detector(R-CNN family)
+
+
+#### Traditional methods- hand-crafted techniques 1. Gradient-based detector
+
+과거에는 경계선의 특징으로 사람의 직관과 직접 설계한 알고리즘으로 Object Detection을 함
+
+| Average Gradient                                             | max (+) SVM weight                                           | max (-) SVM weight                                           | Original Image                                               | R-HOG descriptor                                             | R-HOG w/ (+) SVM                                             | R-HOG w/ (-) SVM                                             |
+| ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ![image-20210310095939961](CV.assets/image-20210310095939961.png) | ![image-20210310095949507](CV.assets/image-20210310095949507.png) | ![image-20210310095956434](CV.assets/image-20210310095956434.png) | ![image-20210310100003591](CV.assets/image-20210310100003591.png) | ![image-20210310100009439](CV.assets/image-20210310100009439.png) | ![image-20210310100015857](CV.assets/image-20210310100015857.png) | ![image-20210310100022937](CV.assets/image-20210310100022937.png) |
+
+**[img. Gradient-based detector]**
+
+- HOG : histogram of Oriented Gradients
+- SVM : Support Vector Machine, 심플한 Linear 모델
+
+#### Traditional methods- hand-crafted techniques 2. Selective search(Box-proposal algorithm)
+
+최근의 초기 Object Detection에서 자주 사용한 기술로, 다양한 물체 후보군에 대해서 영역을 특정하여 Bounding-box를 제안해줌
+
+| 순번 |                              1                               |                              2                               |                              3                               |
+| :--: | :----------------------------------------------------------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
+| 구분 | ![image-20210310100639654](CV.assets/image-20210310100639654.png) | ![image-20210310100646430](CV.assets/image-20210310100646430.png) | ![image-20210310100654360](CV.assets/image-20210310100654360.png) |
+| 예시 | ![image-20210310100702507](CV.assets/image-20210310100702507.png) | ![image-20210310100708780](CV.assets/image-20210310100708780.png) | ![image-20210310100716265](CV.assets/image-20210310100716265.png) |
+| 설명 |    Over-segmentation<br />(비슷한 색, 분포끼리 영역 나눔)    |                     비슷한 영역끼리 합침                     |                     Bounding box를 추출                      |
+
+**[table. Selective search 예시]**
+
+#### R-CNN
+
+딥러닝 기반, Alex Net 보다 압도적인 성능
+
+![image-20210310101110334](CV.assets/image-20210310101110334.png)
+
+**[img. R-CNN의 과정]**
+
+1. 이미지 입력
+2. 위의 Selective search 등의 bounding box 알고리즘으로 Region Proposal(최대 2천개까지)을 구함
+3. 이미지 사이즈를 늘려서 해상도를 맞추고 미리 학습된(Pre-trained) CNN에 입력
+4. SVM을 이용해 Classification
+
+bounding box detection의 성능의 한계와 각각 bounding box 일일이 Classification 하므로 속도가 느림
+
+#### Fast R-CNN
+
+R-CNN과 달리 이미지의 학습된 feature를 재활용해서 속도를 향상(최대 ~18배 빠름)
+
+![image-20210310101542959](CV.assets/image-20210310101542959.png)
+
+**[img. Fast R-CNN의 과정]**
+
+1. CNN을 통하여 feature map을 미리 뽑아냄
+   - Fully Convolutional Network를 이용해 해상도 고정 문제를 해결했으므로 warping 안함
+2. 이렇게 뽑은 feature map을 RoI pooling layer에서 관심영역(RoI, Region of Interest)만 뽑아 resize함
+3. FC layer와 함께 결합된 bbox regressor와 softmax를 통해 각각 더욱 정교한 바운딩박스와 classification을 함
+
+여전히 바운딩 박스 검출(Region Proposal) 성능에 한계를 가짐.
+
+#### Faster R-CNN
+
+Region Proposal 또한 딥러닝 기반으로 바꾼 최초의 End-to-End Object Detection 모델, 즉 모두 학습 가능함
+
+**Intersection over Union(IoU)**
+
+![image-20210310102211024](CV.assets/image-20210310102211024.png)
+
+**[img. IoU의 정의]**
+
+IoU (Intersection over Union) : 얼마나 bounding box가 잘 정합되어있는가를 정의
+
+**Anchor Box**
+
+![image-20210310102328817](CV.assets/image-20210310102328817.png)
+
+**[img. Anchor Box 예시]**
+
+각 위치에서 발생할 만한 박스 후보군들을 크기와 비율 별로 미리 정의해놓으며 이를 Anchor Box라고 함
+
+Faster R-CNN에서는 보통 9개로 정의 해놓고, 더 많이 정의도 가능
+
+각각 Anchoer box와 실제 값(Ground-Truth)의 IoU를 비교하여 정답인 Positive sample과 negative sample을 정의하여 학습시킴
+
+- 보통 IoU가 0.7 이상이면 +, 0.3 이하면 -
+
+**Region Proposal Network(RPN)**
+
+![image-20210310104207161](CV.assets/image-20210310104207161.png)
+
+**[img. Region Proposal Network(RPN)]**
+
+특히, 기존의 느린 Region proposal 알고리즘을 딥러닝 기반 RPN으로 바꿨음
+
+그 이외에는 기존의 Fast R-CNN과 비슷함
+
+![image-20210310104334050](CV.assets/image-20210310104334050.png)
+
+**[img. 자세한 RPN 과정]**
+
+1. Sliding Door 방식으로 Window 마다 k 개의 anchor box 고려
+2. 256 차원 feature map 추출
+3. feature map에서 Classification을 위해 2000개의 score 를 추출, 동시에 바운딩 박스의 크기, 위치를 위해 4000개의 값을 추출
+   - 계산속도를 늘리기 위해 Anchor box로 rough하게 정의한 후, 정교하게 바운딩박스 추출
+   - Classification에서는 Cross Entropy loss, 바운딩 박스 추출은 Regression loss 사용
+   - Anchor box 종류에 따른 Loss도 따로 있음
+
+**Non-Maximum Suppressions (NMS)**
+
+RPN에 의해 많은 Bounding box가 제안되며, 이때 NMS를 통해 최적의 Bounding box만 필터링한다.
+
+![image-20210310105725056](CV.assets/image-20210310105725056.png)
+
+**[img. NMS steps]**
+
+1. 가장 높은 점수의 box를 선택
+2. IoU를 다른 박스와 비교
+3. IoU가 50 이상인 박스들 제거
+4. 그다음 높은 점수의 box를 선택
+5. 2~4 반복
+
+|                            R-CNN                             |                          Fast R-CNN                          |                         Faster R-CNN                         |
+| :----------------------------------------------------------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
+| ![image-20210310105930699](CV.assets/image-20210310105930699.png) | ![image-20210310105945570](CV.assets/image-20210310105945570.png) | ![image-20210310105958162](CV.assets/image-20210310105958162.png) |
+
+**[table. R-CNN Family 구조 비교]**
+
+R-CNN Family은 Two-stage Detector의 대표 모델들이다.
+
+### Single-stage detector
+
+Single-stage detector은
+
+정확도가 조금 뒤떨어지지만 리얼 타임 Detection 가능할 정도로 높은 속도에 중점을 둠
+
+RoI pooling layer를 사용하지 않고, 간단한 구조와 빠른 속도를 자랑하는 경우가 많음
+
+|                      One-stage detector                      |                      Two-stage detector                      |
+| :----------------------------------------------------------: | :----------------------------------------------------------: |
+| ![image-20210310110424184](CV.assets/image-20210310110424184.png) | ![image-20210310110436986](CV.assets/image-20210310110436986.png) |
+
+**[tables. one-stage vs two-stage]**
+
+#### YOLO(You only look once)
+
+![image-20210310110958657](CV.assets/image-20210310110958657.png)
+
+**[img. YOLO 과정]**
+
+1. Input을 S 크기의 그리드로 나눔
+2. 각 박스에 대하여 Boundig box와 Confidence를 예측
+   - 이때, Ground truth와 IoU를 비교하여 학습함
+3. 동시에 각 위치에서의 Class Score를 추가로 예측
+4. NMS를 통해 Bounding box 추출
+
+![image-20210310111451684](CV.assets/image-20210310111451684.png)
+
+**[img. YOLO의 구조]**
+
+일반 CNN 구조와 비슷하며 SxSx30의 아웃풋이 나옴
+
+(채널수 30 = class probability 20 + x,y,w,h 각각 2채널)
+
+![image-20210310112122090](CV.assets/image-20210310112122090.png)
+
+**[img. YOLO 성능비교]**
+
+Two-stage에 비해 성능은 떨어지지만 훨씬 빠르다.
+
+- 성능이 떨어지는 이유는 맨 마지막 Layer에서 한번만 Prediction 하므로
+
+**Single Shot Multibox Detector(SSD)**
+
+![image-20210310112652356](CV.assets/image-20210310112652356.png)
+
+**[img. SSD 예시]**
+
+feature map들의 다른 해상도마다 적절한 크기의 Bounding box를 설정하게 해줌
+
+![image-20210310112951617](CV.assets/image-20210310112951617.png)
+
+**[img. SSD의 구조]**
+
+VGG-16을 backbone으로, 다양한 Scale의 conv를 통과시켜 여러 해상도에 대응함
+
+![image-20210310113138212](CV.assets/image-20210310113138212.png)
+
+**[img. SSD 전체 anchor box 갯수 계산]**
+
+![image-20210310113242498](CV.assets/image-20210310113242498.png)
+
+**[img. SSD 성능 비교]**
+
+속도와 성능이 YOLO 뿐만 아니라 R-CNN 계열 보다도 좋다.
+
+### Single-stage detector vs. two-stage detector
+
+![image-20210310113446418](CV.assets/image-20210310113446418.png)
+
+**[img. Class imbalance Problem 예시]**
+
+Class Imbalance Problem : 결과값에 필요없는 negative anchor box가 positive anchor box보다 훨씬 많은 문제 
+
+**Focal Loss**
+
+![image-20210310113638609](CV.assets/image-20210310113638609.png)
+
+**[img. Focal loss 그래프]**
+
+위의 Class Imbalance Problem를 해결하기 위해 제안됨
+
+cross entropy loss의 연장선으로, 추가적인 확률 텀이 붙게 된다.
+
+CE와 비교하여 $\gamma$값에 따라 정답의 경우 Loss를 더욱 낮게, 오답의 경우 Loss에 더욱 가중을 주게  된다.
+$$
+Cross\ Entropy\ Loss:CE(p_t)=-log(p_t)\\
+Focal\ Loss:FL(p_t)=(1-p_t)^\gamma CE(p_t)=-(1-p_t)^\gamma
+$$
+**[math. Focal loss의 수식]**
+
+**RetinaNet과 Feature Pyramid Networks(FPN)**
+
+RetinaNet = FPN + class/box subnet
+
+U-Net과 비슷한 구조로, low level의 feature와 high level의 feature를 합하여 class와 box_bounding을 각 위치에서 수행
+
+![image-20210310114744367](CV.assets/image-20210310114744367.png)
+
+**[img. RetinaNet 구조]**
+
+![image-20210310115153737](CV.assets/image-20210310115153737.png)
+
+**[img. RetinaNet 성능]**
+
+비슷한 속도에 높은 성능을 보이며, 속도를 희생시키면 성능을 더 올릴 수 있음
+
+### Detection with Transformer
+
+**DETR**(DEtection TRansformer)
+
+NLP에서 큰 혁신을 보여준 Transformer 구조를 Object Detection에 활용한 구조, 
+
+DETR은 facebook에서 개발
+
+![image-20210310115306667](CV.assets/image-20210310115306667.png)
+
+**[img. Transformer 구조]**
+
+![image-20210310115459259](CV.assets/image-20210310115459259.png)
+
+**[img. DETR 구조]**
+
+CNN의 feature와 pixle의 positional encoding을 합하여 encoder에 넣어준 후, N개의 Object queries와 함께 decoder에 넣어준 후, 각 픽셀의 class, bounding box를 출력해주는 구조
+
+
+
+![image-20210310115803248](CV.assets/image-20210310115803248.png)
+
+**[img. bounding box 이외의 방법들]**
+
+이외에도 CornerNet, CenterNet 등 Bounding box 대신 중심점, 양 끝점을 찾는 연구 등이 진행되는 중
+
+## CNN Visualization
+
+CNN을 시각화하는 것
+
+### Visualizing CNN
+
+![image-20210310120152420](CV.assets/image-20210310120152420.png)
+
+**[img. CNN is a black box]**
+
+많은 경우 CNN의 내부 로직 등을 알 수 없거나, 신경쓰지 않고 개발하는 경우가 많다.
+
+어째서 이러한 결과가 나왔는가? 무엇이 문제인가? 어떻게 하면 개선 가능한가? 등을 알아보기 위해 Black box 상태이 CNN 내부를 알아볼 필요가 있다.
+
+![image-20210310120939768](CV.assets/image-20210310120939768.png)
+
+**[img. ZFNet 예제]**
+
+ZFNet 등에서는 각 level의 feature를 확인하여 학습을 파악할 수 있어서 이를 통해 성능을 개선시킬 수 있었다. 
+
+![image-20210310121352942](CV.assets/image-20210310121352942.png)
+
+**[img. 간단한 Filter weight visualization]**
+
+저차원인 1번째 conv layer의 경우 3채널 또는 1채널로 이루어져있어 상단과 같이 직관적으로 Visualization이 가능하지만, layer가 깊어지면(고차원이 되면) 채널 수가 늘어나면서 인간이 이해 가능한 형태의 visualization이 불가능하다.
+
+![image-20210310122007325](CV.assets/image-20210310122007325.png)
+
+**[img. Types of neural network visualization]**
+
+왼쪽으로 갈수록 모델에 대한 이해, 오른쪽을 갈수록 데이터 분석
+
+### Analysis of model behaviors
+
+고차원 layer의 feature들을 분석하는 방법을 알아보자
+
+**고차원 Embedding feature analysis 1번째 방법 - 예제 검색 방법**
+
+ ![image-20210310122418084](CV.assets/image-20210310122418084.png)
+
+**[img. Nearest neighbors (NN) in a feature space]**
+
+NN-search의 경우 feature space에서 가장 가까운 사진들을 비교(예제 검색)함으로써 분석이 가능하다.
+
+상단의 코끼리 사진들을 보아, 잘 clustering 된걸 알 수 있으며, 하단의 강아지 사진으로 pixel 위치(강아지 형태, 위치)가 바뀌어도 모델이 잘 찾아낸다는 것을 알 수 있다.
+
+이러한 예제 검색 방법의 Step은 다음과 같다.
+
+1. 신경망을 통하여 Database에서 각 Input의 고차원 feature를 뽑아내 High dimensional feature space에 위치시킨다.
+
+![image-20210310123615524](CV.assets/image-20210310123615524.png)
+
+**[img. feature 추출 및 DB 위치]**
+
+2. 검색하고 싶은 Input의 고차원 feature를 뽑아 낸 뒤 마찬가지로 High dimensional feature space에 위치시킨다.
+
+![image-20210310123644222](CV.assets/image-20210310123644222.png)
+
+**[img. Input 사진들의 feature의 위치]**
+
+3. 가장 가까운 이웃의 feature를 가져온 뒤, 매칭되는 Input을 가져온다.
+
+![image-20210310123531547](CV.assets/image-20210310123531547.png)
+
+**[img. 사진과 가장 가까운 이웃들]**
+
+4. 그 Input들과 비교하여 Visualization 한다.
+
+단, 이 방법은 전체적인 형태가 아닌 일부 예제만 파악한다는 단점이 있음
+
+**고차원 Embedding feature analysis 2번째 방법 - Dimensionality reduction(차원 축소)**
+
+우리가 사는 3차원(시간을 포함하면 4차원) 공간에 맞게 고차원 공간을 낮추는 방법
+
+![image-20210310123901553](CV.assets/image-20210310123901553.png)
+
+**[img. 고차원 공간을 저차원 공간으로 변형]**
+
+대표적인 방법으로 t-SNE가 있다
+
+t-distributed stochastic neighbor embedding(t-SNE)
+
+![image-20210310124022837](CV.assets/image-20210310124022837.png)
+
+**[img. t-SNE를 통한 숫자 손글씨 구분(MNIST) feature space의 visualization]**
+
+- 고차원 데이터를 2차원으로 매핑한 결과
+
+- 3,5,8의 cluster가 한껏 뭉쳐있는 걸로 보아 CNN이 비슷하다고 느낀다는 것을 알 수 있다.
+
+**중, 고차원 해석: Activation investigation 1-Layer activation**
+
+Layer의 Activation을 분석하여 모델의 특성을 파악하는 방법
+
+![image-20210310125246083](CV.assets/image-20210310125246083.png)
+
+**[img. AlexNet의 Activation 분석]**
+
+특정 Activation의 채널(hidden node)을 masking 한뒤 overlay하여 무슨 일을 하는 노드인가 알아볼 수 있다.
+
+**중차원 해석: Activation investigation 2-Maximally activating patches**
+
+각 채널의 hidden node의 가장 큰 값을 가지는 patch(activation)를 가져와 나열하는 것 
+
+![image-20210310125802162](CV.assets/image-20210310125802162.png)
+
+**[img. hidden node 별 image patch]**
+
+이를 통해 각 히든 노드가 찾는 부분(=하는 일)을 알 수 있다.
+
+국부적이므로 중차원 정도 해석에 어울린다.
+
+1) 특정 layer의 특정 channel을 고른다.
+
+2) input 이미지를 집어 넣은 후 선택한 채널의 activation 값을 저장한다
+
+3) 최대 activation value의 Receptive field를 Input에서 crop하여 image patch로 만든다.
+
+**결과 해석: Activation investigation 3-Class visualization**
+
+예제 데이터 사용없이 네트워크가 기억하는 이미지가 무엇인지 판단
+
+ex)이 CNN은 특정 클래스의 이미지를 대략 어떻게 생겼다고 기억하고 있는가?
+
+
+
+![image-20210310132627390](CV.assets/image-20210310132627390.png)
+
+**[img. CNN이 기억하고 있는 개와 강아지의 모습]**
+
+편향 등을 알아볼 수도 있다. (ex) 위 새 사진은 많은 데이터가 나무와 함께 찍힘)
+
+$$
+I^*=\underset{I}{argmaxf(I)}-Reg(I) =\\
+I^*=\underset{I}{argmaxf(I)}-\lambda \left\|I\right\|^2_2\\
+\lambda \left\|I\right\|^2_2, Reg(I):Regularizaion\ term\\
+I: 영상\ 입력, f(I):CNN\ 모델
+$$
+**[math. Gradient ascent, 일종의 Loss]**
+
+Gradient ascent를 통하여 Visualization을 위한 이미지를 합성하게 된다.
+
+$argmaxf(I)$를 통하여 Input image I를 돌며 각 클래스의 가장 높은 스코어를 얻는다.
+
+너무 큰 스코어 값이 나오는 것을 막고, 이해할 수 있는 형태로 바꾸기 위해 Regularizaion term 추가
+
+최대 스코어값을 찾으려는 과정이므로 Gradient ascent이며, 부호만 바꾸면 Gradient descent이므로 해당 알고리즘을 그대로 사용할 수 있다.
+
+1) 임의의 영상(검정, 하양, 회색 혹은 랜덤한 이미지)을 CNN에 넣어 관심 class의 prediction score를 추출
+
+​	- 처음 주는 영상부터 바뀌기 시작하므로 초기값의 설정에 따라 완성 이미지가 바뀐다.
+
+2) Backpropagation으로 gradient maximizing하여 관심 class의 prediction score가 높아지는 방향으로 입력단의 이미지를 업데이트해준다.
+
+3)  업데이트된 영상으로 1~2를 계속 반복한다
+
+### Model decision explanation
+
+모델이 특정 입력을 어떤 각도로 해석하는 가에 대한 설명
+
+#### Saliency test 계열
+
+주어진 영상의 제대로 판정되기 위한 각 영역의 중요도를 판별
+
+이때 중요도가 표시된 그림을 Saliency map이라고 한다.
+
+**Occlusion map**
+
+![image-20210310141629430](CV.assets/image-20210310141629430.png)
+
+**[img. Occlusion map 예시]**
+
+특정 픽셀을 가려서 바뀌는 Predicdtion score 값을 Heatmap 형식으로 표현한 것
+
+영상의 가린 부분에 따라, 많이 떨어지면 중요한 영역이며 적게 떨어지면 덜 중요한 부분이다.
+
+이 떨어진 정도를 표시하여 표현할 수 있다.
+
+**via backpropagtion**
+
+![image-20210310141852568](CV.assets/image-20210310141852568.png)
+
+**[img. backpropagation을 이용한 saliency map 예시, 밝은 부분이 판단에 중요한 영역]**
+
+앞서 했었던 Class visualization의 Gradient ascent와 비슷
+
+랜덤이미지가 아닌 특정 이미지를 classification을 한 뒤, class score에 대한 backpropagation으로 관심 영역의 점수를 표시하는 방법
+
+1) 입력 영상을 넣어 특정 class의 score를 얻어낸다
+
+2) Backpropagation으로 Input까지 진행해 gradient를 얻어낸다.
+
+3) gradient의 절대값 또는 제곱값을 하여 얻어낸 gradient의 크기를 이미지형태로 얻는다
+
+- 이를 gradient magnitude map이라고 한다.
+- 이를 여러번 반복하여 더욱 정확한 Saliency map를 얻어낼 수 있다.
+
+
+
+backpropagation을 이용한 더 진보적인 visualization 방법으로 *Deconvolution*이 있다.
+
+![image-20210310205954715](CV.assets/image-20210310205954715.png)
+
+**[img. Dconvolution의 결과물]**
+
+![image-20210310205930822](CV.assets/image-20210310205930822.png)
+
+**[img. ReLU의 작용과 deconvnet의 차이]**
+
+보통 CNN의 경우 Forward pass 시 음수는 ReLU 함수를 통과하며 0으로 마스킹되며,
+
+Backward pass 시 이를 기억하여, 해당 픽셀을 다시 0으로 마스킹한다.
+
+하지만 deconvnet은 backward 시 Forward pass때 처럼 음수가 0으로 마스킹된다.
+$$
+ReLU:h^{l+1}=max(0,h^l)\\
+backpropagation:\frac{\partial L}{\partial h^l}=[(h^l>0)]\frac{\partial L}{\partial h^{l+1}}\\
+deconvnet:\frac{\partial L}{\partial h^l}=[(h^{l+1}>0)]\frac{\partial L}{\partial h^{l+1}}
+$$
+**[math. 기존의 pass와 deconvnet의 pass의 수식화]**
+
+
+
+또한, 기존의 방법과 deconvnet의 And 연산하여 만든 Guided Backpropagation 또한 가능하다.
+
+| ![image-20210310212138122](CV.assets/image-20210310212138122.png) |
+| :----------------------------------------------------------: |
+| $\frac{\partial L}{\partial h^l}=[(h^{l+1}>0)\&(h^{l+1}>0)]\frac{\partial L}{\partial h^{l+1}}$ |
+
+**[table. Guided backpropagation]**
+
+![image-20210310212829292](CV.assets/image-20210310212829292.png)
+
+**[img. Guided backpropagation과 다른 방법들 비교]**
+
+수학적으로 구한 것이 아니라 경험적으로 구했지만 결과는 괜찮게 나온다고 한다.
+
+forward 시 결과를 미친 양수 pixel과 backward 시 '이 부분은 증폭하라'의 의미를 가진 양수 pixel만 받아들인 결과 => 즉 classification에 긍정적 영향을 끼친 pixel만 표시되게 됨
+
+**Class activation mapping(CAM)**
+
+어떤 부분을 참조하여 결과가 나왔는지 보여줌.
+
+![image-20210310214251783](CV.assets/image-20210310214251783.png)
+
+**[img. CAM 예시]**
+
+기존의 CNN 구조를 조금 바꾸어야 한다.
+
+![image-20210310220029775](CV.assets/image-20210310220029775.png)
+
+**[img. CAM을 쓸 수 있게 개조된 CNN]**
+
+기존의 출력 이전의 FC Layer 대신 Conv Layer 이후에 Global average pooling (GAP) Layer와 FC layer 한 층이 삽입된다.
+
+이후 Classification에 대해 재학습된다.
+$$
+S_c=\overset{Channels}{\sum_k}w_k^c\overset{GAP\ feature}{F_k}\overset{GAP}{=}\sum_kw_k^c\sum_{(x,y)}\overset{Feature\ map\\before\ Gap}{f_k(x,y)}=\\
+\sum_{(x,y)}\ \ \overset{CAM_c(x,y)}{\sum_kw_k^cf_k(x,y)}\\
+S_c:Score\ of\ the\ class\ c\\
+k: 마지막\ conv\ layer\ channel\ 수
+$$
+**[math. CAM이 포함된 CNN 구조 유도]**
+
+![image-20210310221704489](CV.assets/image-20210310221704489.png)
+
+**[img. GAP layer 부분의 작용]**
+
+(+) 성능이 좋아 가장 많이 사용되는 Visualization 방법
+
+(+) 공간 정보를 주지(supervision?) 않아도 공간에 대한 정보가 나타남
+
+이를 통해 bounding box를 쳐주면 object detection으로 사용 가능
+
+- Weakly supervised learning이라고 함
+
+(-) 구조를 바꾸고 재학습을 해야하며, 이 과정에서 성능이 바뀔 수 있다는 점이 단점
+
+**Grad-CAM**
+
+구조를 바꾸지 않아도 활용할 수 있는 CAM 구조
+
+![image-20210310222311528](CV.assets/image-20210310222311528.png)
+
+**[img. Grad-CAM의 예시]**
+
+(+) CAM과 비슷한 성능, 구조를 바꾸지 않아도 됨
+
+![image-20210310222717615](CV.assets/image-20210310222717615.png)
+
+**[img. Grad-CAM의 구조]**
+
+$\overset{CAM_c(x,y)}{\sum_kw_k^cf_k(x,y)}$ 부분에서 $w_k^c$(importance wieghts)만 구하면 맵을 그릴 수 있다.
+
+Backpropagation을 Input 이미지가 아닌 관심을 가지는 activation map까지만 진행하며, 그렇게 구한 importance weight ($\alpha_k^c$)와 activation map($A^k$)를 선형결합하여 ReLU를 씌워 양수값만 사용
+$$
+\overset{Global\ average\ pooling}{\alpha^c_k=\frac{1}{Z}\sum_i \sum_j \frac{\partial y^c}{\partial A_{ij}^k}}\\
+L^c_{Grad-CAM}=ReLU(\sum_k\alpha^c_kA^k)\\
+\alpha^c_k: importance\ weight\ of\ the\ k-th\ feature\ map\ w.r.t\ the\ class\ c\\
+\frac{\partial y^c}{\partial A_{ij}^k} : Gradients\ via\ backprop
+$$
+**[math. Grad-CAM 수식]**
+
+영상 인식 뿐만 아니라 CNN 구조만 존재하면 어떤 Task에도 활용 가능
+
+![image-20210310224715849](CV.assets/image-20210310224715849.png)
+
+**[img. Grad-CAM 활용 예시와 Guided Grad-CAM]**
+
+추가로 Guided Backprop을 추가하고, Grad-CAM을 내적하여 Guided Grad-CAM을 구하는 것이 일반화 되어있다.
+
+- Guided Backprop(sharp 하지만 class 구분 불가) + Grad-CAM (Rough하고 smooth하지만 class 구분 가능) = Guided Grad-CAM (서로 단점 보완)
+
+![image-20210310225109232](CV.assets/image-20210310225109232.png)
+
+**[img. SCOUTER 예시]**
+
+최근에는 해석 결과에 대한 질문에 대해 답을 줄 수 있는 Visualization 방법(SCOUTER)도 등장함
+
+Visualization 기술을 응용해 GAN에 이용하여 명령을 내릴 수 있음(GAN dissection)
+
+![image-20210310225451782](CV.assets/image-20210310225451782.png)
+
+**[img. 표시한 부분에 문을 생성하는 예시]**
+
+
+

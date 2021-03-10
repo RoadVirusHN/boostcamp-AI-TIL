@@ -36,3 +36,11 @@ if minimum == allPops + 1:
     print(-1)
 else:
     print(minimum)
+
+while True:
+    a = input()
+    print(a)
+
+
+
+
