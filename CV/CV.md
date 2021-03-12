@@ -894,6 +894,7 @@ Classification + Box localization의 Task
 
 - HOG : histogram of Oriented Gradients
 - SVM : Support Vector Machine, 심플한 Linear 모델
+  - 결정 경계, 즉 그래프 내에 분류를 위한 기준선을 정의하는 모델
 
 #### Traditional methods- hand-crafted techniques 2. Selective search(Box-proposal algorithm)
 
@@ -979,14 +980,14 @@ Faster R-CNN에서는 보통 9개로 정의 해놓고, 더 많이 정의도 가�
 
 1. Sliding Door 방식으로 Window 마다 k 개의 anchor box 고려
 2. 256 차원 feature map 추출
-3. feature map에서 Classification을 위해 2000개의 score 를 추출, 동시에 바운딩 박스의 크기, 위치를 위해 4000개의 값을 추출
+3. feature map에서 Classification을 위해 2k개의 score 를 추출, 동시에 바운딩 박스의 크기, 위치를 위해 4k개의 값을 추출
    - 계산속도를 늘리기 위해 Anchor box로 rough하게 정의한 후, 정교하게 바운딩박스 추출
    - Classification에서는 Cross Entropy loss, 바운딩 박스 추출은 Regression loss 사용
    - Anchor box 종류에 따른 Loss도 따로 있음
 
 **Non-Maximum Suppressions (NMS)**
 
-RPN에 의해 많은 Bounding box가 제안되며, 이때 NMS를 통해 최적의 Bounding box만 필터링한다.
+RPN에 의해 많은 Bounding box가 제안되며, 이후 NMS를 통해 최적의 Bounding box만 필터링한다.
 
 ![image-20210310105725056](CV.assets/image-20210310105725056.png)
 
@@ -1012,7 +1013,7 @@ Single-stage detector은
 
 정확도가 조금 뒤떨어지지만 리얼 타임 Detection 가능할 정도로 높은 속도에 중점을 둠
 
-RoI pooling layer를 사용하지 않고, 간단한 구조와 빠른 속도를 자랑하는 경우가 많음
+RoI pooling layer를 사용하지 않고, 간단한 구조와  빠른 속도를 자랑하는 경우가 많음
 
 |                      One-stage detector                      |                      Two-stage detector                      |
 | :----------------------------------------------------------: | :----------------------------------------------------------: |
@@ -1074,11 +1075,13 @@ VGG-16을 backbone으로, 다양한 Scale의 conv를 통과시켜 여러 해상�
 
 ### Single-stage detector vs. two-stage detector
 
+
+
 ![image-20210310113446418](CV.assets/image-20210310113446418.png)
 
 **[img. Class imbalance Problem 예시]**
 
-Class Imbalance Problem : 결과값에 필요없는 negative anchor box가 positive anchor box보다 훨씬 많은 문제 
+Class Imbalance Problem : Single stage detector의 문제, 결과값에 필요없는 negative anchor box가 positive anchor box보다 훨씬 많은 문제 
 
 **Focal Loss**
 
@@ -1129,7 +1132,7 @@ DETR은 facebook에서 개발
 
 **[img. DETR 구조]**
 
-CNN의 feature와 pixle의 positional encoding을 합하여 encoder에 넣어준 후, N개의 Object queries와 함께 decoder에 넣어준 후, 각 픽셀의 class, bounding box를 출력해주는 구조
+CNN의 feature와 pixel의 positional encoding을 합하여 encoder에 넣어준 후, N개의 Object queries와 함께 decoder에 넣어준 후, 각 픽셀의 class, bounding box를 출력해주는 구조
 
 
 
@@ -1263,8 +1266,6 @@ Layer의 Activation을 분석하여 모델의 특성을 파악하는 방법
 
 ex)이 CNN은 특정 클래스의 이미지를 대략 어떻게 생겼다고 기억하고 있는가?
 
-
-
 ![image-20210310132627390](CV.assets/image-20210310132627390.png)
 
 **[img. CNN이 기억하고 있는 개와 강아지의 모습]**
@@ -1325,7 +1326,7 @@ $argmaxf(I)$를 통하여 Input image I를 돌며 각 클래스의 가장 높은
 
 앞서 했었던 Class visualization의 Gradient ascent와 비슷
 
-랜덤이미지가 아닌 특정 이미지를 classification을 한 뒤, class score에 대한 backpropagation으로 관심 영역의 점수를 표시하는 방법
+랜덤 이미지가 아닌 특정 이미지를 classification을 한 뒤, class score에 대한 backpropagation으로 관심 영역의 점수를 표시하는 방법
 
 1) 입력 영상을 넣어 특정 class의 score를 얻어낸다
 
@@ -1465,4 +1466,553 @@ Visualization 기술을 응용해 GAN에 이용하여 명령을 내릴 수 있�
 **[img. 표시한 부분에 문을 생성하는 예시]**
 
 
+
+## Instance/panoptic segmentation and landmark localization
+
+Semantic segmentation, Object Detection은 더욱 어려운 Task로 고도화되면서 연구가 줄어듦
+
+| ![image-20210310094300040](CV.assets/image-20210310094300040.png)<br />Original Image | ![image-20210310094309340](CV.assets/image-20210310094309340.png)<br />Semantic segmentation |
+| :----------------------------------------------------------: | :----------------------------------------------------------: |
+| ![image-20210310094320216](CV.assets/image-20210310094320216.png)<br />**Instance segmentation** | ![image-20210310094328026](CV.assets/image-20210310094328026.png)<br />**Panoptic segmentation** |
+
+**[table. Image 인식 Tasks]**
+
+Instance segmentation, Panoptic segmentation은 자율주행 등, 산업 등에서 많이 쓰임
+
+### Instance segmentation
+
+![image-20210311123630521](CV.assets/image-20210311123630521.png)
+
+**[img. Instance segmentation vs Semantic segmentation]**
+
+같은 물체 class 라도 Instance가 다르면 구분해야하는 문제, 실제 응용사례 많이 사용됨
+
+Object Detection 모델들의 연장해서 많이 사용 됨.
+
+#### Mask R-CNN
+
+![image-20210311124009152](CV.assets/image-20210311124009152.png)
+
+**[img. Mask R-CNN = Faster R-CNN + Mask branch]**
+
+Faster R-CNN과 여러 모로 비슷하지만 개선을 많이 시킴
+
+1. RoI pooling 대신, 정교한 소수점 좌표도 가져올 수 있는 RoIAlign pooling layer 사용
+2. 마지막 layer에 병렬로 mask branch라는 Fully convolutional Network가 추가되어 Output을 Upsampling 뒤, class 수만큼의 채널(여기서는 80개)에 Binary classification 
+   - class 예측결과를 가져와 참조할 mask를 정함
+
+![image-20210311124414989](CV.assets/image-20210311124414989.png)
+
+**[img. R-CNN family의 추가]**
+
+그림의 예시 branch 대신, Key point branch 라는 것을 추가하면 사람의 자세를 추정하는 Task도 가능
+
+#### YOLACT(You Only Look At CoefficienTs)
+
+![image-20210311124722607](CV.assets/image-20210311124722607.png)
+
+**[img. YOLACT 구조]**
+
+실시간 Instance segmentation model
+
+1. Feature Pyramid 구조를 이용해 고해상도이며, 
+2. Protonet 부분에서 Mask의 저해상도의 Prototype Soft segmentation component를 추출한 뒤,
+3. Prediction Head에서 각 Class 간의 Mask Coefficients를 구하여 이를 이용해 2번의 prototype와 선형결합(Weighted Sum)하여 detection에 적합한 Class별 Mask Map을 만들어준다.
+4. 이후 Crop과 Threshhold를 통해 결과를 도출
+
+#### YolactEdge
+
+![image-20210311125500858](CV.assets/image-20210311125500858.png)
+
+**[img. YolactEdge 구조]**
+
+위의 YOLACT를 더욱 경량화하여 영상 처리를 소형기기들에 사용가능한 모델
+
+이전 frame의 feature를 다음 keyframe에 활용하여 연산량 줄임 (성능 비슷, 속도 빠름)
+
+아직은 현실에 사용하기 힘든 성능
+
+### Panoptic segmentation
+
+![image-20210311125730327](CV.assets/image-20210311125730327.png)
+
+**[img. Panoptic segmentation vs Semantic segmentation]**
+
+배경정보 + instnace 구분 가능
+
+#### UPSNet
+
+![image-20210311125929668](CV.assets/image-20210311125929668.png)
+
+**[img. UPSNet 예시]**
+
+FPN(feature pyrmid network) 구조에 병렬로 구성된 semeantic Head와 Instance head 그리고 이를 병합하는 Panoptic Head로 구성된 구조 
+
+![image-20210311130255661](CV.assets/image-20210311130255661.png)
+
+**[img. Panoptic Head의 자세한 구조]**
+
+Instance head의 Instance Mask Output의 경우 리사이징과 패딩을 거친 후 Semnatic head의 물체 mask와 합해진 뒤, output 채널로 concat
+
+-  이를 통해 위치를 알 수 있음
+
+Semantic head의 물체 mask Output의 경우, 위의 Instance mask와 사용된 결과들은 Max된 뒤 기존 물체 mask에서 빠진 뒤 1채널로 output에 추가됨
+
+- 모두 빠지고 남은 물체 mask는 Unknown mask가 된다.(class에 정의되지 않은 물체)
+
+Semantic head의 배경정보 Mask Output은 그대로 Output 채널에 추가됨
+
+#### VPSNet
+
+영상에 사용가능한 Panoptic segmetnation 모델
+
+![image-20210311131747338](CV.assets/image-20210311131747338.png)
+
+**[img. VPSNet 구조]**
+
+1. 두 프레임간의 모션맵(해당 픽셀이 다음 프레임에 어디로 위치가 바뀌었는가?)를 이전 프레임 feature map에 적용하여 feature의 움직임을 tracking한 뒤, FPN을 통해 뽑은 해당 featrue map에 합쳐서 사용
+
+2. Track head를 통해 이전 프레임과  현재 프레임 간의  RoI feature 연관성을 찾아낸다. 
+
+3. 이후 UPS Net과 비슷함
+
+### Landmark localization
+
+![image-20210311133106112](CV.assets/image-20210311133106112.png)
+
+**[img. Landmark localization 예시]**
+
+key point 혹은 landmark 라고 불리우는 영상에서 중요한 부분을 정의하여 위치와 class를 추적하는 것
+
+![image-20210311133426838](CV.assets/image-20210311133426838.png)
+
+**[img. Coordinate regression vs Heatmap classification]**
+
+기존의 box bounding 찾던 방법(Coordinate regression)으로 찾으려고 하니 문제가 있었고 Heatmap classification이 좀더 정확하지만 계산량이 큼
+
+- 각 채널에 keypoint를 할당하고 class로 생각함
+
+Gaussian Heat map을 형성하기 위해 Landmark location을 다음과 같이 변형한다. 
+$$
+G_\sigma(x,y) = \exp\left(-\frac{(x-x_c)^2+(y-y_c)^2}{2\sigma^2}\right)\\
+(x_c, y_c):center\ location
+$$
+**[math. points to Gaussian 수식]**
+
+쉽게 말해 해당 location 좌표를 평균점으로 삼고 주변에 Gaussian을 씌운다.
+
+![image-20210311135139848](CV.assets/image-20210311135139848.png)
+
+**[img. Gaussian 도식]**
+
+```python
+# Generate gaussian
+size = 6 * sigma + 1 # 출력 해상도 크기
+# 모든 영상 좌표의 배열
+x = np.arrange(0, size, 1, float)
+y = x[:, np.newaxis] 
+
+x0 = y0 = size // 2 # 중간이 평균점이라고 가정
+# numpy의 행렬 덧셈의 경우 sx1, 1Xs가 더해지면 sxs 행렬이 나옴 
+
+# The gaussian is not normalized, we want the center value to equal 1
+if type == 'Gaussain':
+    g = np.exp(- ((x - x0) ** 2 + (y - y0) ** 2) / (2 * sigma ** 2))
+elif type == 'Cauchy':
+    g = sigma / (((x - x0) ** 2 + (y - y0) ** 2 + sigma ** 2) ** 1.5)
+```
+
+**[code. Gaussian 코드 구현 ]**
+
+반대로 가우시안의 결과값을 좌표평면으로 바꾸어서 결과값을 보여주는 수식도  필요하다.
+
+#### Hourglass network
+
+Landmark를 위한 특별한 구조
+
+![image-20210311142756433](CV.assets/image-20210311142756433.png)
+
+**[img. Stacked hourglass 구조]**
+
+![image-20210311143026096](CV.assets/image-20210311143026096.png)
+
+**[img. 확대한 hourglass 구조]**
+
+UNet 구조를 여러 스택 쌓은것과 비슷한 구조
+
+- 다만 Concat이 아니라 합으로 되어있으며, 그냥 skip해서 주어지는 것이 아니라 convolution layer를 하나 통과함
+- UNet보다 FPN구조와 좀더 유사함
+
+크기를 줄여 Receptive field를 늘린 구조
+
+#### DensePose
+
+![image-20210311143258133](CV.assets/image-20210311143258133.png)
+
+**[img. image의 UV Map 표현]**
+
+몇 개 픽셀이 아닌 신체 전부 같은 아주 Dense한 landmark를 구하여 3D 모델링 생성 가능
+
+![image-20210311143422824](CV.assets/image-20210311143422824.png)
+
+**[img. UVMap 예시]**
+
+UV map : 3D 매쉬의 평면 표현
+
+각 pixel의 점의 정체성이 영상 내부에서 유지되면서 위치만 바뀐다.
+
+즉 아주 많은 Landmark 검출은 곧, UV map 생성이다.
+
+![image-20210311145459415](CV.assets/image-20210311145459415.png)
+
+**[img. DensePose의 구조]**
+
+DensePose R-CNN = Faster R-CNN + 3D surface regression branch
+
+- Patch: 각 body part의 sementation map(팔,다리,머리)
+
+Mask R-CNN과도 비슷하다.
+
+데이터 표현방법과 데이터셋을 제공한 논문
+
+#### RetinaFace
+
+![image-20210311150521526](CV.assets/image-20210311150521526.png)
+
+**[img. RetinaFace의 구조]**
+
+FPN 구조에 다양한 branch 도입해 Multi task가 가능하게 한 모델
+
+여러 Task로 학습 시, 적은 데이터로도 Backbone 네트워크 학습이 강하고 성능좋게 잘 학습된다.
+
+다른 구조도 branch를 추가하여 여러 Task에 활용 가능
+
+### Detecting objects as keypoints
+
+Bounding box를 찾을 때, keypoint(중앙, 코너)를 시작점으로 찾는 구조들
+
+#### CornerNet
+
+![image-20210311151003579](CV.assets/image-20210311151003579.png)
+
+**[img. CornerNet 구조]**
+
+좌측 상단, 우측 하단의 점 2개를 찾아 Bounding box로 삼는 구조
+
+병렬적으로 2개로 나눈 뒤, 먼저 Heatmap에서 점의 위치를 찾고, 그 점의 class을 의미하는 Embedding을 찾은 뒤 결합한다.
+
+single-stage 구조이며, 성능은 조금 떨어지지만 속도가 빠르다.
+
+#### CenterNet
+
+![image-20210311151752192](CV.assets/image-20210311151752192.png)
+
+**[img. Centernet 1 예시]**
+
+성능을 개선하기위해 중앙점 또한 검출함
+
+![image-20210311151845802](CV.assets/image-20210311151845802.png)
+
+**[img. CenterNet 2 예시]**
+
+어차피 중앙점까지 3개를 구할 꺼면 width, height, center point로 검출 정보를 바꾼 모델
+
+![image-20210311152058073](CV.assets/image-20210311152058073.png)
+
+**[img. 성능 비교]**
+
+CenterNet이 성능과 속도면에서 우위를 보인다.
+
+## Conditional Generative Model(cGAN)
+
+사용자가 컨트롤 가능한 Generative Model을 의미
+
+### Conditional generative model(cGAN)
+
+![image-20210311153324899](CV.assets/image-20210311153324899.png)
+
+**[img. Generative Model VS Conditional Generative Model]**
+
+랜덤한 결과를 생성하는 Generative Model과 달리 Conditional Generative Model은 주어진 조건에 따라 생성한다.
+
+![image-20210311153608344](CV.assets/image-20210311153608344.png)
+
+**[img. Low quality audio -> high quality audio]**
+
+오디오 음질 향상, 인공지능 뉴스 등 여러 방면에 활용 가능
+
+![image-20210311153921357](CV.assets/image-20210311153921357.png)
+
+**[img. GAN의 원리]**
+
+보통 위조 지폐범(Generator)과 지폐 감별자(Discriminator)로 비유하며, Generator는 실제 데이터와 비교하여 가짜 데이터를 생성하고 Discriminator는 이를 가짜인지 진짜인지 구별해본다. 
+
+Discriminator가 감별해내면 해당 loss가 Generator를 학습시키고, Generator가 Discriminator를 속이면 Discriminator가 해당 Loss로 학습되는 상호 보완적인 모델이다. (Adversarial Training, 적대적 학습법)
+
+이러한 Adversarial Training을 이용하는 Generative model을 Generative Adversarial Network 즉, GAN이라고 부른다.
+
+![image-20210311155857602](CV.assets/image-20210311155857602.png)
+
+**[img. Basic GAN vs Conditional GAN(cGAN)]**
+
+기본 GAN의 경우 Generator에 랜덤한 z를 넣고 생성한 결과를 Discrminator가 판별하는 구조
+
+Conditional GAN은 z는 옵션으로 넣고 C라는 조건을 넣어주는 부분이 다르다.
+
+![image-20210311182255485](CV.assets/image-20210311182255485.png)
+
+**[img. Conditional GAN를 이용한 이미지의 화풍 바꾸기]**
+
+이외에도 그림의 화질을 좋게 바꾸는 Super resolution, 흑백이나 채색 되지 않은 그림 채색 등의 일에 사용된다.
+
+
+
+예를 들어 저해상도 이미지를 고해상도로 바꾸는 Super resolution이 대표적인 cGAN 활용의 예시이다.
+
+![image-20210312123342201](CV.assets/image-20210312123342201.png)
+
+**[img. Super Resoultion에 사용되던 과거 구조(Naive Regression Model)와 GAN 구조]**
+
+Low Resolution 이미지를 GAN에서는 High Resolution 이미지로 바꾸고 이를 Discriminator가 학습하면서 이루어진다.
+
+과거에는 Naive Regression model이라는 좀더 단순한 Loss를 Discriminator 대신 사용한 구조를 사용했다.
+
+|                    MSE VS GAN 결과물 비교                    |                         MAE/MSE loss                         |
+| :----------------------------------------------------------: | :----------------------------------------------------------: |
+| ![image-20210312122128991](CV.assets/image-20210312122128991.png) | $MAE = \frac{1}{n}\sum^n_{i=1}|y_i-\hat{y}_i|\\MSE=\frac{1}{n}\sum^n_{i=1}(y_i-\hat{y}_i)^2$ |
+
+**[tables. GAN loss vs MAE/MSE loss]**
+
+MAE는 결과와의 차이의 크기를 loss로, MSE는 결과와의 차이의 제곱을 loss로 사용한다.
+
+MAE/MSE 같은 Regression의 결과물은 blurry한 결과가 나오는데, 두 loss 모두 이미지의 픽셀들의 평균을 포함하는 loss 이기 때문이다.
+
+GAN은 Discriminator를 속이기 위해 에러가 치우쳐도 현실에 가깝게 만든다.
+
+![image-20210312122105022](CV.assets/image-20210312122105022.png)
+
+**[img. 채색을 예시로든 loss의 차이]**
+
+진짜 이미지가 흰색 아니면 검은색이 정답이라면 L1 loss는 그 사이 평균 값이면서, 존재하지 않은 회색 이미지를, GAN loss는 그 둘중에 하나인 검정 아니면 흰 이미지를 만든다.
+
+![image-20210312122047864](CV.assets/image-20210312122047864.png)
+
+**[img. MSE loss를 쓴 SRResNet과 GAN loss를 SRGAN의 차이에 주목]**
+
+### Image translation GANs
+
+Image translation이란, 한 이미지 스타일을 다른 이미지 도메인 혹은 다른 스타일로 변화시키는 문제.
+
+크게 보자면 위의 Super resolution 또한 Image translation의 한 종류
+
+![image-20210312122407888](CV.assets/image-20210312122407888.png)
+
+**[img. Image Translation 예시]**
+
+#### Pix2Pix
+
+Image translation을 CNN 학습 구조로 처음 정리한 연구 
+$$
+G^* = arg\ \underset{G}{min}\ \underset{D}{max}\ \mathcal{L}_{cGAN}(G,D)+\lambda\mathcal{L}_{L1}(G)\\
+where\ \mathcal{L}_{cGAN}(G,D)=\mathbb{E}_{x,y}[\log D(x,y)]+\mathbb{E}_{(x,y)}[\log(1-D(x,G(x,z))]\\
+and\ \mathcal{L}_{L1}(G)=\mathbb{E}_{x,y,z}[\left\|y-G(x,y)\right\|_1]\\
+x:ground-truth,\ y: output,\ z:random\ factor
+$$
+**[math. Pix2Pix의 Loss, Total loss(GAN loss + L1 loss)]**
+
+L1 Loss를 적당한 조건으로, GAN loss를 더해 Realistic한 출력을 만들도록 바꾼 Total loss를 사용함
+
+- MAE L1 Loss는 y-G(x,y)로 결과와 실제 이미지를 직접 비교하지만 GAN loss는 Discriminator를 통해 간접적으로 비교한다.
+- 그러므로 GAN로 Realistic하고  L1 Loss으로 의도와 비슷한 이미지를 만들 수 있다.
+- 또한, 당시에는 GAN의 연구가 많이 진행되지 않아서 학습이 안정적이지 않았다.
+
+또한 GAN Loss 부분은 cGAN이므로 z 뿐만 아니라 조건인 x가 같이 들어감
+
+![image-20210312132131634](CV.assets/image-20210312132131634.png)
+
+**[img. loss 종류에 따른 결과 비교]**
+
+
+
+#### CycleGAN
+
+위의 Pix2Pix는 Supervised learning 방법을 사용해서 pairwise data가 필요하지만 이러한 데이터셋을 얻는 것이 어려워서 CycleGAN이 등장했다.
+
+![image-20210312132419560](CV.assets/image-20210312132419560.png)
+
+**[img. paired vs unpaired data]**
+
+CycleCAN을 이용하면 도메인 간의 관계가 없어보이고, 1:1 대응하는 pair가 없는 두 데이터셋으로도 image translation을 할 수 있다.
+
+- 응용범위와 데이터셋 확보방법이 늘어남
+
+![image-20210312132703158](CV.assets/image-20210312132703158.png)
+
+**[img. CycleGAN 결과물 예시]**
+
+Cycle이라는 이름에서 알 수 있듯이, CycleGAN의 Loss는 데이터셋 X,Y에 대하여, X -> Y로 가는 방향의 Loss와 Y -> X로 가는 방향의 Loss를 Cycle 돌듯이 동시에 학습 시킨다.
+
+추가로 Cycle-consistency loss 텀은 X->Y->X로 돌아왔을 때, 변한 X가 원본 X와 비슷하게 만들도록 하는 Loss이다.
+$$
+L_{GAN}(X\rightarrow Y)+L_{GAN}(Y\rightarrow X) + L_{cycle}(G,F)\\
+where\ G/F\ are\ generators
+$$
+**[math. CycleGAN loss = GAN loss (in bot direction) + Cycle-consistency loss]**
+
+![image-20210312134522568](CV.assets/image-20210312134522568.png)
+
+**[img. Cycle-consistency loss 텀이 존재 하지 않을 시의 CycleGAN Loss 설명]**
+
+ Cycle-consistency loss 텀이 존재 하지 않을 시의 구조이다.
+
+- G, F: generator
+- $D_x, D_y$: discriminator
+- GAN loss : $L(D_x)+L(D_Y)+L(G)+L(F)$
+- 일종의 2개의 GAN이다.
+
+
+
+하지만 이런 GAN loss만 사용시 Mode Collapse 문제가 발생한다.
+
+- Input의 상관없이 하나의 Output만 계속 출력하는 문제
+- 즉 Input과 Output이 서로 영향을 미치지 않음(양방향 모델이기 때문에)
+
+
+![image-20210312135638222](CV.assets/image-20210312135638222.png)
+
+**[img. Mode Collapse 문제]**
+
+이를 해결하기 위해 Cycle-consistency loss가 등장하였다.
+
+- Style 결과 뿐만아니라 content도 유지시켜 줌
+
+X에서 Y, 그리고 다시 X로 돌아왔을 때 원본 X와 같아야 한다(contents 유지).
+
+supervision이 없는 self-supervision 방법(레이블링 필요 없음)
+
+
+![image-20210312134547495](CV.assets/image-20210312134547495.png)
+
+**[img. X->Y->X와 Y->X->Y 처럼 돌아왔을 때의 Cycle-consistency loss]**
+
+#### Perceptual loss
+
+GAN은 Discriminator, Generative 모델이 번갈아가며 학습되어야 하므로 학습하기 쉽지 않다.
+
+더 쉬운 방법을 알아보기 위해 Perceptual loss가 나타났다.
+
+
+
+Peceptual loss는 높은 질의 결과를 얻기위해 제안된 방법이다.
+
+GAN loss(Adversarial loss)의 경우,
+
+- 트레이닝과 코딩이 힘듬(두 모델을 반복, 왕복 학습해야하므로)
+- 대신, pre-training network 필요 없어, 데이터만 있으면 다양한 상황에 활용 가능
+
+Peceptual loss의 경우,
+
+- 학습과 코딩이 편함(평범한 foward & backward computation)
+- 대신 learned loss를 위해 pre-trained network가 필요
+
+
+
+pretrained-network의 filter를 visualization 해보면, 사람의 visual perception 과 비슷하다.
+
+이미지에서  filter들이 방향성, edge, 색깔 등을 찾아 peceptual space로 변환한다.
+
+![image-20210312142140216](CV.assets/image-20210312142140216.png)
+
+**[img. pretraine된 network의 low level layer에서의 filter]**
+
+![image-20210312134625327](CV.assets/image-20210312134625327.png)
+
+**[img. perceptual loss의 결과물 예시]**
+
+
+
+Perceptual loss를 활용해 Input 이미지를 원하는 Style로 바꾸는 Image Transform Net의 예시를 보면, 
+
+여기서는 VGG-16을 Loss Network로 사용하며, 이를 이용해 feature를 activation map 형태로 뽑아낸다.
+
+이때 Loss Network는 Pretrained-Network이므로 고정되어 업데이트 되지 않으며, 그 앞단에 있는 Image Transform Net을 업데이트하기 위해 Backpropagation을 진행하여 업데이트한다.
+
+![image-20210312134645479](CV.assets/image-20210312134645479.png)
+
+**[img. Perceptual loss를 활용하는 Image Transform Net 구조]**
+
+이 때, Style Target과 Content Target 2개에 관한 Loss를 구하게 되는데, 각각 Feature Reconstruction loss, Style Reconstruction loss라고 한다.
+
+1. Feature Reconstruction loss
+
+![image-20210312143846321](CV.assets/image-20210312143846321.png)
+
+**[img. Feature Reconstruction loss의 원리]**
+
+Transformed Image net의 결과물인 $\hat{y}$가 Content Target과 얼마나 일치하는지 측정하는 Loss로,   일반적으로 원본 이미지 x를 Input으로 loss network에 넣어얻어낸 feature와 loss network에서 얻어낸 $\hat{y}$의 feature를 비교하여 L2 Loss로 계산한다.
+
+이후 , 이 값으로 Backpropgation을 하여 Transformed Image Net을 학습시킨다.
+
+2. Style Reconstruction loss
+
+![image-20210312134711159](CV.assets/image-20210312134711159.png)
+
+**[img. Style Reconstruction loss의 원리]**
+
+Feature Reconstruction loss와 비슷하게, Style Target과  $\hat{y}$의 Feature를 뽑아낸다.
+
+다른 점은 이때, Feature를 직접 비교하는게 아니라, 전체적인 Style을 비교하기 위해, Gram matrices라는 feature map의 통계적 특징을 담아낸 feature의 channel size X channel size의 tensor를 비교하여 L2 Loss를 계산한다.
+
+Gram matrices란?
+
+- Gram matrices는 Feature의 공간적 정보를 없애기 위해 pooling을 이용하며, Feature 채널들을  channel X (Height*Width) 형태로 바꾼 뒤,  내적하여 곱해서 얻는다.
+- diagonal component(행렬의 행좌표와 열좌표가 같은 부분)은 해당 Feature의 통계적 특성을 의미하며, 그 이외에는 해당 채널과 다른 채널의 연관성을 의미한다.
+- 즉 Gram Matrices는 채널간의 관계와 통계적 특성이 포함된 정보임
+- 각 feature의 채널은 일종의 detection 역할을 하기 때문에, Gram Matrices는 이 스타일은 어떤 detection들이 많이 나타나는 가?를 분석한 것이다.
+
+
+
+Task에 따라 스타일과 관계없는 일이라면, Style reconstruction loss 대신 Feature reconstuction loss를 사용하지 않은 경우를 사용하지 않을 수도 있다.
+
+### Various GAN applications
+
+GAN의 예시를 알아보자.
+
+1. Deepfake
+
+![image-20210312134759092](CV.assets/image-20210312134759092.png)
+
+**[img. 사람 얼굴 생성기, 가짜 연설 생성기]**
+
+이를 오남용할 수 있으므로, 이러한 Deepfake를 방어하기 위해 여러 시도 또한 이루어지고 있다.
+
+**Face de-identification**
+
+![image-20210312134923519](CV.assets/image-20210312134923519.png)
+
+**[img. Face de-identification]**
+
+프라이버시 침해 방지를 위해 인간은 차이를 알지 못하지만 컴퓨터는 혼돈을 가질 수 있게끔, 조금의 변경을 하는 연구도 진행중 
+
+![image-20210312134900295](CV.assets/image-20210312134900295.png)
+
+**[img. password를 이용해 침해 방지 예시]**
+
+기타 비디오를 통해 포즈를 따라하게 만드거나,  CG 생성, 게임 등에도 사용 가능
+
+## Multi-modal learning: Captioning and Speaking
+
+### Overview of multi-modal learning
+
+### Multi-modal tasks (1) - Visual data & Text
+
+### Multi-modla tasks(2) - Visual data & Audio
+
+## 3D undersanding
+
+### Seeing the world in 3D perspective
+
+### 3D tasks
+
+### 3D application example
 

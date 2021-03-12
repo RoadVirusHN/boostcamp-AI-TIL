@@ -1,2 +1,2 @@
-a = None
-print(2 not in a)
+a = [3,2,1]
+print(sorted(a))
