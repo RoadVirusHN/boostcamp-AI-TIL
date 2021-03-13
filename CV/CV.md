@@ -1588,7 +1588,7 @@ key point 혹은 landmark 라고 불리우는 영상에서 중요한 부분을 �
 
 **[img. Coordinate regression vs Heatmap classification]**
 
-기존의 box bounding 찾던 방법(Coordinate regression)으로 찾으려고 하니 문제가 있었고 Heatmap classification이 좀더 정확하지만 계산량이 큼
+기존의 box bounding 찾던 방법(Coordinate regression)으로 keypoint를 찾으려고 하니 문제가 있었고 Heatmap classification이 좀더 정확하지만 계산량이 큼
 
 - 각 채널에 keypoint를 할당하고 class로 생각함
 
@@ -1600,6 +1600,8 @@ $$
 **[math. points to Gaussian 수식]**
 
 쉽게 말해 해당 location 좌표를 평균점으로 삼고 주변에 Gaussian을 씌운다.
+
+Heatmap 형식을 사용하면 generalization 성능이 좋아짐. 
 
 ![image-20210311135139848](CV.assets/image-20210311135139848.png)
 
@@ -1624,7 +1626,7 @@ elif type == 'Cauchy':
 
 **[code. Gaussian 코드 구현 ]**
 
-반대로 가우시안의 결과값을 좌표평면으로 바꾸어서 결과값을 보여주는 수식도  필요하다.
+반대로 가우시안의 결과값을 좌표평면으로 바꾸어서 결과값을 보여주는 수식도 필요하다.
 
 #### Hourglass network
 
@@ -1651,7 +1653,9 @@ UNet 구조를 여러 스택 쌓은것과 비슷한 구조
 
 **[img. image의 UV Map 표현]**
 
-몇 개 픽셀이 아닌 신체 전부 같은 아주 Dense한 landmark를 구하여 3D 모델링 생성 가능
+몇 개 픽셀이 아닌 신체 전부 같은 아주 Dense한 landmark를 구하여 3D UV map 생성 가능
+
+- 3D 모델을 만드는 방법은 다른 방법임.
 
 ![image-20210311143422824](CV.assets/image-20210311143422824.png)
 
@@ -1685,7 +1689,7 @@ FPN 구조에 다양한 branch 도입해 Multi task가 가능하게 한 모델
 
 여러 Task로 학습 시, 적은 데이터로도 Backbone 네트워크 학습이 강하고 성능좋게 잘 학습된다.
 
-다른 구조도 branch를 추가하여 여러 Task에 활용 가능
+Extension pattern : CV에서의 디자인 패턴 중 하나, 다른 구조도 branch를 추가하여 여러 Task에 활용 가능
 
 ### Detecting objects as keypoints
 
@@ -1811,7 +1815,7 @@ Image translation이란, 한 이미지 스타일을 다른 이미지 도메인 �
 
 #### Pix2Pix
 
-Image translation을 CNN 학습 구조로 처음 정리한 연구 
+Image translation을 CNN Laeyr가 포함된 학습 구조로 처음 정리한 연구 
 $$
 G^* = arg\ \underset{G}{min}\ \underset{D}{max}\ \mathcal{L}_{cGAN}(G,D)+\lambda\mathcal{L}_{L1}(G)\\
 where\ \mathcal{L}_{cGAN}(G,D)=\mathbb{E}_{x,y}[\log D(x,y)]+\mathbb{E}_{(x,y)}[\log(1-D(x,G(x,z))]\\
@@ -1912,14 +1916,14 @@ GAN loss(Adversarial loss)의 경우,
 
 Peceptual loss의 경우,
 
-- 학습과 코딩이 편함(평범한 foward & backward computation)
+- 학습과 코딩이 편함(평범한 foward & backward computation), 따라서 더 빠름
 - 대신 learned loss를 위해 pre-trained network가 필요
 
 
 
 pretrained-network의 filter를 visualization 해보면, 사람의 visual perception 과 비슷하다.
 
-이미지에서  filter들이 방향성, edge, 색깔 등을 찾아 peceptual space로 변환한다.
+이미지에서 filter들이 방향성, edge, 색깔 등을 찾아 peceptual space로 변환한다.
 
 ![image-20210312142140216](CV.assets/image-20210312142140216.png)
 
@@ -1928,8 +1932,6 @@ pretrained-network의 filter를 visualization 해보면, 사람의 visual percep
 ![image-20210312134625327](CV.assets/image-20210312134625327.png)
 
 **[img. perceptual loss의 결과물 예시]**
-
-
 
 Perceptual loss를 활용해 Input 이미지를 원하는 Style로 바꾸는 Image Transform Net의 예시를 보면, 
 
@@ -1949,6 +1951,8 @@ Perceptual loss를 활용해 Input 이미지를 원하는 Style로 바꾸는 Ima
 
 **[img. Feature Reconstruction loss의 원리]**
 
+중간 레이어에 feature 1개를 뽑는다.
+
 Transformed Image net의 결과물인 $\hat{y}$가 Content Target과 얼마나 일치하는지 측정하는 Loss로,   일반적으로 원본 이미지 x를 Input으로 loss network에 넣어얻어낸 feature와 loss network에서 얻어낸 $\hat{y}$의 feature를 비교하여 L2 Loss로 계산한다.
 
 이후 , 이 값으로 Backpropgation을 하여 Transformed Image Net을 학습시킨다.
@@ -1966,7 +1970,8 @@ Feature Reconstruction loss와 비슷하게, Style Target과  $\hat{y}$의 Featu
 Gram matrices란?
 
 - Gram matrices는 Feature의 공간적 정보를 없애기 위해 pooling을 이용하며, Feature 채널들을  channel X (Height*Width) 형태로 바꾼 뒤,  내적하여 곱해서 얻는다.
-- diagonal component(행렬의 행좌표와 열좌표가 같은 부분)은 해당 Feature의 통계적 특성을 의미하며, 그 이외에는 해당 채널과 다른 채널의 연관성을 의미한다.
+- diagonal component(행렬의 행좌표와 열좌표가 같은 부분)은 자기자신의 통계적 특성을 의미하며, 그 이외에는 해당 채널과 다른 채널의 연관성을 의미한다.
+  - 공분산 행렬 구하기
 - 즉 Gram Matrices는 채널간의 관계와 통계적 특성이 포함된 정보임
 - 각 feature의 채널은 일종의 detection 역할을 하기 때문에, Gram Matrices는 이 스타일은 어떤 detection들이 많이 나타나는 가?를 분석한 것이다.
 
@@ -2002,9 +2007,186 @@ GAN의 예시를 알아보자.
 
 ## Multi-modal learning: Captioning and Speaking
 
+![image-20210313165726962](CV.assets/image-20210313165726962.png)
+
+**[img. Unimodal vs Multi-modal]**
+
+Multi-modal learning : 다른 특성을 가진 데이터들을 함께 활용하는 학습(ex) Text + Sound)
+
 ### Overview of multi-modal learning
 
+**multi-modal learning의 어려움**
+
+1. 데이터의 표현 방법이 모두 다름
+
+- 이미지 : H X W X 3 배열, Text : Word Embedding + Positional Encoding 등
+
+![image-20210313171140286](CV.assets/image-20210313171140286.png)
+
+**[img. 데이터 표현 차이]**
+
+2. 정보량의 불균형, feature space의 불균형.
+
+![image-20210313171157797](CV.assets/image-20210313171157797.png)
+
+**[img. 아보카도 모양 가구에 대한 글 하나는 여러 이미지를 포함할 수 있다]**
+
+3. 특정 modality에 편향된 모델이 생성될 수 있음
+
+![image-20210313171544052](CV.assets/image-20210313171544052.png)
+
+**[img. 주어진 데이터가 동일해도 참조하는 modality의 비율은 달라질 수 있음]**
+
+- 예를 들어, 동물 Classification Task에서 사진과 울음소리, 동물에 대한 설명이 적혀있는 글을 줘도, 사진만 보고 동물 Class를 결정할 수 있음
+- 딥러닝은 쉬운 길만 선택하려하기 때문
+
+**Multi modal learning의 여러 패턴**
+
+![image-20210313172559574](CV.assets/image-20210313172559574.png)
+
+**[img. Multi modal learning의 여러 패턴]**
+
+1. Matching
+
+- 서로 다른 Modality를 같은 Space로 보내어 서로 Matching
+
+2. Translating
+
+- 서로 다른 Modality를 다른 Modality로 변환
+
+3. Referencing
+
+- 어떤 Modality 정보를 Input으로 같은 Modality의 결과물로 변환할 때, 다른 Modality를 참조하여 성능을 향상
+
 ### Multi-modal tasks (1) - Visual data & Text
+
+#### Text embedding
+
+Ascii 코드를 사용하는 Character 관점에서는 사용하기 힘들고, Word 레벨의 embedding을 Input으로 이용함.
+
+![image-20210313173716047](CV.assets/image-20210313173716047.png)
+
+**[img. Word embedding 예시]**
+
+각 Word embedding은 단어의 대략적인 의미와 연관성을 가진 feature를 표현한는 Vector의 형태이다.
+
+이를 차원공간에 표현하면 비슷한 의미를 가진 단어는 비슷한 곳에 위치하며, 비슷한 관계를 가진 단어쌍 벡터 둘의 방향(차이 벡터) 또한 비슷한 방향을 가지게 된다. (일반화가 되어 있음)
+
+**Word embedding 생성 방법 : word2vec**
+
+대표적으로 *Skip-gram model*이라는 방법이 있다.
+
+![image-20210313174938346](CV.assets/image-20210313174938346.png)![image-20210313174953023](CV.assets/image-20210313174953023.png)
+
+**[img. Skip-gram model의 예시]**
+
+Input으로 단어의 one hot vector(V차원)를 의미하며, 이를 W와 곱하여 N-차원의 embedding vector가 나오게 된다. 
+
+- 이때 one-hot vector에 의해 W의 한 Row만 slicing 되게 된다. 즉 W는 embedding vecotr의 Row들의 집합이다.
+
+이후 그 Embedding vector를 이용해 해당 단어의 주변에 나타난 n개의 단어들을 예측하는 Task로 학습한다. 
+
+- 나타나는 주변 단어를 통하여 관계성을 학습할 수 있다.
+
+#### Joint embedding
+
+서로 다른 Modality의 Matching을 하기 위한 공통된 Embedding 벡터를 학습하기 위한 방법
+
+![image-20210313184519681](CV.assets/image-20210313184519681.png)
+
+**[img. Joint embedding은 Multi-Modality learning에서 Matcing 패턴을 위해 사용 ]**
+
+**Image tagging**
+
+Image tagging은 사진에 tag를 지정하거나, 반대로 tag를 통해 사진을 가져오는 Task이다.
+
+![image-20210313184903379](CV.assets/image-20210313184903379.png)
+
+**[img. Image Taggin의 예시]**
+
+![image-20210313193522529](CV.assets/image-20210313193522529.png)
+
+**[img. Text와 Image의 matching 예시]**
+
+위의 예시의 경우 각각 Text와 Image를 feature vector와 한 후,  그 이후 서로 다른 모델을 통하여 같은 차원의 (d-dimension) vector로 바꾼 뒤, 그 둘을 통하여 Joint embedding  vector를 학습한다.
+
+이때 Joint embedding Vector는 두 다른 Modality 데이터의 연관성, 거리를 의미한다.	
+
+ ![image-20210313193932616](CV.assets/image-20210313193932616.png)
+
+**[img.  joint visual-semantic embedding space 내부]**
+
+이렇게 구한 joint embedding vector 둘의 두 차원 상의 거리를 관련이 있는 Label은 가깝게, 관련 없으면 멀게 되도록 학습한다.
+
+- 이런 Distance 기반으로 학습하는 것을 Metric learning이라고 한다.
+
+![image-20210313195855010](CV.assets/image-20210313195855010.png)
+
+**[img. Multi-modal analogy]**
+
+또한, 이렇게 학습된 embedding을 이용하여 Multi-modal analogy라는 property 생겨난다.
+
+- 서로 다른 Modality embedding를 포함하여, embedding 더하거나 빼서 가장 가까운 embedding을 데이터 형태로 가져올 수 있다.
+- 예를 들어 위의 이미지처럼 개 사진에 개 단어를 빼고 고양이 단어를 추가하면, 고양이 사진들이 나타난다.
+  - 심지어, 각 첫번째 사진들의 입력한 사진의 배경과 비슷하다.
+
+![image-20210313201642274](CV.assets/image-20210313201642274.png)
+
+**[img. 레시피를 통해 사진을 예상하는 application 예시]**
+
+![image-20210313202403238](CV.assets/image-20210313202403238.png)
+
+**[img. 위 어플리케이션의 구조]**
+
+1. Text는 encoder를 통하여 instruction과 Ingredient를 하나의 output으로 concat 한 뒤, FCL을 통하여 d 차원의 vector로 만든다. 
+
+2. Image는 conv layer을 통하여 feature를 뽑아낸 결과를 FCL을 통하여 d0 차원의 vector로 만든다.
+3. 두 embedding vector를 cosine similarty loss로 loss를 구하여 학습하며, 또는 추가 정보를 제공하여 더욱 좋은 성능의 semantic regularization loss를 이용하여 학습할 수 있다.
+
+#### Cross modal translation
+
+![image-20210313204332841](CV.assets/image-20210313204332841.png)
+
+**[img. modal 간의 변환을 하는 Translating]**
+
+![image-20210313204437528](CV.assets/image-20210313204437528.png)
+
+**[img. Image captioning ]**
+
+Image Captioning은 이미지의 설명 Text를 생성하는 대표적인 cross modal translation Task이다.
+
+![image-20210313210508665](CV.assets/image-20210313210508665.png)
+
+**[img. Image 분석을 위한 CNN과 Text 생성을 위한 RNN으로 이루어져있다.]**
+
+Image Captioning 에서는 CNN과 RNN 구조가 필요하며 대표적인 구조로 *Show and tell*이 있다.
+
+1. Encoder 구조로 ImageNet에 의해 pre-train된 CNN model을 사용하여 이미지를 vector로 바꾼 뒤, 
+2. 이를 Decoder인 LSTM RNN의 Condition으로 제공하고, 시작 토큰(보통 0이나 <START> 토큰)을 준 뒤, 
+3. 해당 LSTM의 Output을 다음 LSTM의 Input으로 주는 과정을 반복한다.
+4. <END> 토큰이 나올때 까지 반복하여 결과물은 만든다.
+
+![image-20210313210617115](CV.assets/image-20210313210617115.png)
+
+**[img. Show and Tell 구조, 좌측의 CNN과 우측 RNN을 활용]**
+
+Show and Tell은 단 한번의 Image 분석 뒤에 태깅을 하나, 실제로는 단어 마다 Image에서 중요시 해야할 feature 가 다를 수 있다.
+
+Show, attend, and tell 이라는 구조는 attend 구조를 통하여 단어별로 attention을 달리하여 문장을 생성 시, 이미지에서 feature의 가중치를 바꿔가며 할 수 있다. 
+
+![image-20210313222709143](CV.assets/image-20210313222709143.png)
+
+**[img. show, attend, and tell의 visualization]**
+
+![image-20210313220048887](CV.assets/image-20210313220048887.png)
+
+**[img. Show, attend, and tell 구조]**
+
+
+
+![image-20210313221545572](CV.assets/image-20210313221545572.png)
+
+**[img.]**
 
 ### Multi-modla tasks(2) - Visual data & Audio
 
