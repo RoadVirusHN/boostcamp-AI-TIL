@@ -2153,6 +2153,8 @@ Image tagging은 사진에 tag를 지정하거나, 반대로 tag를 통해 사�
 
 **[img. Image captioning ]**
 
+**Image Captioning**
+
 Image Captioning은 이미지의 설명 Text를 생성하는 대표적인 cross modal translation Task이다.
 
 ![image-20210313210508665](CV.assets/image-20210313210508665.png)
@@ -2170,25 +2172,278 @@ Image Captioning 에서는 CNN과 RNN 구조가 필요하며 대표적인 구조
 
 **[img. Show and Tell 구조, 좌측의 CNN과 우측 RNN을 활용]**
 
-Show and Tell은 단 한번의 Image 분석 뒤에 태깅을 하나, 실제로는 단어 마다 Image에서 중요시 해야할 feature 가 다를 수 있다.
+Show and Tell은 단 한번의 Image 분석 뒤에 태깅을 하나, 실제로는 단어 마다 Image에서 중요시 해야할 feature가 다를 수 있다.
 
-Show, attend, and tell 이라는 구조는 attend 구조를 통하여 단어별로 attention을 달리하여 문장을 생성 시, 이미지에서 feature의 가중치를 바꿔가며 할 수 있다. 
+Show, attend, and tell 이라는 구조는 attend 구조를 통하여 단어별로 attention을 달리하여 순차적으로 단어를 생성 시, 이미지에서 feature의 가중치를 바꿔가며 할 수 있다. 
 
 ![image-20210313222709143](CV.assets/image-20210313222709143.png)
 
-**[img. show, attend, and tell의 visualization]**
+**[img. show, attend, and tell의 attention]**
+
+1. CNN을 이용하여 Input Image의 14x14 feature map을 생성한다.
+   - 기존의 Vector 형태가 아니라는 점이 특징
+2. 해당 feature map을 RNN에 입력하여 단어를 생성할 때마다 다른 attention으로 단어를 생성
 
 ![image-20210313220048887](CV.assets/image-20210313220048887.png)
 
 **[img. Show, attend, and tell 구조]**
 
+Show, attend, and tell 구조의 경우, 사람이 사진을 인식할 때 전체적인 부분을 보는 것이 아닌, 일부에 관심(attention)을 가중하여 본다는 것에 착안되었다.
 
+1) Input image를 CNN을 통해 얻은 feature map과,
 
-![image-20210313221545572](CV.assets/image-20210313221545572.png)
+2) 위 featuremap을 RNN에 넣어 얻은 spatial attention
 
-**[img.]**
+1)과 2)을 결과물을 inner product(weighted sum)하여 얻은 soft attention embedding(z) 벡터를 얻어낸다.
+
+- 사실, Translating 보다는 Reasoning의 Cross modal reasoning에 더 가깝다.
+
+![image-20210314041635448](CV.assets/image-20210314041635448.png)
+
+**[img. 사람이 사진을 인식할 때 보는 부분 (좌), attention 결합 방법]**
+
+RNN에서 결과를 내는 과정을 좀 더 자세히 살펴보면, 
+
+1. Feature map을 hidden stat로 첫번째 RNN 모듈 h0에 넣어주고 spatial attention s1을 얻는다.
+2. 이렇게 얻은 s1과 feature map을 inner product하여 얻은 z1 vector를 start token y1과 함께 두번째 RNN 모듈 h1에 넣어준다.
+3. 그 결과 첫번째 단어 d1('A')와 두번째 spatial attention s2가 나온며, 이를 다시 feature map과 합쳐 soft attention embedding z2를 만든다.
+4. 이 이후 세번째 RNN 모듈 h2에는 z2와 이전에 출력한 단어 y2(또는 d1, 'A')를 함께 넣어주고, End Token 나올때 까지 반복한다.
+
+![image-20210314041733532](CV.assets/image-20210314041733532.png)
+
+**[img. RNN의 단어 build 과정]**
+
+또한, 반대로 Text를 통하여 Image를 생성하는 것이 가능하며, 이때, 여러 Output Image가 나오는 것이 가능하므로 Conditional GAN을 이용한다.
+
+![image-20210314050205760](CV.assets/image-20210314050205760.png)
+
+**[img. Text-to-image by generative model]**
+
+Text to image 모델의 Generator의 경우
+
+Text의 Vector가 주어지면, 이를 Gaussian Random factor와 결합하여 다양한 output이 나오도록 해준 뒤, Decoder를 거쳐서 image를 생성해준다.
+
+Discriminator의 경우
+
+Input된 Image를 encoder로 뽑은 feature map과 위에 사용했던 Text Vector를 합친 벡터를  label된 데이터와 비교하여 판단함.
+
+| ![image-20210314050718230](CV.assets/image-20210314050718230.png) |
+| :----------------------------------------------------------: |
+| ![image-20210314050658466](CV.assets/image-20210314050658466.png) |
+
+**[img. . Text-to-image Generator와 Discriminator 구조]**
+
+#### Cross modal reasoning
+
+![image-20210314052621396](CV.assets/image-20210314052621396.png)
+
+**[img. Modality간의 Referencing을 이용하는 Cross Modal reasoning]**
+
+**Visual question answering**
+
+영상과 질문을 받으면 이를 통해 답을 도출하는 Task
+
+각각 Text와 Image에서 추출한 같은 차원의 vector를 point-wise multiplication을 통하여 Joint embedding 한 뒤, 이 vector를 FCL을 통하여 답을 도출한다.
+
+모든 구조에서 학습이 가능한 End-to-End 구조이다. 
+
+![image-20210314052755045](CV.assets/image-20210314052755045.png)
+
+**[img. Visual question answering 구조]**
 
 ### Multi-modla tasks(2) - Visual data & Audio
+
+#### Sound representation
+
+Sound data는 자연상태에서 1차원 Waveform 형태로 존재하지만, 우리가 사용하기 위해서는 Spectrogram이나, MFCC 등의 형태로 바꿔줘야 한다.
+
+![image-20210314055637416](CV.assets/image-20210314055637416.png)
+
+**[img. Sound data의 다양한 형태]**
+
+1. **Fourier transform**
+
+대중적으로 많이 사용되는 소리의 형태인 Spectrogram으로 변환을 위한 방법
+
+wave 형태의 data를 분석하여 각 frequency 별 세기를 기록한 것이 Power spectrum 형태이다.
+
+- Power spectrum : 주파수와 세기에 대한 그래프
+
+![image-20210314122450480](CV.assets/image-20210314122450480.png)
+
+**[img. Fourier transform]**
+
+Waveform에 Fourier transform이용하면 하나의 파장으로 표현가능 하나, 시간에 대한 정보가 사라지게 된다.
+
+구체적으로 이를 방지하기 위해 아주 작은 시간 구간 t에 대해서만 FT하여 Spectrogram으로 바꾸는  *Short-Time Fourier transform(STFT)*라는 방법이 사용된다.
+
+1. Hamming window의 형태처럼 Boundary 부분은 조금, 가운데 부분은 강조하는 식으로 element wise 곱을 해준다.
+
+- 이때 window가 달라질 때마다(= 정의한 시간 t가 지날때마다) 값이 확달라지게 되는데, 이를 막기 위해 window가 조금씩 겹치게 하면서 Spectrum을 구하게 된다.
+- 하단의 예시는 시간 t인 A를 20~25ms로 잡고, B를 10ms로 잡았으니 각 window들은 10~15ms(A-B)만큼 이전과 이후 window들과 겹치면서 변환이 진행된다.
+
+2. 이렇게 구한 Spectrum들을 stack하여 Spectrogram을 구하게 된다.
+
+![image-20210314123237637](CV.assets/image-20210314123237637.png)
+
+**[img. STFT의 예시]**
+
+Spectrogram은 시간축과 Frequecy 축으로 표현한 그래프에 강도(세기, Magnitude)를 색으로 표현한 3차원 그래프이다.
+
+- Dimension을 조금 낮추면 Melspectrogram, MFCC 등의 다른 표현 방법도 있다.
+
+![image-20210314130743494](CV.assets/image-20210314130743494.png)
+
+**[img. Spectrogram. 시간별로 색이 대비되는 부분은 windowing의 흔적이다.]**
+
+**Application- Scene recognition by sound**
+
+Sound-Image Task 중 Matching에 해당하는 Scene recognition by sound task를 알아보자
+
+![image-20210314131540172](CV.assets/image-20210314131555165.png)![image-20210314131606093](CV.assets/image-20210314131606093.png)
+
+**[img. Scene recognition by sound, 영상에 대한 sound 태깅 Task]**
+
+**SoundNet**
+
+오디오 표현에 대한 학습을 처음 제시함, Teacher-student 학습 모델
+
+1. label되지 않은 영상을 프레임별로 pretrained된 Object detection과 Scene detection 모델들에게 각각 Input으로 넣고 output을 얻는다.
+2. Raw waveform을 CNN layer에 넣어준 뒤, 위의 output dimension과 같은 차원의 two head output을 얻는다.
+   - 이때, Spectrogram이 아니라 Raw Waveform을 쓴 이유는 단순히 연구 초기라 모르고 안썼다고 한다.
+3. 1의 output과 2의 output을 KL loss를 통해 loss를 얻은 뒤, 1번 모델들은 fixed한 채로 2번 모델을 학습시킨다. (Teacher-student 학습)
+4. 이렇게 학습된 2번의 모델을 다른 Task에 적용할 때에는 중앙의 pool5의 output인 feature vector를 task에 맞게 layer를 추가로 쌓아 사용한다.
+
+![image-20210314131813882](CV.assets/image-20210314131813882.png)
+
+**[img. SoundNet의 구조]**
+
+#### Cross modal translation
+
+![image-20210314142514349](CV.assets/image-20210314142514349.png)
+
+**1. Speech2Face**
+
+음성을 통하여 사람의 얼굴을 상상하는 Network
+
+각각 담당 Task에 대하여 Pretrained된 모델을 활용하는 Module 구조를 활용
+
+사람이 말하는 영상을 그대로 쓰면 되므로 annotation이 필요없는 self-supervised 모델
+
+이때 사용된 Pretrained 모델로
+
+1. Face Recognition : VGG-Face Model
+   - 얼굴 사진을 4096-D의 Face Feature vector로 바꿔 줌
+2. Face Decoder : facenet
+   - 얼굴 사진을 Landmark location을 이용하여 무표정으로 바꿔줌
+
+![image-20210314142608069](CV.assets/image-20210314142608069.png)
+
+**[img.Speech2Face 구조]**
+
+이후,
+
+1. Spectrogram 형태로 바꾼 사운드 데이터를 
+2. Voice Encoder에 넣어 앞서 구했던 Face Recogntion의 Feature dimension과 같은 vector를 생성하고
+3. Face feature와 비교하여 Loss를 구하여 학습한다.
+   - 이때, 학습되는 것은 Speech2Face Model인 Voice Encoder 부분이며, 기타 Pretrained 된 부분은 업데이트하지 않는다.
+
+![image-20210314152015701](CV.assets/image-20210314152015701.png)
+
+**[img. Speech2Face에서 학습되는 부분]**
+
+2. **Image-to-speech synthesis**
+
+사진에 대한 묘사를 음성으로 출력해주는 Task, Module network 구조를 활용
+
+![image-20210314161355636](CV.assets/image-20210314161355636.png)
+
+**[img. Image-to-speech Task]**
+
+1. Input Image를 14x14 feature map으로 형성 후 Attention을 활용한 RNN 구조에 hidden state로 사용한다.
+
+- 기본적으로 Show, Attend, and Tell 구조와 같지만, subword unit이라는 토큰 비슷한  것이 output 이다.(Learned Units)
+
+2. 해당 Unit을 Unit-to-Speech Model인 Tacotron 2의 구조를 이용해 subword를 음성으로 변환한다.
+   - 원본 Tacotron 2는 TTS(Text To Speech) 모델, 즉, text를 input으로 받지만 여기서는 subword를 받는다는 점이 다르다.
+
+![image-20210314161515132](CV.assets/image-20210314161515132.png)
+
+**[img. Image to speech Task]**
+
+이때, 위의 두 모델을 학습시키기 위해, Pre-trained model(ResDAVEnet-VQ)을 이용해 speech를 Unit으로 바꾸고 이를 Learned Units의 Ground-Truth로 사용한다.
+
+1) 즉 Image-to-Unit Model은 Ground-Truth Unit과 비교하여 Loss로 나와야 하고, 
+
+2) Unit-to-Speech Model은 Ground-Truth Unit을 Input으로 받으면 Pre-trained model(ResDAVEnet-VQ)의 Input Speech가 나와야 한다.
+
+![image-20210314205744504](CV.assets/image-20210314205744504.png)
+
+**[img. 학습을 위한 Speech-to-Unit Model]**
+
+#### Cross modal reasoning 
+
+**Sound source localization**
+
+사운드가 주어지면 해당 사운드가 사진의 어떤 Object가 내는지 예측하는 Task
+
+![image-20210314220447590](CV.assets/image-20210314220447590.png)![image-20210314220505377](CV.assets/image-20210314220505377.png)
+
+**[img. Sound source localization은 Cross modal Referencing에 속한다.]**
+
+label된 데이터의 여부에 따라 3가지 버전이 있으며 기초적인 과정은
+
+1) image Input을 통해서 Visual net에서 WxHxF image feature map을 내보낸다.
+
+2) audio Input을 통해서 Audio net에서 1x1xF audio feature map을 내보낸다.
+
+3) image feature map의 각 pixel 마다 audio feature map을 내적하여 관계성(attention)을 파악하고, 이 결과물 map이 Localization Score map이다.
+
+여기서 부터는 각 버전에 따라 다르다.
+
+1. Fully supervised version : label이 된 데이터셋이 있는 경우
+
+4) 결과물로 나온 Localization Score를 Ground-truth Loclization score와 비교하여 loss를 구한 뒤, Backpropagation 한다.
+
+2. unsupervised verison: label된 데이터셋이 없음
+
+- 비디오에는 보통 Sound가 포함되어 있다는 점을 annotation으로 활용
+
+4) 1)에서 구했던 WxHxF image feature map을 결과물이었던 Localization Score map과 Weighted sum pooling하여 1x1xF의 Attended visual feature를 만든다.
+
+5) Audio net에서 만든 1x1xF audio feature map과 비교해서 metric learn Loss를 구한다.
+
+	- 같은 비디오에서 나온 소리면 positive pair
+	- 다른 비디오에서 나온 소리면 negative pair로 이용한다.
+	- 여러 영상에서 특정 사운드가 나올 때마다 비슷한 image feature map이 나온다면, 그 image feature map의 가중치가 높은 지점이 sound source이기 때문
+
+3. semisupervised version: label된 데이터셋이 있지만 Audio net output과도 비교함
+
+4) 1. 2. 방법을 전부 사용하여 loss를 2개를 구하고 맞춰본다.
+
+![image-20210314225611105](CV.assets/image-20210314225611105.png)
+
+**[img. Sound source localization의 여러가지 버전]**
+
+**Speech separation**
+
+동시에 말하는 사람들의 말을 각각 1사람씩 말하는 Audio를 가져오는 Task
+
+![image-20210314225228243](CV.assets/image-20210314225228243.png)
+
+**[img. Speech separation]**
+
+|           과정           |                             도식                             | 설명                       |
+| :----------------------: | :----------------------------------------------------------: | :------------------------- |
+|    Visual<br />stream    | ![image-20210314235141102](CV.assets/image-20210314235141102.png) | N개의 나눌 이름 만큼, Face |
+|    Audio<br />stream     | ![image-20210314235235719](CV.assets/image-20210314235235719.png) |                            |
+| Audio-visual<br />fusion | ![image-20210314235245107](CV.assets/image-20210314235245107.png) |                            |
+
+**[table. Speech separation 과정]**
+
+이외에도 Cross modal task로, Lip movements generation, Tesla self-driving 등이 있다.
+
+
 
 ## 3D undersanding
 
