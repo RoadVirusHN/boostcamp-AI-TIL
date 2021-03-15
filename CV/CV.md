@@ -2313,6 +2313,7 @@ Sound-Image Task 중 Matching에 해당하는 Scene recognition by sound task를
    - 이때, Spectrogram이 아니라 Raw Waveform을 쓴 이유는 단순히 연구 초기라 모르고 안썼다고 한다.
 3. 1의 output과 2의 output을 KL loss를 통해 loss를 얻은 뒤, 1번 모델들은 fixed한 채로 2번 모델을 학습시킨다. (Teacher-student 학습)
 4. 이렇게 학습된 2번의 모델을 다른 Task에 적용할 때에는 중앙의 pool5의 output인 feature vector를 task에 맞게 layer를 추가로 쌓아 사용한다.
+   - 주로 이렇게 Pre-trained 모델로 사용하기 위해 학습시킨다.
 
 ![image-20210314131813882](CV.assets/image-20210314131813882.png)
 
@@ -2364,7 +2365,7 @@ Sound-Image Task 중 Matching에 해당하는 Scene recognition by sound task를
 
 - 기본적으로 Show, Attend, and Tell 구조와 같지만, subword unit이라는 토큰 비슷한  것이 output 이다.(Learned Units)
 
-2. 해당 Unit을 Unit-to-Speech Model인 Tacotron 2의 구조를 이용해 subword를 음성으로 변환한다.
+2. 해당 Unit을 Unit-to-Speech Model인 Tacotron 2를 이용해 subword를 음성으로 변환한다.
    - 원본 Tacotron 2는 TTS(Text To Speech) 모델, 즉, text를 input으로 받지만 여기서는 subword를 받는다는 점이 다르다.
 
 ![image-20210314161515132](CV.assets/image-20210314161515132.png)
@@ -2413,9 +2414,9 @@ label된 데이터의 여부에 따라 3가지 버전이 있으며 기초적인 
 
 5) Audio net에서 만든 1x1xF audio feature map과 비교해서 metric learn Loss를 구한다.
 
-	- 같은 비디오에서 나온 소리면 positive pair
-	- 다른 비디오에서 나온 소리면 negative pair로 이용한다.
-	- 여러 영상에서 특정 사운드가 나올 때마다 비슷한 image feature map이 나온다면, 그 image feature map의 가중치가 높은 지점이 sound source이기 때문
+- 같은 비디오에서 나온 소리면 positive pair
+- 다른 비디오에서 나온 소리면 negative pair로 이용한다.
+- 여러 영상에서 특정 사운드가 나올 때마다 비슷한 image feature map이 나온다면, 그 image feature map의 가중치가 높은 지점이 sound source이기 때문
 
 3. semisupervised version: label된 데이터셋이 있지만 Audio net output과도 비교함
 
@@ -2433,23 +2434,223 @@ label된 데이터의 여부에 따라 3가지 버전이 있으며 기초적인 
 
 **[img. Speech separation]**
 
-|           과정           |                             도식                             | 설명                       |
-| :----------------------: | :----------------------------------------------------------: | :------------------------- |
-|    Visual<br />stream    | ![image-20210314235141102](CV.assets/image-20210314235141102.png) | N개의 나눌 이름 만큼, Face |
-|    Audio<br />stream     | ![image-20210314235235719](CV.assets/image-20210314235235719.png) |                            |
-| Audio-visual<br />fusion | ![image-20210314235245107](CV.assets/image-20210314235245107.png) |                            |
+Dataset 필요한 Supervised Learning이며, 이때 데이터셋은 단순히 목소리 2개를 겹쳐서 만들 수 있다.
+
+|           과정           |                             도식                             | 설명                                                         |
+| :----------------------: | :----------------------------------------------------------: | :----------------------------------------------------------- |
+|    Visual<br />stream    | ![image-20210314235141102](CV.assets/image-20210314235141102.png ) | N개의 나눌 사람 만큼, <br />Face Embedding을 통해 <br />각자 feature를 구한다. |
+|    Audio<br />stream     | ![image-20210314235235719](CV.assets/image-20210314235235719.png) | Audio Spectrogram으로<br /> speech feature를 구한다.         |
+| Audio-visual<br />fusion | ![image-20210314235245107](CV.assets/image-20210314235245107.png) | 위에서 구한 feature들을<br /> concat한 뒤, N개의 <br />complex mask를 뽑아낸다. |
+|          output          | ![image-20210315000341431](CV.assets/image-20210315000341431.png) | 오리지널 spectrogram과 <br />mask를 곱해 필터링 결과 <br />spectrogram을 ISTFT로<br />waveform으로 바꾼 뒤,<br />원본과 비교해서 L2 Loss를 구하여 학습 |
 
 **[table. Speech separation 과정]**
 
 이외에도 Cross modal task로, Lip movements generation, Tesla self-driving 등이 있다.
 
-
-
 ## 3D undersanding
 
 ### Seeing the world in 3D perspective
 
+우리는 3D 세상에 살고 있기 때문에, 3D 공간에 대한 이해가 중요하다.
+
+
+
+|                             예시                             | 영역     |
+| :----------------------------------------------------------: | -------- |
+| ![image-20210315085123440](CV.assets/image-20210315085123440.png) | VR       |
+| ![image-20210315085130426](CV.assets/image-20210315085130426.png) | AR       |
+| ![image-20210315085154016](CV.assets/image-20210315085154016.png) | 3D Print |
+| ![image-20210315085207489](CV.assets/image-20210315085207489.png) | Medical  |
+| ![image-20210315085217203](CV.assets/image-20210315085217203.png) | Bio      |
+
+**[img. 3D를 활용하는 영역의 예시]**
+
+빛은 직진성을 띄기 때문에 3D의 형태는 2차원에 표현이 가능하며, 우리가 실제로 3D 물체를 인식하는 방법은 3D world를 2D space에 projection하는 image이다.
+
+![image-20210315085444009](CV.assets/image-20210315085444009.png)
+
+**[img. 원근에 대한 연구와 과거와 현재의 결실]**
+
+3차원 공간을 2차원 공간에 표현하는 것을 Projection을 통하여 가능했다면, 반대로 2차원 공간의 정보를 이용해 3차원 공간으로 표현하는 것은 Triangulation으로 가능하다.
+
+- 2장 이상의 이미지에서 3D pint의 한 점의 pixel 이동값과 이미지를 촬영했던 위치를 알고 있으면 Triangulation을 통해 이론상 3D 모델을 예측할 수 있다.
+
+![image-20210315085636357](CV.assets/image-20210315085636357.png)
+
+**[img. Triangulation의 예시]**
+
+2차원 이미지는 각 픽셀을 의미하는 2차원 array에 RGB 값을 저장함으로써 표현 가능하다.
+
+3차원 데이터의 표현은 여러가지 방법이 있다.
+
+|                                                              |                     3D 데이터 표현 예시                      |                                                              |
+| :----------------------------------------------------------: | :----------------------------------------------------------: | :----------------------------------------------------------: |
+| ![image-20210315090240429](CV.assets/image-20210315090240429.png) | ![image-20210315090245681](CV.assets/image-20210315090245681.png) | ![image-20210315090252859](CV.assets/image-20210315090252859.png) |
+|                      Multi-view images                       |                      Volumetric(voxel)                       |                        Part assembly                         |
+|                     2차원 이미지 여러장                      |                         3차원 array                          |                     기본 3D 도형의 집합                      |
+| ![image-20210315090258370](CV.assets/image-20210315090258370.png) | ![image-20210315090304829](CV.assets/image-20210315090304829.png) | ![image-20210315090329872](CV.assets/image-20210315090329872.png) |
+|                         Point cloud                          |                       Mesh (Graph CNN)                       |                   Implicit shape(function)                   |
+|                    3차원 Point 들의 집합                     |                      Vertex의 삼각 edge                      |                        고차원의 함수                         |
+
+**[img. 3D의 다양한 표현 방법들]**
+
+#### 3D datasets
+
+**ShapeNet**
+
+대용량 3D model 데이터셋(51,300개, 55 카테고리)
+
+![image-20210315090929981](CV.assets/image-20210315090929981.png)
+
+**[img. ShapeNet의 object들]**
+
+**PartNet(ShapeNetPart2019)**
+
+ShapeNet의 개량, 추가로 Detail이 annotation 되어있음(ex)자동차 모델 -> 자동차 바퀴, 창문, 천장 등이 따로 나눠짐)
+
+(26,671개의 3D model 총 573,585개의 part로 나눠짐)
+
+![image-20210315091038307](CV.assets/image-20210315091038307.png)
+
+**[img. PartNet 예시들]**
+
+**SceneNet**
+
+500만개의 랜덤하게 Generation된 RGB-Depth Indoor image들 
+
+![image-20210315091318160](CV.assets/image-20210315091318160.png)
+
+**[img. SceneNet, 랜덤하게 만들어짐]**
+
+**ScanNet**
+
+RGB-Depth 250만개의 실제 Indoor scan data
+
+![image-20210315091502679](CV.assets/image-20210315091502679.png)
+
+**[img. ScanNet]**
+
+**Outdoor 3D scene datasets**
+
+주로 자율주행을 위한 야외 데이터셋들, Lidar로 스캔한 것이 많음
+
+![image-20210315091528122](CV.assets/image-20210315091528122.png)
+
+**[img. Outdoor 3D scene 모음]**
+
 ### 3D tasks
 
-### 3D application example
+2차원 classification이나 object detection, semantic segmentation 등, 3D에도 같은 Task가 있다.
+
+자율주행, 의료, 제조업 등에 활발히 사용 중
+
+![image-20210315093050546](CV.assets/image-20210315093050546.png)![image-20210315093057024](CV.assets/image-20210315093057024.png)
+
+**[img. 3D task의 예시]**
+
+**Mesh R-CNN**
+
+2D image를 입력으로 감지된 object의 3D 메쉬를 출력
+
+Mask R-CNN 구조를 변경해서 구현
+
+![image-20210315094811949](CV.assets/image-20210315094811949.png)
+
+**[img. Mesh R-CNN 예시]**
+
+Mesh R-CNN은 기존의 Mask R-CNN에 3D mesh를 출력하는 3D branch가 추가된 형태
+
+![image-20210315095019376](CV.assets/image-20210315095019376.png)
+
+![image-20210315095042922](CV.assets/image-20210315095042922.png)
+
+**[imgs. Mask R-CNN VS Mesh R-CNN]**
+
+3D mesh를 생성하는 문제를 조금더 작은 여러개의 부 문제로 나누어 해결하여 더 좋은 성능을 낼 수 있다.
+
+- normal map, depth map, silhouette 검출 -> 3D 오브젝트 생성
+- Depth 탐지-> Spherical map(어느 한점을 중심으로 물체를 보았을 때의 이미지) 생성 -> voxel화 -> 3D mesh화
+
+![image-20210315095118571](CV.assets/image-20210315095118571.png)
+
+**[img. 더 복잡하고 정확한  3D mesh 생성법]**
+
+### 3D application example- Photo refocusing
+
+사진의 depth map을 이용하여 사진의 focus를 바꾸는 application
+
+Photo refocusing 또는 post-refocusing이라고도 함.
+
+![image-20210315101738298](CV.assets/image-20210315101738298.png)
+
+**[img. 앞의 조각상에 focusing 된 사진]**
+
+depth map은 depth sensor나 neural network를 이용해 검출 가능하다.
+
+![image-20210315101921972](CV.assets/image-20210315101921972.png)
+
+**[img. 사진의 depth map]**
+
+**구현 과정**
+
+1. depth thrshold range 최소치 ~ 최대치($D_{min}\sim D_{max}$)를 정하기
+
+- 즉 $D_{min}\sim D_{max}$까지만 focus하고 나머지는 blur 처리하겠다는 의미
+
+우리의 경우 0~255로 표현함
+
+![image-20210315103416424](CV.assets/image-20210315103416424.png)
+
+**[img.  depthmap 예시]**
+
+2. depth map thresholding으로 masking
+   - focusing할 focusing area와 blur 처리할 defocsing area로 마스킹
+
+![image-20210315103523577](CV.assets/image-20210315103523577.png)
+
+**[img. Threshold가 170일 때의 masking]**
+
+```python
+focus_mask = depth_map[..., :] > threshold_value
+defocus_mask = depth_map[..., :] <= threshold_value
+```
+
+**[img. masking code 예시]**
+
+3. blurr버전의 image를 생성
+
+- Depth에 따라 adaptive하게 적용하는 방법도 있음
+
+![image-20210315103745583](CV.assets/image-20210315103745583.png)
+
+**[img. Blur kernal을 이용한 image]**
+
+```python
+blurred_image= cv2.blur(original_image, (20, 20))
+```
+
+**[code. cv2를 이용한 blur 처리]**
+
+4. Masked focused image와 Masked defocused image를 생성하고 이미지 blending을 통해 refocused된 이미지 생성
+
+- 간단한 image array의 연산으로 생성 가능
+
+![image-20210315104240365](CV.assets/image-20210315104240365.png)
+
+**[img. Masked images]**
+
+```python
+focused_with_mask = focus_mask * original_image
+defocused_with_mask = defocus_mask * blurred_image
+```
+
+**[code. Masked Image 생성 코드]**
+
+![image-20210315104319659](CV.assets/image-20210315104319659.png)
+
+**[img. 결과물 blend]**
+
+![image-20210315104654349](CV.assets/image-20210315104654349.png)
+
+**[img. Threshold에 따른 blur 차이]**
 
