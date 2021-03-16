@@ -76,10 +76,9 @@ class Solution:
 
         return sorted(answer)
 
-# a = Solution()
-# # print(a.fourSum([1,0,-1,0,-2,2], 0))
-# # print(a.fourSum([], 0))
-# # print(a.fourSum([0,0,0,0], 1))
-# # print(a.fourSum([-3,-1,0,2,4,5], 0))
-# print(a.fourSum([0,-5,5,1,1,2,-5,5,-3], -11))
-print( 2< 7< 5)
+a = Solution()
+print(a.fourSum([1,0,-1,0,-2,2], 0))
+print(a.fourSum([], 0))
+print(a.fourSum([0,0,0,0], 1))
+print(a.fourSum([-3,-1,0,2,4,5], 0))
+print(a.fourSum([0,-5,5,1,1,2,-5,5,-3], -11))
