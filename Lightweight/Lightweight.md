@@ -1,3 +1,5 @@
+[TOC]
+
 # Lightweight
 
 > Naver AI boostcamp 내용을 정리하였습니다.
@@ -326,6 +328,8 @@ Hyperparameter 탐색 시마다 간격을 일정하게 주는 Grid search와 ran
 
 **[img. Surrogate model 도식]**
 
+
+
 ![image-20210316130201643](Lightweight.assets/image-20210316130201643.png)
 
 **[img. Gaussian model 예시]**
@@ -479,6 +483,8 @@ DB의 데이터에 대한 CRUD 로직
 
 KL divergence는 Loss를 많이 구하는데 사용하지만, 엄밀히 말하면 entropy의 차이를 측정할 수 있는 방법이며, 압축 등의 효율을 구하는 데도 사용한다.
 
+P분포와 Q분포의 차이를 찾음
+
 ![image-20210316232057799](Lightweight.assets/image-20210316232057799.png)
 
 **[img. Mnist Model의 예측 결과]**
@@ -521,4 +527,558 @@ $$
 
 ![image-20210316235214563](Lightweight.assets/image-20210316235214563.png)
 
-**[img. 각 모델과 ILSVRC와의 비교 ]**
+**[img. 각 모델 성능의 비교 ]**
+
+DEEP Compression 논문에서 Pruning, Quantization, Huffman coding을 이용한 모델 압축 후의 성능과 압축율에 대한 정보가 나와있다.
+
+![image-20210317003028256](Lightweight.assets/image-20210317003028256.png)
+
+**[img. 기존 모델의 압축과 압축에 따른 성능 비교]**
+
+압축이 크게 된 Layer는 쓸모없는 Parameter가 많았다는 의미이다.
+
+![image-20210317003042603](Lightweight.assets/image-20210317003042603.png)
+
+**[img. AlexNet의 Layer 별 압축 결과]**
+
+![image-20210317003100440](Lightweight.assets/image-20210317003100440.png)
+
+**[img. Compression 비율에 따른 정확도 그래프]**
+
+TFlite를 사용하면 크게 압축 된다.
+
+## Acceleration
+
+우리가 배운 pytorch는 framework 수준이며 실제 구동에서는 더욱 더 낮고 Low level로 compile 되게 된다.
+
+![image-20210317101850213](Lightweight.assets/image-20210317101850213.png)
+
+**[img. DL Software~Hardware 까지]**
+
+### Acceleration
+
+Numpy는 C 기반이라 병렬적으로 처리가 가능, 메모리에 효율적으로 배치되어서 Python List보다 훨씬 빠름
+
+Python은 Intepreter 언어
+
+C는 Compile 언어
+
+![image-20210317130635210](Lightweight.assets/image-20210317130635210.png)![image-20210317130645457](Lightweight.assets/image-20210317130645457.png)
+
+**[img. Bandwidth와 Throughput에 대한 개념]**
+
+![image-20210317130656020](Lightweight.assets/image-20210317130656020.png)
+
+![image-20210317130705159](Lightweight.assets/image-20210317130705159.png)
+
+**[img. Latency에 대한 개념]**
+
+Bandwidth는 시간당 얼마나 CPU가 데이터를 주고 받을 수 있는가에 대한 능력
+
+Latency는 정보가 전송될 때 지연되는 시간(메모리간의 속도 차이, 데이터의 병목, 너무 많은 명령 처리 등으로 인해)
+
+Throughput은 실제 데이터가 전송되는 양
+
+Parallel processing은 Throughput이 좋아지며, latency와 badnwidth는 변화없다.
+
+![image-20210317131639430](Lightweight.assets/image-20210317131639430.png)
+
+**[img. ML에서의 가속 방법]**
+
+이때, 모델의 속도를 개선하기 위해, Multithreding 디자인 또는 Low-Precision arth metic, data flow 개선, in-memory computing capabilty 증가 등의 방법이 있다. 
+
+### Hardwares (chip)
+
+하드웨어 가속(Acceleration)을 통하여 latency를 줄이고, throughput을 늘리는 효과를 가질 수 있다.
+
+- 이때, 하드웨어 가속(Acceleration)은 잘 수행할 수 있는 특정 목적에 맞게 하드웨어를 이용하거나 설계하는 것이다.
+
+![image-20210317132115165](Lightweight.assets/image-20210317132115165.png)
+
+**[img. about hardware acceleration]**
+
+Processing Unit은 많은 종류가 있다, ARM이 대세
+
+|      명칭       |                   의미                    |                   설명                   |
+| :-------------: | :---------------------------------------: | :--------------------------------------: |
+|       CPU       |          Central Processing Unit          |                   범용                   |
+|       GPU       |          Graphic ProcessingUnit           |       이미지, 컴퓨터 그래픽, 게임        |
+|       DPU       |            Data ProcessingUnit            |                  데이터                  |
+|       TPU       |           Tenor ProcessingUnit            |      2차원 이상의 array, NPU에 속함      |
+|       NPU       |           Neural ProcessingUnit           |                  딥러닝                  |
+|       IPU       |        Inelligence ProcessingUnit         |           그래프코어에서 생산            |
+|       VPU       |           Vision ProcessingUnit           |                                          |
+|      FPGA       |       Field Programmable Gate Array       |       조립 가능, 아두이노 같은 것        |
+|       SoC       |              System on Chip               | CPU,GPU,Memory,Camera등 모든 기능을 탑재 |
+|      ASIC       | Applicatioin Specific Integrated Circuits |  특정 목정만을 위한 칩(냉장고, 밥솥 등)  |
+| Neuromorphic IC |      Neuromorphic Integrated Circuit      |                                          |
+
+**[img. Processing uint 차이]**
+
+IPU는 메모리와 코어와의 거리가 짧아 병목현상과 Latency가 적다.
+
+![image-20210317132735565](Lightweight.assets/image-20210317132735565.png)
+
+**[img. 가장 많이 사용되는 4개의 Processing uint]**
+
+CPU는 범용 목적이며, 순차적인 업무에 전반적으로 성능이 좋음
+
+GPU는 병렬 처리에 유리하며 그래픽 업무, 병렬 처리가 필요한 ML에 좋음
+
+![image-20210317132755525](Lightweight.assets/image-20210317132755525.png)
+
+**[img. CPU vs GPU]**
+
+### Compression & Acceleration
+
+Compression : 보통 소프트웨어 단에서 용량을 줄이는 등에 사용 (Space complexity로 계산)
+Acceleration : 보통 로우레벨 또는 하드웨어 단에서 연산속도, Latency 등을 개선하는데 사용 (Time complexity로 계산)
+
+칼같이 구분하진 않음
+
+![image-20210317134634083](Lightweight.assets/image-20210317134634083.png)
+
+**[img. Compression과 Acceleration의 차이]**
+
+  하드웨어를 고려한 Compression이 더욱 효과적임
+
+하드웨어 + 소프트웨어 co-design
+
+### Deep learning compiler
+
+DL compiler는 다른 framework에서 만들어진 DL model을 Input으로 받아서 여러 hardware에 최적화된 DL code를 출력하는 compiler다.
+
+- XLA, TVM, GLOW, ONNC 등이 존재함 
+
+multi-level IRs : 여러 단계를 걸쳐 시행
+
+frontend/backend optimization : High level <-> lowlevel 구조
+
+- frontend/high level은 하드웨어에 Independent 하다
+- backend/low level은 하드웨어에 따라 다르다.
+
+![image-20210317142711749](Lightweight.assets/image-20210317142711749.png)
+
+**[img. High level과 low level의 예시]**
+
+**LLVM**
+
+LLVM IR을 사용하여 언어 <-> 하드웨어 간의 번역을 통합함
+
+컴파일러 수가 크게 줄어듦
+
+![image-20210317144433209](Lightweight.assets/image-20210317144433209.png)
+
+**[img. LLVM의 장점]**
+
+**MLIR(Multi-Level Intermediate Representation)**
+
+머신러닝 컴파일러 생성을 도와주는 library
+
+![image-20210317144936104](Lightweight.assets/image-20210317144936104.png)
+
+**[img. 자세한 ML 모델의 컴파일 과정]**
+
+**compiler backend optimization 예시**
+
+polytotype method : loop 문에 관한 optimization 방법
+
+Locality of reference : 사용했던 데이터는 또 다시 쓸 확률이 높으므로, 메모리 위치를 조정해줌
+
+- Temporal locality
+- spatial locality
+- Branch locality
+- Equidistant locality
+
+![image-20210317145119884](Lightweight.assets/image-20210317145119884.png)
+
+**[img. Hardware단의 compile의 여러 예시]**
+
+Structured pruning + Mixed precision quantization = Harware-ware compression
+
+단순히 소프트웨어 만으로 최적화하지 않고 hardware에 맞추어 최적화하는 것,
+
+![image-20210317145926276](Lightweight.assets/image-20210317145926276.png)
+
+**[img. Hardware-aware compression ]**
+
+![image-20210317150113694](Lightweight.assets/image-20210317150113694.png)
+
+**[img. compression의 최신 트랜드]**
+
+## 가지치기(Pruning)
+
+### Weighted sum model
+
+$$
+S = \sum^N_iw_ix_i=(w_1,w_2,\dots,w_N)\cdot(x_1,x_2,\dots,x_N)=W\cdot X, (W,X) \in \mathbb{R}^{N\times N}
+$$
+
+**[math. weighted sum 공식]**
+
+### Pruning이란?
+
+중요한 node만 남기는 방식으로 optimization
+
+장점으로 추론 속도증가, 모델의 complexity 감소, Regularization으로 인한 generalization 성능 향상
+
+단점으로 정보의 손실압축 형식, 하드웨어 기반 optimization이 까다로워짐, acc loss
+
+
+
+그다지 중요하지 않은 정보는 weight가 0에 가깝게 생성되므로, 큰영향을 끼치지 않는다. 
+
+weight가 0에 가까운 neuron을 pruning하여 opimization할 수 있다.
+
+![image-20210318120749490](Lightweight.assets/image-20210318120749490.png)
+
+**[img. Pruning의 결과]**
+
+Dropout 또한 Regularization을 위해 사용하며, 랜덤으로 Drop하게 되면 다른   모델처럼 되므로 앙상블과 비슷한 효과를 가질 수 있다.
+
+Dropout과 Pruning의 차이는 Dropout은 매번 training마다 랜덤하게 끄고, Inference 시 다시 켜지지만, Pruning은 아니다.
+
+![image-20210318120916714](Lightweight.assets/image-20210318120916714.png)
+
+**[img. Dropout]**
+
+![image-20210318121217720](Lightweight.assets/image-20210318121217720.png)
+
+**[img. Pruning(좌), Dropout(우)]**
+
+![image-20210318121252827](Lightweight.assets/image-20210318121252827.png)
+
+**[img. Prunnig과 Dropout의 수식적 차이]**
+
+![image-20210318121618870](Lightweight.assets/image-20210318121618870.png)
+
+**[img. Pruning시, Iterative하게하고, retrain을 하면 성능을 좀더 보존할 수 있다.]**
+
+![image-20210318121849767](Lightweight.assets/image-20210318121849767.png)
+
+**[img. Regulariazation에 대한 설명]**
+
+### 여러가지 Pruning들
+
+Pruning 방법은 분류에 따라 아주 많다
+
+- Global Magnitude Pruning, Layerwise Magnitude Pruning, Random Pruning 등등...
+
+![image-20210318122110713](Lightweight.assets/image-20210318122110713.png)
+
+**[img. Prunning의 분류 방법]**
+
+**Unstructured VS Structured Pruning**
+
+Unstructured pruning은 weight 연산을 구분없이 사라지게 하며
+
+​	- Neuron이 성긴 모양으로 생기게 되는 장점
+
+Structured pruning은 커널이나, Layer 등의 구분을 두고, 해당 구분에서 통째로 사라지게 만든다.
+
+	- 하드웨어 등에서 좀더 잘 Pruning 해준다.
+
+![image-20210318122402440](Lightweight.assets/image-20210318122402440.png)
+
+**[img. Unstructure Pruning vs structured pruning]**
+
+Scratch-trained는 시작부터 다시 트레이닝 하는 거며,
+
+Fine tuning은 Pretraing 된 것을 pruning 한것,
+
+Unstructed Pruning은 Finetuning을 하여도 0 주변 weight가 되살아나지 않는다.
+
+![image-20210318122718514](Lightweight.assets/image-20210318122718514.png)
+
+**[img. 두 방법의 결과 그래프]**
+
+한꺼번에 Pruning 하면 Retraining 해도 Accuracy가 다시 오르지 않는다고 한다.
+
+![image-20210318123029520](Lightweight.assets/image-20210318123029520.png)
+
+**[img. 한꺼번이 아니라 조금씩 pruning한 결과]**
+
+![image-20210318123438277](Lightweight.assets/image-20210318123438277.png)
+
+**[img. 자세한 Pruning 과정]**
+
+### Lottery Ticket Hypothesis
+
+Lottery Ticket Hypothesis란, 같은 accuracy를 가진 Pruning한 network가 원래 기존의 원본 network 안에 subnetwork로 존재했을 것이라는 가설.
+
+즉, 굳이 Pruning을 하지 않아도 처음부터 Pruning한 network 구조를 알 수 있으면 처음부터 Pruning한 Network(Lottery ticket)를 가지고 올 수 있다.
+
+가설이므로 아직 증명은 안됨
+
+![image-20210318124533178](Lightweight.assets/image-20210318124533178.png)
+
+**[img. Lottery Ticket Hypothesis에 대한 개념]**
+
+retraining시 처음 Initial state의 W로 시작하지 않고, 어느정도 train된 $W_k$부터 시작하는 방법,
+
+랜덤화를 위해 조금의 noise를 섞어준다.
+
+어느 정도 training 구간을 skip 할 수 있으므로 training cost를 줄이면서 성능도 좋아진다.
+
+![image-20210318124934361](Lightweight.assets/image-20210318124934361.png)
+
+**[img. Lottery Ticket을 구하는 방법 중 하나인 Rewinding]**
+
+![image-20210318131218851](Lightweight.assets/image-20210318131218851.png)
+
+**[img. Rewinding algorithm]**
+
+## 양자화 (Quantization for model compression)
+
+### Fixed point, floating point
+
+32-bit fixed-point는 앞에 지수 10자리를 정수부분, 뒤의 22 자리를 소수점을 표현하는데 사용
+
+- 덧셈과 뺄셈시 erorr가 없음, 정수 분수 표현 가능
+- 연산 속도가 빠르고 메모리 사용량, 전력 사용량이 적음
+
+- 곱셈이 힘들고(수가 자주 표현범위를 넘어가므로), 수의 표현 범위가 작음
+
+32bit floating-point는 가수부에서 일의 자리 + 소수점 부분을 표현하며, 앞의 지수부에서 10의 지수를 표현함
+
+- 비교적 많이 사용되며, 아주 넓은 범위의 수를 손실없이 표현 가능
+- hardware에 구현이 힘듦, 특히 ARM에서 구현 힘듦 
+- 과거에는 FPU(Floting point precessing unig)라는 CPU와 별개의 연산 장치가 연산했지만 요즘에는 CPU에 내장
+
+![image-20210318132848115](Lightweight.assets/image-20210318132848115.png)
+
+**[img. fixed-point vs floating point]**
+
+소수점 연산은 수가 단계에 맞아떨어지는 정수와 달리 연속적인 수이므로 연산이 힘들고 복잡하다.
+
+Quantization의 아이디어는 float으로 이루어진 AI weight를 연산이 빠른 정수형으로 바꾸는데에 있다.
+
+![image-20210318172850424](Lightweight.assets/image-20210318172850424.png)
+
+**[img. 소수점 연산의 힘듦 : CPU 내의 FPU의 크기]**
+
+**정확도 vs 정밀도**
+
+정확도(Precision) : 정답과 값들의 거리
+
+정밀도(Variance) : 값 간의 모임 거리 
+
+![image-20210318193639557](Lightweight.assets/image-20210318193639557.png)
+
+**[img. Variance vs bias]**
+
+### 양자화(Quantization)
+
+모델크기 감소, Inference 시간 감소에 효과적이며, 메모리 bandwidth 요구에 맞추는데 사용
+
+기존에 float32형태의 weight 값들에서 int8형으로 mapping하여 속도의 향상을 얻을 수 있다
+
+대신 lossy conversion이므로 정보가 조금 손실된다.
+
+![image-20210318201540902](Lightweight.assets/image-20210318201540902.png)
+
+**[img. 8비트 정수값에 맞게 mapping한 Quantization(아래)과 그에 따른 에러 그래프(위)]**
+
+![image-20210318210713972](Lightweight.assets/image-20210318210713972.png)
+
+**[img. Deep Learning은 아주 많은 compuation을 필요로 한다.]**
+
+**Affine quantization**
+
+**Affine transformation** : 공간 dimension이나 평행 선의 길이의 비율(parallel line segemnt)은 유지한채로 affine space로 변환하는 변환
+
+모양은 유지한 채로, 비율만 변하는 변환? "닮음 변환"
+
+Affine map은 결합 법칙이 성립함 $m_f(x-y)=f(x)-f(y)$
+
+ex) $y=\sigma\left(\sum_{i=1}^nx_iw_i + b\right): ML의\ 선형변환의\ Activation\ 적용\ 전까지$
+
+ ![image-20210318213914862](Lightweight.assets/image-20210318213914862.png)
+
+**[img. Affine quantization의 예시]**
+
+![image-20210318214039864](Lightweight.assets/image-20210318214039864.png)
+
+**[img. Quantization mapping의 과정]**
+
+**Quantizing activation and weights**
+
+Weight뿐만 아니라 Activation또한 Quantization이 가능하다.
+
+![image-20210318215116786](Lightweight.assets/image-20210318215116786.png)
+
+**[img. 정수값마다 계단형으로 바뀐 activation]**
+
+하지만 Activation을 Quantization할 경우, Backpropagation 시 문제가 생긴다.
+
+이를 해결하기 위해,
+
+1) 계단식의 그래프와 가장 비슷한 기울기 1의 그래프로 쳐서 Backpropagation 한다.
+
+2) 또는, Quantization을 할 때 smothing을 주어 미분가능한 형태로 만든다.
+
+![image-20210318221319291](Lightweight.assets/image-20210318221319291.png)
+
+**[img. Quantization에 의한 Backpropagation 문제 해결 1]**
+
+![image-20210318221718407](Lightweight.assets/image-20210318221718407.png)
+
+**[img. Quantization에 의한 Backpropagation 문제 해결 2]**
+
+DoReFa-Net style 3-bit activation quantizer function 이나
+
+Binarized Neural Networks 처럼
+
+8단계(3bit)나 극단적으로 1bit(0,1)로만 activation을 바꾸는 방법도 있다.
+
+### Quantization의 종류 
+
+- Quantization 대상에 따라 : Weight, Activation
+- Quantize 방법에 따라 : Dynamic(DQ, Acitvation들을 Inference 할 때 그 순간만 양자화, Weight는 처음부터 양자화 ), Static(양자화된 채로 아예 변형)
+- Quantize 강도에 따라 : 1bit~16bit, Mixed-precision
+- Quantize 시기에 따라: Post-training(PTQ, Training된 모델에 Quantize, 파라미터 size가 클수록 성능 하락 적음), Quantization aware training(QAT, Training 하면서 Quantization을 시뮬레이션, 성능하락 적음)
+
+![image-20210318222117729](Lightweight.assets/image-20210318222117729.png)
+
+**[img. Quantization의 종류 구분]**
+
+DQ, PTQ, QAT 모두 원본 Model과는 성능이 똑같지 않다.
+
+![image-20210318223654527](Lightweight.assets/image-20210318223654527.png)
+
+**[img. DQ, PTQ, QAT에 대한 도식]**
+
+GPU, TPU 등의 큰 분류 뿐만 아니라, 제조사, 제조 모델, 운영체제나 라이브러리에 따라 지원하지 않을 수도 있다.
+
+![image-20210318223935091](Lightweight.assets/image-20210318223935091.png)
+
+**[img. Quantization 들의 장점과 하드웨어 제한]**
+
+![image-20210318224354275](Lightweight.assets/image-20210318224354275.png)
+
+**[img. 여러가지 방법을 섞어서 Quantization을 할 수 있다.]**
+
+**Hardware-aware-quantization**
+
+하드웨어에 따라 가능한 Quantization 방법이 다르고, 적절한 방법도 다르다.
+
+강화학습과, 성능 측정을 통해 하드웨어 적합한 Policy를 찾아 적용 가능하다.
+
+![image-20210318230344151](Lightweight.assets/image-20210318230344151.png)
+
+**[img. bit 크기에 따른 quantization의 성능 비교]**
+
+![image-20210318230549209](Lightweight.assets/image-20210318230549209.png)
+
+**[img. 강화학습을 이용한 Hardware-aware quantization]**
+
+### Quantization 결과 테이블 읽기
+
+주로 여러가지 방법의 Quantization 간의 Latency와 용량, accuracy를 비교해본다.
+
+Resnet의 경우 Batch Normalization layer 때문에 안되는 것으로 추정
+
+![image-20210318232322913](Lightweight.assets/image-20210318232322913.png)
+
+**[img. Quantization 결과]**
+
+![image-20210318232714566](Lightweight.assets/image-20210318232714566.png)
+
+**[img. Flexible bit를 이용한 Quantization 결과 비교 예시]**
+
+## 지식 증류 (Knowledge distillation for network compression)
+
+### Knowledge 
+
+![image-20210318235936099](Lightweight.assets/image-20210318235936099.png)
+
+**[img. Knowledge의 정의]**
+
+$C_K$는 Reference class(모든 확률을 더한 값?)
+
+![image-20210319000939461](Lightweight.assets/image-20210319000939461.png)
+
+**[img. logit, softmax, sigmoid의 정의]**
+
+### Knowledge distillation
+
+ training 시와 deploment 간 필요한 setting과 parameter가 다르다.
+
+그러므로 deploy를 위한 compressed된 model이 따로 필요하다.
+
+![image-20210319003526782](Lightweight.assets/image-20210319003526782.png)
+
+**[img. train model과 deploy 모델 차이]**
+
+Transfer learning은 다른 도메인의 모델을 Task를 위해 기존의 모델을 통해 learning 하는 것이며,
+
+Teacher-Student model은 같은 도메인 내에서 model size를 줄이기 위해 Learning 한다.
+
+![image-20210319003626866](Lightweight.assets/image-20210319003626866.png)
+
+**[img. knowledge distillation 방법 중 하나인 Teacher-student model]**
+
+### Teacher-Student networks & Hinton loss
+
+Teacher-student 모델로 생성된 최적화된 모델은 데이터에서 직접 트레이닝한 모델보다 비슷한 크기, 비슷한 파라미터 하에, 성능이 더 좋은 경향이 있다.
+
+Teacher의 결과와의 차이인 distllation loss와 Ground-Truth와의 차이인 student loss를 합쳐서 종합 Loss(Hinton loss)를 만든다.
+
+이때 $p_i$를 통하여 결과값인 class별 확률을 soft하게 만들어준다.
+
+- $p_i$의 T는 Temperature로 knowledge distillation의 핵심이다.
+
+![image-20210319004034472](Lightweight.assets/image-20210319004034472.png)
+
+**[img. Teacher-Student 모델의 개념도]**
+
+기존의 one-hot vector의 경우나, 확률 편차가 극도로 큰 ouput은 정보가 많이 없는 반면,
+
+soften한 output의 경우, 개와 고양이의 정보값이 큰것으로 보아, 개와 고양이를 조금 헷갈려 한다는 것을 알 수 있다.(Dark knoweldge)
+
+이 정보를 이용하기 위해 결과값을 soften 한다.
+
+- 다 합쳐서 1이 되는 것은 모두 같아야 한다, 아래 그림은 나머진 숨긴 것
+
+![image-20210319005056883](Lightweight.assets/image-20210319005056883.png)
+
+**[img. 결과값을 soft하게 하는 이유]**
+
+![image-20210319010358656](Lightweight.assets/image-20210319010358656.png)
+
+**[img. T의 크기에 따른 softmax output]**
+
+### Zero-mean assumption
+
+knowledge distillation == model compression이 되려면 zero-mean Assumption이 True여야 한다.
+
+zero-mean Assumption이란, logit들이 모두 Zero-mean일 경우를 의미한다.
+$$
+\frac{\partial C}{\partial z_i}=\frac{1}{T}(q_i-p_i)=\frac{1}{T}\left(\frac{e^{z_i/T}}{\sum_je^{z_j/T}}-\frac{e^{v_i/T}}{\sum_je^{v_j/T}}\right)
+\\\approx\frac{1}{T}\left(\frac{1+z_i/T}{N+\sum_jz_j/T}-\frac{1+v_i/T}{N+\sum_jv_j/T}\right)\\
+\approx \frac{1}{NT^2}(z_i-v_i) : compression\\
+z_i:distilled\ model\ logits, v_i:teacher\ model\ logits
+$$
+**[math. zero-mean assumption이 참이 되어야 성립하는 식]**
+
+### 여러 distillation들
+
+이외에도 여러 distillation 방법들이 존재한다.
+
+![image-20210319013243836](Lightweight.assets/image-20210319013243836.png)
+
+**[img. 여러 distilation 기법, 우리가 배운 것은 밑줄 친 BLKL]**
+
+예를 들자면,
+
+Overhaul Feature Distillation  
+
+-  중간에 Distillation 상황을 점검하고 결과값을 비교하는 Layer을 추가, 
+- feature를 뽑는 distillation output의 위치 ReLU이전으로 조정, 
+- partial L2 distance 제안 
+
+Data-Free Knowledge Distillation
+
+- 데이터가 적거나 없을 때 사용할 수 있는 방법
+- meta data로 data를 reconstruction 하여 사용함
+  - Pruning, Quantization, Matrix factorization 등의 방법도 data-free임.
