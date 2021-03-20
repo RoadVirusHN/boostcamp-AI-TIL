@@ -1,3 +1,5 @@
+[TOC]
+
 # Hidden class - Basic computer class for newbies
 
 - 모바일에만 익숙한 젊은 컴맹들을 위한 기초 강의
@@ -27,7 +29,7 @@
 - Console, CMD라고도 부름.
 - 윈도우 키 + R로 CMD 실행 가능
 
-#### 명령어
+#### 명령어x
 
 - 모든 명령어들은 **[명령어] -h, [명령어] –help, man [명령어]**를 통하여 사용례와 설명을 볼 수 있다.
 
