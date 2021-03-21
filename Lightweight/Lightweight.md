@@ -1082,3 +1082,30 @@ Data-Free Knowledge Distillation
 - 데이터가 적거나 없을 때 사용할 수 있는 방법
 - meta data로 data를 reconstruction 하여 사용함
   - Pruning, Quantization, Matrix factorization 등의 방법도 data-free임.
+
+## 행렬 분해(Low-rank approximation for model compression)
+
+### Three maps
+
+1. Matrix 또는 Tensor는 data modeling tool 이다. 
+
+![image-20210321210747679](C:\Users\roadv\AppData\Roaming\Typora\typora-user-images\image-20210321210747679.png)
+
+**[img. Matrix 또는 Tensor의 해석 방법 ]**
+
+2. Matrix(Tensor)는 linear transformation (map)
+
+![image-20210321210942205](C:\Users\roadv\AppData\Roaming\Typora\typora-user-images\image-20210321210942205.png)
+
+**[img. ]**
+
+3. terminology
+
+### Kernel method
+
+### Matrix decomposition
+
+### Tensor decomposition
+
+### Tensor decomposition on network compression
+
