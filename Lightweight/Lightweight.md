@@ -1089,23 +1089,162 @@ Data-Free Knowledge Distillation
 
 1. Matrix 또는 Tensor는 data modeling tool 이다. 
 
+Matrix와 달리 Tensor는 2차원 이상의 Matrix를 의미함.
+
 ![image-20210321210747679](C:\Users\roadv\AppData\Roaming\Typora\typora-user-images\image-20210321210747679.png)
 
 **[img. Matrix 또는 Tensor의 해석 방법 ]**
 
-2. Matrix(Tensor)는 linear transformation (map)
+2. Matrix(Tensor)는 linear transformation(선형 변환) (map)
 
 ![image-20210321210942205](C:\Users\roadv\AppData\Roaming\Typora\typora-user-images\image-20210321210942205.png)
 
-**[img. ]**
+**[img. 차원공간에서의 위치 변경이 가능함]**
 
 3. terminology
 
+![image-20210322072531072](C:\Users\roadv\AppData\Roaming\Typora\typora-user-images\image-20210322072531072.png)
+
+**[img. 행렬에 대한 전문용어]**
+
+행렬을 통하여 연립방정식 또한 표현 가능하다.
+$$
+\left\{\begin{matrix}
+x+2y+z=5\\-2x-3y+z=8 \\3x+5y+0z=2 \\
+\end{matrix}\right. \Leftrightarrow \begin{bmatrix}
+1 & 2 & 1\\ 
+-2 & -3 & 1\\ 
+3 & 5 & 0
+\end{bmatrix}\begin{bmatrix}
+x
+\\ 
+y
+\\ 
+z
+\end{bmatrix}=\begin{bmatrix}
+5
+\\ 
+8
+\\ 
+2
+\end{bmatrix}
+$$
+**[img. 연립방정식의 행렬에 의한 표현]**
+
+**Gaussian elimination**
+
+basis : n차원 공간을 결정하기 위한 n개의 벡터의 집합을 basis라고 한다고 함.
+
+rank + nullity로 matrix의 dimension을 구할 수 있음
+
+![image-20210322075337170](C:\Users\roadv\AppData\Roaming\Typora\typora-user-images\image-20210322075337170.png)
+
+**[img. Rank를 구하는데 사용]**
+
+![image-20210322083238664](C:\Users\roadv\AppData\Roaming\Typora\typora-user-images\image-20210322083238664.png)
+
+**[img. filter, matrix, tensor의 처리 방법]**
+
+Low-rank matrix approximations : large-scale learning problem kernel method에 필요한 툴
+
 ### Kernel method
+
+kernel: a central or essential part
+
+![image-20210322083915548](C:\Users\roadv\AppData\Roaming\Typora\typora-user-images\image-20210322083915548.png)
+
+**[img. CNN에서의 Kernel]**
+
+kernel method를 통하여 고차원으로 변환할 때 연산량을 줄일 수 있다.
+
+- 저차원에서 내적값을 미리 계산한 뒤, 변환
+
+![image-20210322085234133](C:\Users\roadv\AppData\Roaming\Typora\typora-user-images\image-20210322085234133.png)
+
+**[img. kernel method의 고차원 변환에서의 사용]**
+
+
+
+![image-20210322090842169](C:\Users\roadv\AppData\Roaming\Typora\typora-user-images\image-20210322090842169.png)
+
+**[img. kernel method의 적용 연산 비교]**
+
+연산량이 줄어들지만 연산결과가 완전 같지는 않다.
+
+optimization에서 많이 사용함
+
+![image-20210322090919929](C:\Users\roadv\AppData\Roaming\Typora\typora-user-images\image-20210322090919929.png)
+
+![image-20210322091030152](C:\Users\roadv\AppData\Roaming\Typora\typora-user-images\image-20210322091030152.png)
+
+**[imgs. ML에서 low-rank approximation을 이용한 파라미터 감소 예시]**
 
 ### Matrix decomposition
 
+행렬을 n개의 행렬의 곱으로 나타내는 것,
+
+approx 값일 때도 있고, equal 값일 때도 있다.
+
+ML이전에 PCA, SVD 등을 이용한 추천 시스템 등에서 많이 사용함
+
+![image-20210322091646203](C:\Users\roadv\AppData\Roaming\Typora\typora-user-images\image-20210322091646203.png)
+
+**[img. Matrix decomposition의 예시]**
+
+Eigen Vector: 변환 시켰을 때, 길이만 변하는 벡터
+
+Eigen Value: 변환 시켰을 때, 길이만 변하는 벡터가 변한 길이의 량 
+
+위 두 개념을 이용해 행렬을 변환시킬 수 있다. 
+
+![image-20210322123056843](C:\Users\roadv\AppData\Roaming\Typora\typora-user-images\image-20210322123056843.png)
+
+**[img. Eigenvalue Decomposition]**
+
+**Singular value decomposition (SVD): a generalization (nm case) of EVD**
+
+가로 세로 길이가 다른 행렬을 가로 세로 길이를 뒤바꾼 형태로 transpose하여, 정행렬과 정행렬의 transpose, 그리고 singular value의 제곱($\sum^2_{nn}$= Eigen value)으로 나타내는 방법
+
+다항식의 인수분해로 비유할 수 있음
+
+![image-20210322124540042](C:\Users\roadv\AppData\Roaming\Typora\typora-user-images\image-20210322124540042.png)
+
+**[img. SVD 예시]**
+
+![image-20210322130123194](C:\Users\roadv\AppData\Roaming\Typora\typora-user-images\image-20210322130123194.png)
+
+**[img. SVD를 이용한 PCA 차원축소]**
+
+![image-20210322130209484](C:\Users\roadv\AppData\Roaming\Typora\typora-user-images\image-20210322130209484.png)
+
+**[img. 다양한 방식의 decomposition]**
+
 ### Tensor decomposition
+
+![image-20210322130727508](C:\Users\roadv\AppData\Roaming\Typora\typora-user-images\image-20210322130727508.png)
+
+**[img. Tensor의 예시]**
+
+각각 다차원 matrix나 tensor는 outer product를 통해 rank 1 짜리 matrix나 tensor로 표현 가능
+
+![image-20210322131047212](C:\Users\roadv\AppData\Roaming\Typora\typora-user-images\image-20210322131047212.png)
+
+**[img. Matrix decomposition]**
+
+**CP (Canonical Polyadic) decomposition**
+
+tensor 버전의 SVD (Rank1 짜리 tensor의 linear combination 표현)
+
+Tucker의 경위 CP의 일반화된 버전 (Rank 1은 아니지만 조금더 저차원의 tensor로 표현) 
+
+두뇌의 신경 구조 분석 등을 위해 사용
+
+![image-20210322131333118](C:\Users\roadv\AppData\Roaming\Typora\typora-user-images\image-20210322131333118.png)
+
+**[img. CP의 예시]**
 
 ### Tensor decomposition on network compression
 
+모바일넷의 선형대수적 증명과 모바일넷 v2의 차이에 관한 논문에 대한 설명
+
+network compression은 위에서 설명한 decomposition을 이용해 설명할 수 있는 경우가 많다.
