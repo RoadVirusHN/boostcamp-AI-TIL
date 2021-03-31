@@ -271,3 +271,103 @@ num_workers 사용 결과
 
 너무 큰 값을 사용하면, 딥러닝 이외의 시스템에서의 사용하는 연산이 간섭하여 오히려 성능이 떨어진다고 함.
 
+## Model
+
+![모델링 단계](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210331095140379.png)
+
+모델은 데이터셋을 Input으로 받아 원하는 출력을 만들어 준다.
+
+![모델의 역할](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210331095303582.png)
+
+객체의 정보적 표현을 모델이라고 한다.
+
+### Design Model wtih Pytorch
+
+![Pytorch](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210331100639097.png)
+
+사용성 좋고 연구에 편리한(Pythonic) Low level 오픈소스 머신러닝 프레임워크
+
+![keras vs pytorch](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210331102230452.png)
+
+좌 keras 코드와 우 pytorch 코드를 비교하면 좀더 Low level에 가까운 것을 알 수 있다.
+
+이를 통해 원리의 이해와 customizing이 좀더 쉽다.
+
+**nn.Module**
+
+![nn.Module을 상속하는 레이어들](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210331102719982.png)
+
+Pytorch 모델의 모든 레이어는 nn.Module 클래스를 따른다.
+
+![모델 출력 결과](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210331103816260.png)
+
+modules 함수를 통해 내부에 nn.Module를 상속하는 layer들을 확인할 수 있다.
+
+nn.Module 클래스는 일종의 정보를 저장하는 저장소 역할을 하며 이를 상속받아 layer(모델, layer 등)를 만든다.
+
+- 이때 모델 내부의 conv layer 같은 layer들은 child 모듈이라고 하며, nn.Module을 상속받은 모든 클래스의 공통된 특징이다.
+  - 이 특징을 통해 연결된 모든 module을 확인할 수 있다.
+
+이후 이 모델이 호출 되었을 때는 forward() 함수가 불러진다.
+
+이때 input을 넣어주며, 또는 직접 모델명.forward(input)으로 불러도 된다.
+
+- 최상위 nn.module의 forward() 함수 실행으로 정의된 모듈 각각의 forward()가 모두 실행된다.
+
+**Parameter**
+
+![module의 parameter 확인](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210331110502417.png)
+
+module 내부에는 Tensor 기반의 parameter를 가지고 있을 수 있다.
+
+![parameter 내부 기능](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210331110544054.png)
+
+parameter는 또한, data, grad, requires_grad 등의 변수를 가지고 있으며
+
+- data : paremater의 수치
+
+- grad : loss에 의해 정해진 gradient 값
+
+- requires_grad : boolean, 해당 parameter를 backpropagation 시 업데이트 할 것인가?
+
+이런 식으로 파이토치는 형식과 구조를 파악하고 응용하기 쉬우며 디버깅도 쉽다
+
+### Pretrained Model
+
+대량의 데이터셋, 오래 걸리는 학습 시간, 복잡한 레이어 구축 등을 고려하면 처음부터 모델의 모든 것을 만드는 것은 힘들다.
+
+그러므로 YOLO와 같이 미리 만들어지고 학습된 Pretrained Model을 내 Task에 맞게 다듬어서 사용하면 이러한 노력을 줄이면서도 성능을 보장할 수 있다.
+
+![ImageNet 로고](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210331123156740.png)
+
+Pretrained model의 발전에는 일반화가 뛰어나고 데이터의 양과 질이 뛰어난 오픈소스 데이터셋인 IMAGENET의 등장에서 부터 시작되었다.
+
+![image-20210331142139009](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210331142139009.png)
+
+TorchVision 등에서 손쉽게 이용 가능하며, pretrained=True로 설정시, 구조 뿐만 아니라 학습한 weight 또한 같이 가져온다.
+
+### Transfer Learning
+
+앞서 가져온 Pretrained model을 우리가 원하는 용도로 사용하기 위해 학습하는 것을 Transfer Learning이라고 한다.
+
+![내 TASK vs ImageNEt](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210331151429231.png)
+
+나의 Task와 비교하여 적절한 Transfer Learning 방법을 고려해야 한다.
+
+1. 학습데이터가 충분한 경우
+
+![학습 데이터 충분 시 Transfer Learning](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210331152156297.png)
+
+Task가 ImageNet과 비슷할 경우, Classifier만 학습시킨다.(*feature-extraction, 특색 추출*)
+
+Task가 ImageNet과 비슷하지 않을 경우, Classifier뿐만 아니라 CNN Backbone또한 다시 학습시킨다.(*Fine-tuning, 미세 조정*)
+
+- 이때 구조만 살리고 처음부터 하는 것이 아니라, 기존의 weight를 가지고 있는 채로 다시 학습하는 것이다.(보통 성능이 더욱 좋다.)
+
+2. 학습 데이터가 충분하지 않은 경우
+
+![학습 데이터가 충분하지 않을 경우의 Transfer Learning](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210331152357033.png)
+
+Task가 ImageNet과 비슷할 경우, Classifier만 학습시킨다.
+
+Task가 ImageNet과 비슷하지 않을 경우, 성능이 그리 높지 않으므로 추천하진 않는다.
