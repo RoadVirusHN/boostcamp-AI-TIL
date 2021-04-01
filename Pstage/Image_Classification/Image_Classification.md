@@ -371,3 +371,188 @@ Task가 ImageNet과 비슷하지 않을 경우, Classifier뿐만 아니라 CNN B
 Task가 ImageNet과 비슷할 경우, Classifier만 학습시킨다.
 
 Task가 ImageNet과 비슷하지 않을 경우, 성능이 그리 높지 않으므로 추천하진 않는다.
+
+## Training & Inference
+
+![ML pipeline에서의 Training 부분](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401095438363.png)
+
+### Loss, Optimizer, Metric
+
+Training에 필요한 요소는 크게
+
+- Loss
+- Optimizer
+- Metric
+
+으로 나뉜다.
+
+#### Loss
+
+![Error Backpropagation 도식](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401095742828.png)
+
+Loss 값은 정답인 Target과 예상값인 Output의 차이를 Loss 함수(Cost 함수, Error 함수)를 통하여 구한다.
+
+- Loss 함수는 목적이나 Task 등에 따라 잘 골라줘야 한다.
+
+이후 Error Backpropation을 통해 가중치가 업데이트 되게 된다.
+
+![nn 패키지 내부의 Loss](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401100138025.png)
+
+nn 패키지 내부의 Loss함수 또한 Module을 상속하고 있으며, 이를 통해 모델 등의 child Module이 되어 보여지거나 Forward가 존재하는 등의 특징을 갖는다.
+
+그래서 커스텀 Loss를 만들려면 Module을 상속해야 함.
+
+ 
+
+![loss.backward()함수의 역할](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401100427483.png)
+
+criterion(관용적인 변수명)에 loss 함수를 정의한 뒤 output과 labels를 넣어 구한 loss의 backward 함수가 실행되면 모델의 파라미터 grad가 업데이트된다.
+
+업데이트하지 않고 Freeze하고 싶으면 requires_grad를 false로 설정하면 된다.
+
+- 이때 모델(net)->output->criterion->loss 순으로 연결이 되는 체인을 통하여 backpropation이 가능하게 된다.
+
+
+
+Loss 함수에 조금 과정을 추가한 특별한 Loss 또한 존재한다.
+
+*Focal Loss* : Class Imbalance 문제를 해결하기 위해 맞춘 확률이 높은 Class는 조금의 Loss를, 맞춘 확률이 낮은 Class는 Loss를 훨씬 높게 부여
+
+*Label Smoothing Loss* : Class target label을 Onehot 표현으로 사용하기 보다는 조금 Soft하게 표현해서 일반화 성능을 높임 
+
+- 즉 [0, 1, 0, 0, 0] 같은 형태 대신 [0.025, 0.9, 0.025, 0.025, ...] 같은 형태
+
+#### Optimizer
+
+Optimizer는 Loss 함수의 결과물인 Loss와 방향과 Learnig rate에 따라 weight를 업데이트 한다.
+$$
+w'=w-\eta\frac{\part E}{\part w}\\
+\eta:Learning\ rate(학습률),\ \frac{\part E}{\part w}:방향, E: error
+$$
+![Learning rate 높음 vs 낮음](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401102109226.png)
+
+Optimizer는 LR scheduler를 통해 Learning rate를 학습 중에 동적으로 조절할 수 있다.
+
+Scheduler의 종류는 다음과 같다.
+
+1. StepLR
+
+특정 Step 마다 LR 감소
+
+![StepLR 코드와 LR 수치 그래프](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401102240255.png)
+
+2. CosineAnnealingLR
+
+Cosine 함수 형태처럼 LR을 급격히 변경
+
+변화를 급격하게 주어, Local minimum에 빠지는 경우를 막음
+
+![CosineAnnealingLR 코드와 LR 추이 그래프](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401102336856.png)
+
+3. ReduceLROnPlateau
+
+일반적으로 많이 사용함, 더 이상 성능 향상이 없을 때 LR 감소
+
+![ReduceLROnPlateau의 코드와 LR 추이 그래프](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401102600936.png)
+
+#### Metric
+
+학습된 모델을 객관적으로 평가할 수 있는 지표가 필요
+
+![여러 Metric의 종류](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401102948372.png)
+
+R...은 ROCAOC
+
+여러 Task, 목적, 데이터 상태 등에 따라 여러 Metric의 종류가 있다.
+
+Ranking : 추천 시스템에 사용되는 경우가 많음.
+
+![부적절한 Metric의 예](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401103204920.png)
+
+상단의 예시처럼, 데이터의 편향 등에 따라 정확도가 다르게 나올 수 도 있다.
+
+Classification의 경우,
+
+그러므로 Class 별로 밸런스가 적절히 분포되었을 시, Accuracy,
+
+Class 별 밸런스가 좋지 않을 경우 F1-Score를 사용하는게 좋다.
+
+### Training Process
+
+![Training vs Inference 코드 비교](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401111744185.png)
+
+pytorch는 머신러닝의 과정을 잘알 수 있게 끔 구성되었다
+
+우리는 앞서 Dataset, Model, Loss, Optimizer, Metric 등 Training을 하기 위한 준비에 대해 배웠다.
+
+Training을 할때 코드를 이해해 보자.
+
+1. Model.train()
+
+모듈을 상속한 객체를 training 모드로 바꿔준다.
+
+training/evaluation 모드의 차이에 따라 Dropout이나 BatchNormalzation 등의 행동이 조금 달라지게 된다.
+
+2. optimizer.zero_grad()
+
+![optimizer.zero_grad() 함수의 내부](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401112415462.png)
+
+optimizer가 이전 batch 사용했던 Parameter들의 grad를 초기화해준다.
+
+기본값이 아닌 이유는 Loss를 쌓아서 사용하는 방법도 존재하기 때문
+
+3. loss = criterion(outputs, labels)
+
+![loss 함수의 내부 로직](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401113635199.png)
+
+![loss 또한 Module을 상속하므로 이어질 수 있다.](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401113909959.png)
+
+loss 함수 또한 Module을 상속하므로 input 부터 output 까지 연결되는 체인이 생겨난다.
+
+![loss 함수의 디버그 툴을 이용한 해부](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401114002370.png)
+
+loss의 grad_fn chaing에 loss의 backward() 함수가 들어가 있으며, 내부에 next_fucntion을 통해 다음 layer와 죽 연결되어 있음을 확인할 수 있다.
+
+4. optimizer.step()
+
+![optimizer의 내부 로직](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401114310825.png)
+
+step()를 실행하면 optimizer가 loss backward를 통해 업데이트된 gradient를 이용하여 weight들을 업데이트한다.
+
+정확한 내부 로직은 optimizer 마다 다르다.
+
+![코드를 응용한 Gradient Accumulation](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401114556658.png)
+
+Gradient Accumulation은 optimizer의 step가 zero_grad를 특정 배수 epoch에만 실행한다.
+
+batch size를 늘리는 것 과 같은 효과를 내면서 동시에 batch size를 늘렸을 때의 성능 요구를 줄였다.
+
+### Inference Process
+
+1. model.eval()
+
+모델을 evaluation 모드로 바꾼다. 위의 train()과 같은 이유
+
+2. with torch.no_grad():
+
+![with.torch.no_grad() 로직](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401121701696.png)
+
+with torch.no_grad()내부 로직일때는 모든 parameter들이 require_grad=False 인 상태와 같아진다.
+
+Inference 중일때는 내부 parameter가 업데이트 되지 않는다.
+
+![Validation 검증 코드](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401122016260.png)
+
+Validation data로 Inference 하는 코드가 검증 코드이다.
+
+![Checkpoint 생성 코드 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401122117703.png)
+
+checkpoint는  inference 결과를 보고 모델을 저장하면 된다.
+
+![Submission 변환](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401122319980.png)
+
+마지막으로 eval의 결과를 submission으로 바꾸어 제출하면 된다.
+
+![PyTorch Lightning을 이용한 코드](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401122702520.png)
+
+PyTorch Lightning을 이용하면 코드를 좀더 간결하고 읽기 쉽게 사용할 수 있다.
