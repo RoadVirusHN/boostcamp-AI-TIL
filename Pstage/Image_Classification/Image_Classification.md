@@ -547,7 +547,7 @@ Validation data로 Inference 하는 코드가 검증 코드이다.
 
 ![Checkpoint 생성 코드 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401122117703.png)
 
-checkpoint는  inference 결과를 보고 모델을 저장하면 된다.
+checkpoint는 inference 결과를 보고 모델을 저장하면 된다.
 
 ![Submission 변환](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401122319980.png)
 
@@ -556,3 +556,122 @@ checkpoint는  inference 결과를 보고 모델을 저장하면 된다.
 ![PyTorch Lightning을 이용한 코드](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210401122702520.png)
 
 PyTorch Lightning을 이용하면 코드를 좀더 간결하고 읽기 쉽게 사용할 수 있다.
+
+## Ensemble(앙상블)
+
+싱글 모델보다 더 나은 성능을 위해 서로 다른 여러 학습 모델을 사용하는 것
+
+효과는 있지만, 학습, 추론 시간이 배로 소모됨
+
+딥러닝은 Overfitting이 생길 경향이 상당히 많다.
+
+앙상블의 기법은 Begging, Stacking, Boosting 등의 기법이 있으며 
+
+Underfitting(High Bias)을 해결하기 위해 Boosting이 주로 자주 사용된다.
+
+- 정형데이터 등에서도 gradient Boosting이나 XGBoost 같은 방법이 사용된다.
+
+Overfitting(High Variance)를 해결하기 위해 Begging이 주로 사용된다.
+
+- 여러 정답을 취합해서 평균을 내는 방법, Random forest 등이 있음
+
+**Model Averaging(Voting)**
+
+![Model Averaging (Voting)](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210402100642568.png)
+
+앙상블에서 사용하는 방법, 서로 다른 특색을 가진 모델이 애매한 결과들을 냈을 때, 투표를 통하여 답을 구하는 것
+
+1. One-hot vector로 voting하는 Hard Voting(다수결)이 있고,
+2. 가중치들의 합으로 결정하는 Soft Voting이 있다. 
+   - 일반적으로 성능이 더욱 좋다.
+
+**Cross Validation(CV)**
+
+![Cross Validation의 방식](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210402101108075.png)
+
+기존에 Training에 사용하지 않던 Validation set을 학습 시 마다 다른 분포를 사용하여 학습에 이용해 보는 방법
+
+**Stratified K-Fold Cross Validation**
+
+![Stratified K-Fold Cross Validation](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210402101630637.png)
+
+Validation이 생성될 수 있는 모든 경우의 수와 고른 Class 분포까지 고려한 CV
+
+단, K(일반적으로 5개)개 만큼의 모델이 생성되므로, 학습시간이 그만큼 커진다.
+
+**TTA(Test Time Augmentation)**
+
+![TTA의 결과 벡터](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210402102234925.png)
+
+Test data set을 Augmentation 호 모델 추론, 출력된 여러가지 결과를 앙상블
+
+## Hyperparametr Optimization
+
+시스템의 매커니즘에 영향을 주는 주요한 파라미터들을 찾아내는 것
+
+- Learning rate, Batch size, Hidden Layer 갯수, Loss 파라미터, Dropout, k-fold, Regularization, Optimizer 파라미터 등이 있다.
+
+사실, Ensemble 만큼이나 시간과 자원이 많이 필요하지만 성능 상승은 미비하다.
+
+Grid search, Random search, Beysian Optimization 등의 방법이 있음
+
+- Beysian Optimization: 이전 결과를 바탕으로 최적의 방법을 찾아가는 방법
+
+**Optuna library**
+
+![Optuna 코드와 로고](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210402105132426.png)
+
+파라미터 범위를 주고 그 범위 안에서 정해진 Trials 만큼 시행하도록 도와줌
+
+## Experiment Toolkits & Tips
+
+### Training Visualization
+
+**Tensorboard**
+
+기존에는 Tensorflow 용이였지만 Pytorch에도 포팅됨, 학습과정을 기록하고 트래킹 가능한 툴
+
+![Tensorboard 예시 1](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210402111837533.png)
+
+![Tensorboard 예시 2](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210402111846420.png)
+
+데이터 확인 등도 가능
+
+```bash
+tensorboard --logdir PATH(log가 저장된 경로) --host ADDR(default localhost) --port PORT(포트 번호)
+```
+
+위와 같은 번호로 사용 가능
+
+**Weight and Bias(wandb)**
+
+딥러닝 로그계의 깃허브
+
+![wandb frontpage](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210402113812540.png)
+
+![wandb 로그인](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210402113832831.png)
+
+![wandb init, log 설정](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210402113848920.png)
+
+![wandb 로그 확인](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210402113907459.png)
+
+Jupyter Notebook : Cell 마다 사용가능함, EDA시 많이 활용
+
+![Python IDLE의 장점](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210402115425183.png)
+
+Python IDLE : 디버깅 쉬움, 코드 실행이 안정적임, 자유로운 실험 핸들링
+
+그 외의 팁
+
+![EDA 코드와 설명글](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210402120416916.png)
+
+1. 데이터 분석 코드 시, 코드 자체보단, 필자의 설명글을 유심히 보자
+
+![loc 코드 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\Image_Classification.assets\image-20210402120700163.png)
+
+2. 언제나 활용가능하도록 코드를 자세히 이해하자
+
+3. paperwithcode.com 에서 최신 논문과 코드까지 
+
+4. 자신의 지식을 자주 공유하자.
+
