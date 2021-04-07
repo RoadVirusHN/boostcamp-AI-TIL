@@ -1,7 +1,8 @@
-# SSH&tmux
+# PStage Image Classification WrapUp 
 
-## VScode SSH 설정
+## TIL
 
+### SSH & tmux
 ![Remote Development Extension](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Image_Classification\SSH & tmux.assets\image-20210406233915986.png)
 
 Remote Development Extension을 VSCode에 다운 받는다.
@@ -18,5 +19,21 @@ C:\\Users\\유저명\\.ssh 경로의 config에 key 방식의 경우 제공된 �
 
 SSH에 접속하여 파일 경로, Terminal 등을 사용할 수 있다.
 
-### tmux 소개
+**tmux**
+linux 내부에서 여러 session을 생성하여 동시 연산할 수 있게 도와주는 library
+https://github.com/tmux/tmux/wiki/Getting-Started
+
+
+### Technics
+
+
+### Models
+
+### BaseCode
+
+
+
+
+
+
 
