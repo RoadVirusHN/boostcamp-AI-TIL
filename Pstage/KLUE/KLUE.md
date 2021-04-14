@@ -176,8 +176,6 @@ Task의 성능을 확실하게 올릴 수 있는 방법
 
 
 
-
-
 **7. 모델 설계**
 
 **8. 모델 구현**
@@ -204,7 +202,50 @@ Python의 upper, lower, strip, split 등의 string 관련 함수로 전처리를
 
 ex) 안녕하세요 -> 안녕/NNG, 하/XSA, 세/EP, 요/EC
 
+## BERT 언어모델
 
+### BERT 언어모델 소개
 
+![이미지 Autoencoder와 BERT의 차이](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210414091656871.png)
 
+이미지에서 Autoencoder는 encoder단에서 이미지의 정보를 요약된 형태로 바꾼 뒤, Decoder를 통해 이미지의 대략적인 특징을 알 수 있게 복원한다.
 
+이때 중간 layer의 Compressed Data 부분의 정보를 가져오면 이미지의 context vector 값(즉, 이미지의 대표 특징)을 알아볼 수 있다. 
+
+마찬가지로 BERT는 Transformer의 Encoder, Decoder 기능을 이용할 뿐만 아니라 기존의 Input 정보에 마스킹(Masking)을 추가하여 Decoder의 복원을 어렵게하여 더욱 학습이 잘되게 한다.
+
+![GPT와 BERT의 역사](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210414092055125.png)
+
+GPT-1이 평범한 Transformer을 이용하는 것을 시작으로 BERT, GPT-2는 마스킹 대신 언어의 일부를 자른 뒤, 나머지 부분을 복원하는 방식으로 진행된다.
+
+![BERT 모델의 구조](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210414092314628.png)
+
+BERT 모델(Base의 경우)는 12개의 Transformer layer가 all-to-all로 연결된 형태이며, 이때 Input으로 2개의 문장이 \<SEP\> 토큰으로 구별된 채로 입력된다.
+
+output으로 Class Label의 경우 BERT가 판단한, 두 문장의 관계(2문장은 1문장 다음에 올만한 문장인가? 아니면 관계없는 별개읜 문장인가?)를 판단한 Class Label이 있으며, 이렇게 나온 Vector들이 두 문장들의 특성을 잘 표현하는 벡터라고 판단하고 Classification layer을 얹어 Pretraining한다.
+
+Corpus 양이 상당히 많으며, 빈도수를 기준으로 학습한다.(WordPiece tokenizing)
+
+![BERT 학습](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210414094202184.png)
+
+학습은 기존의 연결된 2문장을 절반의 확률로 랜덤한 다른 문장으로 바꿔 학습하며, 이때 15% 확률로 마스킹 또한 포함한다.
+
+마스킹을 할때에는 또 80% 확률로 Mask 토큰, 10%로 랜덤한 단어로 변경, 10% 마스킹하지않는 것으로 진행된다.
+
+다양한 실험으로 성능을 증명하였으며, 다음과 같다.
+
+![BERT가 사용한 성능평가용 데이터셋들](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210414094424544.png)
+
+![BERT의 TASK에 따른 구조](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210414094559226.png)
+
+BERT의 구조를 조금 바꿈으로 여러가지 분류를 시행할 수 있다.
+
+144개 국어를 커버할 수 있는 BERT Multi-lingual pretrained model로 많은 Task를 할 수 있다.
+
+![형태소 분석을 통해 성능을 향상한 ETRI KoBERT](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210414102124701.png)
+
+![Tokenizing 기법의 차이에 따른 성능 변화](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210414102207514.png)
+
+![Entitiy 토큰을 객체에 해당하는 곳에 감싸 성능을 향상](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210414102236873.png)
+
+이때, Tokenizing 방식을 바꾸거나 Input에 토큰을 추가로 사용하는 방법으로 성능을 향상시킬 수 있으므로, 고민이 필요하다.
