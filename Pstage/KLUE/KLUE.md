@@ -249,3 +249,18 @@ BERT의 구조를 조금 바꿈으로 여러가지 분류를 시행할 수 있�
 ![Entitiy 토큰을 객체에 해당하는 곳에 감싸 성능을 향상](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210414102236873.png)
 
 이때, Tokenizing 방식을 바꾸거나 Input에 토큰을 추가로 사용하는 방법으로 성능을 향상시킬 수 있으므로, 고민이 필요하다.
+
+## BERT Pre-Training
+
+특정 도메인 특화 Task의 경우, PreTrained 모델을 재학습 시키면, 성능이 더욱 향상한다.
+
+BERT의 학습 단계는 다음과 같다.
+
+1. Tokenizer 생성
+2. 데이터셋 확보 :
+   - 데이터셋 생성 : 데이터를 입력가능한 꼴로 바꾸는 것, 토큰 등의 삽입, 마스킹 등
+   - 데이터로더 생성: 입력방법을 결정
+   - 개인정보, 저작권 등을 유의해서 생성하자.
+3. Next sentence prediction(NSP)
+4. Masking
+
