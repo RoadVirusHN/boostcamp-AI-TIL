@@ -264,3 +264,57 @@ BERT의 학습 단계는 다음과 같다.
 3. Next sentence prediction(NSP)
 4. Masking
 
+## 05. BERT 언어모델 기반의 단일 문장 분류
+
+### 1. KLUE 데이터셋 소개
+
+한국어 자연어 이해 벤치마크(Korean Language Understanding Evaluation, KLUE)
+
+문장분류, 관계 추출, 문장 유사도, 자연어 추론, 개체명 인식, 품사 태깅, 질의 응답, 목적형 대화, 의존 구문 분석 등의 task 유형이 존재
+
+![의존 구문 분석의 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210416142336385.png)
+
+이때, 의존 구문 분석은 단어들 사이의 관계를 분석하는 task 이다.
+
+지배소는 의미의 중심이 되는 요소를 의미하며, 의존소는 지배소가 갖는 의미를 보완, 수식 해주는 요소이다.
+
+어순과 생략이 자유로운 한국어와 같은 언어에서 주로 연구 된다.
+
+지배소는 항상 의존소 보다 뒤에 있는 후위언어 이며, 지배소는 하나만 가지며, 교차 의존 구조(서로 지배 또는 의존하는 구조)는 없다.
+
+![의존 구문 분석의 단계](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210416142601681.png)
+
+Sequence labeling 방식으로 처리 단계를 나눈다.
+
+1. 앞 어절에 의존소가 없고
+2. 다음 어절이 지배소인 어절을 삭제하는 방법으로 의존 관계를 생성
+
+이를 통하여 자연어 형태를 그래프로 구조화해서 표현이 가능하며, 그 그래프를 통해 대상에 대한 정보 추출이 가능(누가 충무공인가? 이순신은 어디 사람인가?)
+
+
+
+### 2. 단일 문장 분류 task 소개
+
+주어진 문장이 어떤 종류의 범주에 속하는지를 구분하는 task
+
+1. 감정 분석(Sentiment Analysis), 2. 주제 라벨링(Topic Labeling), 언어감지(Language Detection), 의도 분류(Intent Classification) 등에 사용됨
+
+구체적으로는 혐오 발언 분류, 기업 모니터링, 대용량 문서 분류, VoC, 번역기, 챗봇 등...
+
+kor_hate : 한국의 혐오 표현에 대한 데이터셋
+
+kor_sarcasm : 한국의 비꼰 표현의 데이터셋
+
+kor_sae : 예/아니오로 답변 가능한 질문 중 금지, 요구 , 강한 요구, 육하원칙 분류
+
+kor_3i4k : 평서문, 질문, 명령 등을 분류
+
+### 3. 단일 문장 분류 모델 학습
+
+![단일 문장 분류 모델의 구조도](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210416143724836.png)
+
+BERT의 [CLS] token의 vector를 classification 하는 Dense layer 사용
+
+![주요 매개변수](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210416143820195.png)
+
+![NLP의 학습 과정](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210416144328812.png)
