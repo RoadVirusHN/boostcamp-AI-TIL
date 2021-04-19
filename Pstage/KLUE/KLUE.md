@@ -318,3 +318,12 @@ BERT의 [CLS] token의 vector를 classification 하는 Dense layer 사용
 ![주요 매개변수](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210416143820195.png)
 
 ![NLP의 학습 과정](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210416144328812.png)
+
+## BERT 언어모델 기반의 두 문장 관계 분류
+
+### 두 문장 관계 분류 task 소개
+
+
+
+### 모델 학습 실습
+
