@@ -323,7 +323,70 @@ BERT의 [CLS] token의 vector를 classification 하는 Dense layer 사용
 
 ### 두 문장 관계 분류 task 소개
 
+주어진 2개의 문장에 대해, 두 문장의 자연어 추론과 의미론적인 유사성을 측정하는 task
+
+![두 문장 관계 분류 task 구조](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210420015007280.png)
+
+**Natural Language Inference (NLI)**
+
+- 언어 모델이 자연어의 맥락을 이해할 수 있는지 검증하는 task
+
+- 전제문장(Premise)과 가설문장(Hypothesis)을 Entailment(함의), Contradiction(모순), Neutral(중립)으로 분류
+
+![NLI 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210420015701794.png)
 
 
-### 모델 학습 실습
 
+**Semantic text pair**
+
+- 두 문장의 의미가 서로 같은 문장인지 검증하는 task
+- ex) 무협 소설 추천 해주세요 != 판타지 소설 추천해주세요
+- ex) Gmail과 네이버 메일 중 뭐 쓸래? == 두개 중에 골라줘 네이버랑 지메일
+
+
+
+IRQA(Information Retrieval Question and Answering) 챗봇 시스템 구조
+
+![챗봇 구조](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210420025124306.png)
+
+## 문장 토큰 분류
+
+![문장 토큰 분류 Task의 구조](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210420222136613.png)
+
+주어진 문장의 각 token이 어떤 범주에 속하는지 분류하는 task
+
+**Named Entity Recognition(NER, 개체명 인식)**
+
+개체명 인식은 문맥을 파악해서 인명, 기관명, 지명 등과 같은 문장 또는 문서에서 특정한 의미를 가지고 있는 단어 또는 어구(개체) 등을 인식하는 과정을 의미함.
+
+동음이의어, 문맥 차이 등에 의해 문맥에 따라 개체명이 달라질 수 있음
+
+**Part-of-speech tagging (POS TAGGING, 품사 태깅)**
+
+![품사 분류의 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210420224436028.png)
+
+품사란 단어를 문법적 성질의 공통성에 따라 언어학자들이 몇 갈래로 묶어 놓은 것,
+
+품사 태깅은 주어진 문장의 각 성분에 대하여 가장 알맞는 품사를 태깅하는 것
+
+형태소 태깅 또한 POS Tagging임.
+
+
+
+pororo library를 이용하면 한국어 Task를 쉽게 해결할 수 있음.
+
+**kor_ner**
+
+![kor_ner 내부 구조](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210420231530353.png)
+
+문장 토큰 분류를 위한 한국어 NER 데이터셋
+
+한국해양대학교 자연어 처리 연구실에서 공개했으며, 일반적으로 pos tagging도 함께 존재
+
+![BOI Tag 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210420231728666.png)
+
+Entity tag는 [BIO] Tagging으로 이루어져 있으며 B는 개체명의 시작(Begin), I는 내부(Inside), O는 다루지 않는 개체명(Outside)을 의미함
+
+ex) B-PER : 인물 개체명의 시작, I-PER : 인물명 개체명의 내부 분을 뜻함
+
+BERT 모델 활용의 경우, WordPiece tokenizer가 잘못 판단할 수도 있으므로 음절단위로 tag를 매핑해주는 것을 추천
