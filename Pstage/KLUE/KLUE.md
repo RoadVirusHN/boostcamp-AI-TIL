@@ -389,4 +389,36 @@ Entity tag는 [BIO] Tagging으로 이루어져 있으며 B는 개체명의 시�
 
 ex) B-PER : 인물 개체명의 시작, I-PER : 인물명 개체명의 내부 분을 뜻함
 
-BERT 모델 활용의 경우, WordPiece tokenizer가 잘못 판단할 수도 있으므로 음절단위로 tag를 매핑해주는 것을 추천
+BERT multilingual 모델 활용의 경우, WordPiece tokenizer가 잘못 판단할 수도 있으므로 음절단위로 tag를 매핑해주는 것을 추천(애시당초 음절단위로 학습했다고 함.)
+
+## GPT 언어 모델
+
+Generation Pre-trained Transformer의 약자, Genereation 분야에 강점을 가지고 있음
+
+BERT와 달리 단일 방향으로 주어진 단어 다음에 가장 올 확률이 높은 단어를 예측함.
+
+Transformer의 Encoder를 활용한 BERT와 달리 Decoder를 활용함.
+
+순차적으로 단어를 예측하여 문장을 생성
+
+![GPT의 학습](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210421101601273.png)
+
+시기적으로 BERT보다 일찍 나왔으며, 기존의 문장의 Context vector를 생성하고 이를 통해 분류하는 성능이 뛰어남
+
+![GPT의 Task 수행](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210421102202081.png)
+
+덕분에 적은 양의 데이터에서도 높은 분류 성능을 나타내며, 다양한 자연어 task에서 SOTA 달성, Pre-train 언어 모델의 새 지평을 엶
+
+![GPT의 no-fine tuing 방식](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\KLUE\KLUE.assets\image-20210421103855482.png)
+
+특정 task를 위해 fine-tuning된 모델은 다른 task에서 사용 불가, GPT는 이를 막기 위해 fine-tunnig을 하지 않아도 다중의 task를 수행할 수 있게 만들려 했다.
+
+GPT2는 GPT1에서 조금의 decoder layer 변경과 커다란 parameter 수 증가의 차이를 가지며, 최신의 GPT3는 100배정도 데이터셋과 parameter 수를 늘렸으며, initializer와 구조를 조금 바꿨다.
+
+Awesome GPT-3에서 성능확인 가능
+
+Weight update가 없으므로, 새로운 지식에 대한 학습이 없으며, 시기에 따라 달라지는 문제, 최신의 정보가 필요한 문제는 대응 불가
+
+즉, GPT-3에 사용한 데이터셋의 지식만 가지고 있음
+
+모델 사이즈가 너무 크고, 멀티 모달 정보 활용이 필요함.
