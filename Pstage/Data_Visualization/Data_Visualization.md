@@ -88,8 +88,8 @@ Mark는 기본적인 시각적 요소로, 점, 선, 면으로 이루어진 시�
 전주의적 속성(Pre-attentive Attribute)는 시작적인 주의를 주지 않아도 인지하게 되는 요소를 의미한다.
 
 동시에 사용하면 인지하기 어려우므로 적절하게 사용할 때, 시각적 분리(visual pop-out)이 필요하다.
-
-## 기본 Bar Plot
+## 기본적인 차트의 사용
+### 기본 Bar Plot
 
 Bar plot이란 직사각형 막대를 사용하여 데이터의 값을 표현하는 차트/그래프를 의미하며, 범주(category)에 따른 수치 값을 개별 또는 그룹 별로 비교하기에 적합하다.
 
@@ -99,7 +99,7 @@ Bar plot이란 직사각형 막대를 사용하여 데이터의 값을 표현하
 
 ![bar vs barh](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210425225339626.png)
 
-### 여러 Bar plot
+#### 여러 Bar plot
 
 범주형 A, B, C, D, E column을 가진 두 그룹 파랑 = [1,2,3,4,3], 분홍 = [4,3,2,5,1]이 있을 때,
 
@@ -131,7 +131,7 @@ Bar plot이란 직사각형 막대를 사용하여 데이터의 값을 표현하
 
 - (.set_xticks(), .set_xticklabels())로 구현
 
-### 정확한 Bar plot
+#### 정확한 Bar plot
 
 ![잘못된 비례 관계 그래프](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210425233831294.png)
 
@@ -176,4 +176,151 @@ pandas에서는 sort_values(), sort_index()를 사용하여 정렬 가능
 
 Bar 사이의 Gap이 없으면 히스토그램(Histogram)이 되며, 연속된 느낌이며, .hist()를 통해 사용 가능
 
- 
+### Line Plot
+
+![Line Plot의 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210426001044039.png)
+
+연속적으로 변화하는 값을 순서대로 점으로 나타내고, 이를 선으로 연결한 그래프
+#### Line Plot의 기본
+Line plot은 꺾은선 그래프, 선 그래프, line chart, line graph 등의 이름으로도 불리며, 시간/순서에 대한 변확에 적합하여 추세(시계열 분석)를 살피기 위해 사용함.(.plot()으로 사용)
+
+
+
+가독성을 위해 5개 이하의 선을 여러 요소로 구별하며 사용하는 것이 좋다.
+
+1. 색상(color)
+2. 마커(marker, markersize)
+3. 선의 종류(linestyle, linewidhth)
+
+![구별 가능한 선의 종류](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210426001552666.png)
+
+또한, Noise로 인하여 패턴 및 추세 파악이 힘들 경우 smoothing을 통해 가독성을 늘릴 수 있다.
+
+![smoothing을 통한 패턴 파악](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210426001821085.png)
+
+#### 정확한 Line plot
+
+![추세에 집중된 Line plot](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210426003104044.png)
+
+1. **추세에 집중하기**
+
+- 추세가 목적이므로 굳이 0을 시작점으로 두지 않아도 된다.
+
+- Grid, Annotate 등을 제거한 뒤, 디테일한 정보는 표로 제공하자.
+
+- 생략되지 않는 성에서 범위를 조정해 변화율 관찰 (.set_ylim())
+
+![image-20210426003320621](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210426003320621.png)
+
+2. **간격 조정**
+
+- 규칙적인 간격이 아닐 경우 점을 추가하여 데이터가 있는 부분만 표시하자.
+
+3. **보간**
+
+- Line은 점을 이어 만드는 요소이므로 데이터가 없어도 이를 이어서 만드는 보간을 하게 된다.
+- 데이터의 이해를 도울 수 있지만, 없는 데이터를 있다고 생각하거나 적은 차이를 못보게 할 수 있으므로 일반적인 분석에서는 지향 하자.
+
+- 데이터의 error나 noise가 포함되어 있는 경우, Moving Average 방법, Smooth Curve with Scipy(scipy의 interpolate 내부의 make_interp_spline(), interp1d() 또는 scipy의 ndimage.gaussian_filter1d() 등을 사용 가능)
+
+![이중 축 그래프의 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210426004152188.png)
+
+4. **이중 축 사용**
+
+![이중축 vs 다중 plot의 가독성 차이](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210426004221912.png)
+
+- 한 plot에 대해 2개의 축을 이중 축(dual axis)라고 함, 왠만하면 이중 축보단 다중 plot으로 해결하는 게 좋다.
+- 같은 시간 축에 대해 서로 다른 종류의 데이터를 표현하기 위해 축이 2개 필요 (.twinx() 사용)
+- 한 데이터에 대해 단위가 다른 경우, .secondary_xaxis(), .secondary_yaxis()를 사용해 보자.
+
+5. **기타**
+
+![Line 끝 단에 레이블 추가](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210426004318619.png)
+
+- 범례 대신 라인 주위에 레이블을 추가하면 가독성이 좋다.
+
+![Min/Max Info가 추가된 그래프](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210426004419061.png)
+
+- Min/Max 정보(또는 특정 포인트)를 추가(annotation)로 가독성 증가
+
+![신뢰구간의 표현](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210426004517987.png)
+
+- 보다 연한 색을 사용하여 uncertainty 표현 가능 (신뢰구간, 분산 등)
+
+### Scatter Plot
+
+![Basic Scatter Plot](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210426005150349.png)
+
+#### 기본 Scatter plot
+
+![Scatter plot의 요소](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210426010247769.png)
+
+점을 사용하여 두 feature 간의 관계를 알기 위해 사용하는 그래프, 산점도라고도 말함
+
+직교 좌표계에서 x축/y축에 feature r값을 매핑해서 사용, .scatter()로 사용
+
+색, 모양, 크기 등을 바꾸어 다양한 차원의 데이터 표현 가능
+
+![image-20210426010716264](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210426010716264.png)
+
+![군집, 값의 차이, 이상치](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210426010727232.png)
+
+Scatter plot을 통해 상관관계(양, 음의 상관 관계, 상관 없음), 군집, 값 사이의 차이, 이상치 등을 알 수 있다.
+
+
+
+#### 정확한 Scatter plot
+
+![점의 분포 파악을 위해 변환 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210426011708647.png)
+
+1. **Overplotting 방지**
+
+- 점이 너무 많으면 분포 파악이 힘드므로, 투명도 조정, 지터링(jittering, 점의 위치 약간 변경), 2차원 히스토그램(히트맵을 사용하여 깔끔한 시각화), Contour plot(분포를 등고선을 사용해 포현) 등으로 표현하면 좋다.
+
+
+
+
+
+![점의 요소와 인지](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210426012238441.png)
+
+2. **점의 요소와 인지**
+
+- 색 : 연속은 gradient, 이산은 개별 색상으로 표시
+- 마커 : 거의 구별하기 힘들고, 크기가 달라 보이므로 사용 유의
+- 크기 : 흔히 버블 차트(bubble chart)라고 부름, 오용이 잦으며, 관계 보다는 각 점간의 비율에 초점을 두자, SWOT 분석등에 자주 사용
+
+
+
+3. **인과 관계와 상관 관계**
+
+- 인과 관계(causal relation)과 상관 관계(correlation)을 잘 구별하자
+- 인과 관계는 사전 정보와 함께 가정으로 제시
+
+
+
+
+
+![추세선의 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210426012304744.png)
+
+4. **추세선**
+
+- 추세선을 이용하면 scatter의 패턴을 유추할 수 있지만, 2개 이상 사용하면 가독성이 떨어진다.
+
+5. 기타
+
+- Grid는 왠만하면 사용하지 않으며 무채색을 활용하자
+- 범주형이 포함되어 있으면 heatmap 또는 bubble chart 추천
+
+
+
+
+## 차트의 요소
+
+### Text 사용하기
+
+### Color 사용하기
+
+### Facet
+
+
+### More Tips
