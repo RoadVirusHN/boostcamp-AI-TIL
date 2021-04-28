@@ -135,7 +135,7 @@ Bar plot이란 직사각형 막대를 사용하여 데이터의 값을 표현하
 
 ![잘못된 비례 관계 그래프](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210425233831294.png)
 
-x축의 시작은 zero(0)부터이며, 실제 값과 그래픽으로 표현 되는 잉크양은 비례해야 한다.
+Principle of Proportion Ink : x축의 시작은 zero(0)부터이며, 실제 값과 그래픽으로 표현 되는 잉크양은 비례해야 한다.
 
 ![정렬을 통해 패턴이 보이는 그래프](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210425234257251.png)
 
@@ -318,9 +318,48 @@ Scatter plot을 통해 상관관계(양, 음의 상관 관계, 상관 없음), �
 
 ### Text 사용하기
 
+#### Matplotlib에서 Text
+
+
+
+#### 실습
+
+
+
 ### Color 사용하기
+
+#### Color에 대한 이해
+
+
+
+#### Color Palette의 종류
+
+
+
+#### 그 외 색 Tips
+
+
 
 ### Facet
 
+#### 기본 Facet
+
+
+
+#### Matplotlib에서 구현
+
+
+
 
 ### More Tips
+
+#### Grid 이해하기
+
+
+
+#### 심플한 처리
+
+
+
+#### Setting 바꾸기
+

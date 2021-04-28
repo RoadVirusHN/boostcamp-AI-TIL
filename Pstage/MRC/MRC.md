@@ -238,8 +238,6 @@ BERT의 output vector의 각 element는 해당 token이 답의 시작 또는 끝
 
 
 
-
-
 ## Generation-based MRC
 
 ### Generation-based MRC
@@ -282,7 +280,7 @@ Attention mask는 이전 BERT와 같지만 우리가 사용할 Generation-based 
 
 기계 독해, 기계 번역, 요약, 대화 등 sequence to sequence 문제의 pre-training을 위한 denoising autoencoder (noise(mask)를 없애는 방식으로 학습하는 것)
 
-BART의 인코더는 BERT처럼 bi-directional이며, BART의 디코더는 GPT처럼 uni-directional(autoregressive)
+BART의 인코더는 BERT처럼 bi-directional이며, BART의 디코더는 GPT처럼 uni-directional (autoregressive)
 
 - 아래 1일 경우 정보가 주워진다는 의미이다.
 
@@ -309,3 +307,135 @@ BART는 텍스트에 노이즈를 주고 원래 텍스트를 복구하는 문제
 ![Searching](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210427231721860.png)
 
 output을 생성할 때는 대부분 Beam Search 방법을 사용한다.
+
+## Passage Retrieval - Sparse Embedding
+
+### Introduction to Passage Retrieval
+
+**Passage Retrieval**
+
+Database 등에서 질문(query)에 맞는 문서(Passage)를 찾는 것
+
+![Passage Retrieval with MRC](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210428213559640.png)
+
+이를 MRC와 결합하여 Open-domain Question Answering 같은 2-stage 질문 답 찾기 등이 가능하다.
+
+![Passage Retrieval](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210428213802514.png)
+
+Query(실시간)와 Passage(또는 문서, 미리 해놓음)를 임베딩한 뒤 유사도로 랭킹을 매기고, 유사도(inner product 또는 공간상의 거리)가 가장 높은 Passage를 선택
+
+### Passage Embedding and Sparse Embedding
+
+**Passage Embedding Space**
+
+Passage Embedding의 벡터 공간이며, 벡터화된 Passage를 이용하여 Passage 간 유사도 등을 알고리즘 계산 가능
+
+
+
+**Sparse Embedding**
+
+![BOW의 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210428231630498.png)
+
+Dense하지 않고 0이 아닌 숫자가 드문 embedding 방법, Bag-of-Words(BoW)가 예시이다.
+
+위의 경우가 BoW의 방법으로, 단어의 종류만큼의 차원을 가진 벡터에서 단어가 존재할 경우 해당 단어의 차원을 1로 놓아 문서를 표현하는 방법이다.
+
+단어나 문서의 길이가 너무 많으면 차원의 수가 엄청 커진다.
+
+1. BoW를 구성하는 방법 ->  n-gram 방법
+
+- unigram(1-gram): It was the best of times => It, was, the, best, of, time
+- bigram(2-gram): It was the best of times => It was, was the, the best, best of, of times(2개씩 짝지어 단어로, 기하급수적으로 vocab 사이즈(차원 수)가 크지만, 더욱 정확한 Embedding 값을 가져올 수 있다. )
+
+2. Term value를 결정하는 방법(ex)TF-IDF)
+
+- Term이 document에 등장하는지 (binary)
+- Term이 몇번 등장하는지 (term frequency), 등
+
+
+
+특징으로,
+
+1. Dimension of embedding Vector = number of terms
+
+- 등장하는 단어가 많아질수록 차원 수 증가
+- N-Gram의 n이 커질수록 증가
+
+2. Term overlap을 정확하게 잡아 내야 할 때 유용(즉, 정확히 해당 단어가 필요하다면 잡아낼 수 있음).
+3. 반면, 의미(semantic)가 비슷하지만 다른 단어인 경우 비교가 불가(즉, 비슷한 의미를 가진 단어는 찾을 수 없음)
+
+
+
+### TF-IDF (Term Frequency - Inverse Document Frequency)
+
+TF와 IDF를 고려하여 Embedding 하는 방법
+
+**TF(Term Frequency)**
+
+해당 문서 내 단어의 등장 빈도, 많이 등장할 수록 높다.
+
+보통 다음과 같은 방법으로 측정한다.
+
+1. Raw count, 그냥 등장 숫자 세기, 잘 안사용한다.
+2. Adjusted for doc lengh: raw count/ num words (TF), 비율로 측정
+3. OTher variants: binary, log normalization, etc.
+
+
+
+**IDF (Inverse Document Frequency)**
+
+단어가 제공하는 정보의 양, 주로 명사나 형용사가 포함되며, 정보를 많이 가지는 단어일 수록 크다. 
+
+로그(모든 다큐먼트 갯수/등장한 다큐멘터 수)로 구한다
+
+한 문서의 등장 빈도인 TF와 무관하다.
+$$
+IDF(t) = log\frac{N}{DF(t)}\\
+Document\ Frequency (DF) : Term\ t가\ 등장한\ document의\ 개수\\
+N: 총\ document의\ 개수
+$$
+
+
+**Combine TF & IDF**
+
+TF와 IDF를 곱한 값, 높을 수록 정보를 많이 담고 있는 단어이다.
+
+TF-IDF(t, d): TF-IDF for term t in document d,
+$$
+TF(t,d)\times IDF(t)
+$$
+a, the 같은 관사는 TF가 높아도 IDF가 0에 가까우므로 낮게 된다.
+
+고유명사 등은 IDF가 아주 커지면서 TF-IDF 값이 크게 된다.
+
+**TF-IDF를 이용해 유사도 구하기**
+
+목표: 계산한 TF-IDF를 가지고 사용자가 물어본 질의에 대해 가장 관련있는 문서를 찾자.
+
+1. 사용자가 입력한 질의를 토큰화
+2. 기존에 단어 사전에 없는 토큰들은 제외
+3. 질의를 하나의 문서로 생각하고, 이에 대한 TF-IDF 계산
+4. 질의 TF-IDF 값과 각 문서별 TF-IDF 값을 곱하여 유사도 점수 계산
+
+$$
+Score(D,Q)=\sum_{term\in Q}TFIDF(term,Q)*TFIDF(term,D)
+$$
+
+
+
+5. 가장 높은 점수를 가지는 문서 선택
+
+
+
+**BM25**
+
+TF-IDF의 개념을 바탕으로, 문서의 길이까지 고려하여 점수를 매김
+
+- TF 값에 한계를 지정해두어 일정한 범위를 유지하도록 함
+- 평균적인 문석의 길이보다 더 작은 문서에서 단어가 매칭된 경우 그 문서에 대해 가중치를 부여
+- 실제 검색 엔진, 추천 시스템 등에서 아직까지도 많이 사용되는 알고리즘
+
+$$
+Score(D,Q)=\sum_{term\in Q}IDF\cdot\frac{TFIDF(term,D)\cdot(k_1+1)}{TFIDF(term,D)+k_1\cdot(1-b+b\cdot\frac{|D|}{avgdl})}
+$$
+
