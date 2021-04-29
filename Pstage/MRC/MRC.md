@@ -410,6 +410,8 @@ a, the 같은 관사는 TF가 높아도 IDF가 0에 가까우므로 낮게 된�
 
 **TF-IDF를 이용해 유사도 구하기**
 
+**Lab.[MRC-2]TF-IDF 참조**
+
 목표: 계산한 TF-IDF를 가지고 사용자가 물어본 질의에 대해 가장 관련있는 문서를 찾자.
 
 1. 사용자가 입력한 질의를 토큰화
@@ -421,11 +423,7 @@ $$
 Score(D,Q)=\sum_{term\in Q}TFIDF(term,Q)*TFIDF(term,D)
 $$
 
-
-
 5. 가장 높은 점수를 가지는 문서 선택
-
-
 
 **BM25**
 
@@ -439,3 +437,175 @@ $$
 Score(D,Q)=\sum_{term\in Q}IDF\cdot\frac{TFIDF(term,D)\cdot(k_1+1)}{TFIDF(term,D)+k_1\cdot(1-b+b\cdot\frac{|D|}{avgdl})}
 $$
 
+## Passage Retrieval -Dense Embedding
+
+### Introduction to Dense Embe
+
+**Passage Embedding**은 구절(Passage)을 벡터로 변환하는 것을 의미하며,
+
+![Passage Embedding의 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429100257478.png)
+
+**Sparse Embedding**은 TF-IDF가 대표 예시로 차원의 수가 크고 유사성을 고려하지 못한다.
+
+![TF-IDF의 공간 낭비](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429100507584.png)
+
+**Dense Embedding**
+
+Complementary to sparse representations by design
+
+- 더 작은 차원의 고밀도 벡터 (length = 50 - 1000)
+- 각 차원이 특정 term에 대응되지 않음
+- 대부분의 요소가 non-zero
+
+![Dense Embedding으로 변환](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429101541847.png)
+
+
+
+### Training Dense Encoder
+
+BERT, ELMo와 같은 Pre-trained language model(PLM)이 자주 사용하며, 예시를 들면 BERT의 [CLS] token output 등이 사용된다.
+
+![Dense Encoder의 구조](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429103127071.png)
+
+연관된 question과 passage dense embedding(또는 inner product) 간의 거리의 좁음, 즉, similarity를 높이는 것이 목표이며, 이를 통해 question/passage의 연관성을 알 수 있다.
+
+![image-20210429105211929](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429105211929.png)
+
+
+
+![Embedding 공간에서의 passage 간의 거리](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429110249854.png)
+
+1) 연관된 question과 passage 간의 dense embedding 거리를 좁히는 것 (higher similarity) -> positive
+
+2) 연관 되지 않은 question과 passage 간의 embedding 거리는 멀어야 함 -> Negative
+
+- 이를 학습하기 위해 Negative sampling을 통해 학습한다
+  - Corpus 내에서 랜덤하게 뽑거나, 높은 TF-IDF 스코어를 가지지만 답을 포함하지 않는 샘플 같은 헷갈리는 샘플을 뽑는다.
+
+![Objective funtion](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429111147957.png)
+
+Positive passage에 대해서 negative log likelihood (NLL) loss를 사용한다.
+
+![Top-k retrieval accuracy](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429111702628.png)
+
+또한 Top-k retrieval accuracy를 이용해 retrieve된 passage 중에 답을 포함하는 passage의 비율을 계산해서 성능을 측정한다.
+
+### Passage Retrieval with Dense Encoder
+
+![From dense encoding to retrieval](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429112721737.png)
+
+1. From dense encoding to retrieval
+
+Inference: Passage와 query를 각각 embedding한 후, query로부터 가까운 순서대로 passage의 순위 매김
+
+![From retrieval to open-domain question answering](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429112748573.png)
+
+2. From retrieval to open-domain question answering
+
+Retriever를 통해 찾아낸 Passage을 활용, MRC 모델로 답을 찾음.
+
+
+
+이러한 과정을 학습 방법 개선(DPR 등)이나 인코더 모델 개선 (더 좋은 모델), 데이터 개선 등으로 성능을 향상 시킬 수 있다.
+
+## Passage Retrieval - Scaling Up
+
+### Passage Retrieval and Similarity Search
+
+**MIPS(Maximum Inner Product Search)**
+
+![MIPS in Passage Retrieval](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429191418027.png)
+
+주어진 질문(query) 벡터 q에 대해 Passage 벡터 v들 중 가장 질문과 관련된 벡터를 찾아야함
+$$
+argmax_{vi\in V}q^T_{v_i}\\
+argmax:검색(search),\ 인덱싱된\ 벡터들\ 중\ 질문\ 벡터와\\ 가장\ 내적값이\ 큰\ 상위\ k개의\ 벡터를\ 찾는\ 과정 \\
+q^T_{v_i}:인덱싱(indexing),\ 방대한\ 양의\ passage\ 벡터들을\ 저장하는\ 방법
+$$
+이전에 배운 방법은 brutre-force(exhaustive) search 방법으로, 저장해둔 모든 Sparse/Dense 임베딩에 대해 일일이 내적값을 계산하여 가장 값이 큰 Passage를 추출
+
+
+
+문제는 검색해야할 데이터가 방대(위키피디아만 500만개, 그이상 수십억, 조단위 까지 커질 수 있음)
+
+즉, 더이상 모든 문서 임베딩을 일일히 보면서 검색할 수 없음
+
+
+
+**Tradeoffs of similarity search**
+
+즉, 모두 완벽하게 할 순 없고 다음 3가지를 Trade-off 해야한다.
+
+![similarity search를 위한 Trade-off](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429191821405.png)
+
+1) Search Speed : 쿼리 당 유사한 벡터를 k개 찾는데 걸리는 시간, Pruning으로 개선할 수 있다.
+
+- 일반적으로 속도를 빠르게 하면 정확도가 떨어진다.
+
+2) Memory Usage : 벡터를 저장할 공간, Compression으로 개선할 수 있다.
+
+3) Accuracy : 검색결과의 질, Exhaustive search로 개선할 수 있다.
+
+또한, 코퍼스(corpus)의 크기가 커질수록 탐색 공간이 커지고 검색이 어려워지며, Memory space 또한 많이 요구 됨
+
+- 그래도 Dense Embedding의 경우 Sparse Embedding 보단 낫다.
+
+
+
+### Approximating Similarity Search
+
+![Scalr Quantization 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429213855108.png)
+
+**Compression - Scalr Quantization(SQ)**
+
+Vector를 압축하여, 하나의 Vector가 적은 용량을 차지하도록 함, 
+
+압축량이 클수록 메모리 사용량은 줄고 정보 손실을 늘어난다.
+
+상단 그림의 4byte의 float point를 1-byte의 unsigned integer로 압축하는 Scalar quantization이 예시
+
+
+
+![Searching with clustering and IVF의 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429214225135.png)
+
+**Pruning - Inverted File (IVF)**
+
+Search space를 줄여 search 속도 개선(dataset의 subset만 방문)
+
+=> Clustering + Inverted file을 활용한 search
+
+1) Clustering: 전체 vector space를 k 개의 cluster로 나눔 (ex. k-means clustering)
+
+2) Inverted file (IVF) : Vector의 index = inverted list structure
+
+=> (각 cluster의 centroid id)와 (해당 cluster의 vector들)이 연결되어있는 형태
+
+즉, 
+
+1. 주어진 query vector에 대해 근접한 centroid 벡터를 찾음
+2. 찾은 cluster의 inverted list 내 vector들에 대해 서치 수행
+
+
+
+### Introduction to FAISS
+
+![FAISS의 사용](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429222428177.png)
+
+FAISS란, similarity search와 dense vector의 clustering에 사용되는 라이브러리다. 
+
+**Passage Retrieval with FAISS**
+
+![FAISS 1단계](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429222651432.png)
+
+1) Train index and map vectors
+
+![FAISS 2단계](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429222739709.png)
+
+2) Search based on FAISS index
+
+
+
+
+### Scaling up with FAISS
+
+실습
