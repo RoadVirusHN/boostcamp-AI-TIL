@@ -1,3 +1,5 @@
+[TOC]
+
 # 기계 독해(MRC)
 
 > Naver AI boostcamp 기계 독해 강의를 정리한 내용입니다.
@@ -439,19 +441,19 @@ $$
 
 ## Passage Retrieval -Dense Embedding
 
-### Introduction to Dense Embe
+### Introduction to Dense Embedding
 
 **Passage Embedding**은 구절(Passage)을 벡터로 변환하는 것을 의미하며,
 
 ![Passage Embedding의 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429100257478.png)
 
-**Sparse Embedding**은 TF-IDF가 대표 예시로 차원의 수가 크고 유사성을 고려하지 못한다.
+**Sparse Embedding**은 TF-IDF가 대표 예시로, 단점으로 차원의 수가 크고 비슷한 단어의 유사성을 고려하지 못한다.
 
-![TF-IDF의 공간 낭비](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429100507584.png)
+(Compressed format으로 차원의 수 문제는 해결가능 하다)![TF-IDF의 공간 낭비](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429100507584.png)
 
 **Dense Embedding**
 
-Complementary to sparse representations by design
+Sparse Embedding의 단점을 보완하기 위해 나타남
 
 - 더 작은 차원의 고밀도 벡터 (length = 50 - 1000)
 - 각 차원이 특정 term에 대응되지 않음
@@ -459,11 +461,19 @@ Complementary to sparse representations by design
 
 ![Dense Embedding으로 변환](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429101541847.png)
 
+Dense는 Sparse에 비해 vector들의 유사성을 파악하기 쉽고, 알고리즘 또한 더욱 많은 것을 적용할 수 있다.
 
+![Sparse와 Dense의 비교](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210430065838321.png)
+
+각자의 장점을 고려해서 둘다 동시에 사용하거나 서로 보완한다.
+
+![현실적인 MRC 구조](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210430070002242.png)
+
+주로 두가지 모델을 이용해 Context의 벡터를 구하는 모델과 question의 벡터를 구하는 모델을 이용해 dot product, space similarity 등을 계산하여 유사도를 비교해 결정한다.
 
 ### Training Dense Encoder
 
-BERT, ELMo와 같은 Pre-trained language model(PLM)이 자주 사용하며, 예시를 들면 BERT의 [CLS] token output 등이 사용된다.
+context를 Dense Embedding으로 Encoding 하는 Dense Encoder의 모델로, BERT, ELMo와 같은 Pre-trained language model(PLM)이 자주 사용하며, [CLS] token이 encoding된 output이 해당 context의 최종 Embedding output으로 사용된다.
 
 ![Dense Encoder의 구조](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429103127071.png)
 
@@ -484,11 +494,13 @@ BERT, ELMo와 같은 Pre-trained language model(PLM)이 자주 사용하며, 예
 
 ![Objective funtion](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429111147957.png)
 
-Positive passage에 대해서 negative log likelihood (NLL) loss를 사용한다.
+이때 loss로 Positive passage에 대해서 negative log likelihood (NLL) loss를 사용한다.
+
+분모에는 모든 passage의 similarity score, 분자에는 positive sample의 score를 놓은 뒤, negative log를 취하여 계산된다. 
 
 ![Top-k retrieval accuracy](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429111702628.png)
 
-또한 Top-k retrieval accuracy를 이용해 retrieve된 passage 중에 답을 포함하는 passage의 비율을 계산해서 성능을 측정한다.
+또한 Top-k retrieval accuracy(retrieve된 passage 중에 답을 포함하는 passage의 비율)을 계산해서 성능을 측정한다.
 
 ### Passage Retrieval with Dense Encoder
 
@@ -496,15 +508,17 @@ Positive passage에 대해서 negative log likelihood (NLL) loss를 사용한다
 
 1. From dense encoding to retrieval
 
-Inference: Passage와 query를 각각 embedding한 후, query로부터 가까운 순서대로 passage의 순위 매김
+Inference: Passage(미리 embedding되있음)와 query를 각각 embedding한 후, query로부터 가까운 순서대로 passage의 순위 매김
+
+
+
+
 
 ![From retrieval to open-domain question answering](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429112748573.png)
 
 2. From retrieval to open-domain question answering
 
 Retriever를 통해 찾아낸 Passage을 활용, MRC 모델로 답을 찾음.
-
-
 
 이러한 과정을 학습 방법 개선(DPR 등)이나 인코더 모델 개선 (더 좋은 모델), 데이터 개선 등으로 성능을 향상 시킬 수 있다.
 
@@ -517,6 +531,8 @@ Retriever를 통해 찾아낸 Passage을 활용, MRC 모델로 답을 찾음.
 ![MIPS in Passage Retrieval](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429191418027.png)
 
 주어진 질문(query) 벡터 q에 대해 Passage 벡터 v들 중 가장 질문과 관련된 벡터를 찾아야함
+
+이때 현업에서는 주로 inner product로 구하는 경우가 많음.(좀더 효율적임)
 $$
 argmax_{vi\in V}q^T_{v_i}\\
 argmax:검색(search),\ 인덱싱된\ 벡터들\ 중\ 질문\ 벡터와\\ 가장\ 내적값이\ 큰\ 상위\ k개의\ 벡터를\ 찾는\ 과정 \\
@@ -534,7 +550,7 @@ $$
 
 **Tradeoffs of similarity search**
 
-즉, 모두 완벽하게 할 순 없고 다음 3가지를 Trade-off 해야한다.
+즉, 모두 완벽하게 할 순 없고 다음 3가지 중에 Trade-off 해야한다.
 
 ![similarity search를 위한 Trade-off](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429191821405.png)
 
@@ -598,6 +614,8 @@ FAISS란, similarity search와 dense vector의 clustering에 사용되는 라이
 ![FAISS 1단계](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429222651432.png)
 
 1) Train index and map vectors
+
+- Train phase과 add phase로 나뉜다.
 
 ![FAISS 2단계](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210429222739709.png)
 

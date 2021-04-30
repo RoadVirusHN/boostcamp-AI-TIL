@@ -306,7 +306,7 @@ df[["account", "street", "state"]].head(3) # 일부 colmun 일부 갯수만 출�
 df[["account", "street", "state"]][:3] # 위 코드와 비슷하나 index 기준
 df[["account", "street", "state"]][[0,1,2]] # 위 코드와 같음
 df[["account", "street", "state"]][range(0,3)] # 위 코드와 같음
-df[["account", "street", "state"]][account > 25000] # condition 설정 가능
+df[["account", "street", "state"]][df['account'] > 25000] # condition 설정 가능
 ```
 
 **[code 4-1. selection with column names ]**

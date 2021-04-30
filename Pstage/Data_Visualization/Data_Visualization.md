@@ -13,6 +13,8 @@
 5. 방법 : 전달하고자 하는 내용에 맞게 효과적인 방법을 사용하고 있는가?
 6. 디자인 : UI에서 만족스러운 디자인을 가지고 있는가?
 
+
+
 ##  시각화의 요소
 
 시각화를 위해서 데이터의 관점을 먼저 생각해봐야한다.
@@ -320,6 +322,22 @@ Scatter plot을 통해 상관관계(양, 음의 상관 관계, 상관 없음), �
 
 #### Matplotlib에서 Text
 
+Text는 Data Visualization에서 명확하고 오해를 방지할 수 있는 수단이지만 과용하면 가독성을 떨어뜨리고 오히려 이해를 방해할 수 도 있다.
+
+![Anatomy of a Figure](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429013253277.png)
+
+**Title** : 가장 큰 주제를 설명
+
+**Label** : 축에 해당하는 데이터 정보를 제공
+
+**Tick Label** : 축에 눈금을 사용하여 스케일 정보를 추가
+
+**Legend** : 한 그래프에서 2개 이상의 서로 다른 데이터를 분류하기 위해서 사용하는 보조 정보
+
+**Annotation(Text)** : 그 외의 시각화에 대한 설명을 추가
+
+**Text 원하는 대로 사용하기**
+
 
 
 #### 실습
@@ -330,36 +348,130 @@ Scatter plot을 통해 상관관계(양, 음의 상관 관계, 상관 없음), �
 
 #### Color에 대한 이해
 
+Visualization에 있어서 위치와 색은 가장 효과적인 채널 구분 방법
 
+특히, 위치와 달리 사람이 직접 개입하여 골라야 하며, 심미성을 가진다.
+
+![Data Vis에 있어서 구분과 수치 표현을 위한 방법들](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429013759543.png)
+
+![색을 이용한 최댓값과 최솟값의 강조](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429014213984.png)
+
+일부 색의 사용 장소는 사회적인 약속, 색이 주는 느낌 그리고 자연에 대한 모방 등에 의해 이미 결정되어 있다.
+
+- ![당의 색깔에 따른 투표 결과](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429015011430.png)
+
+- 무지개 빛을 응용한 수치 표현
+- 파랑과 빨강을 이용한 온도 표현 등
 
 #### Color Palette의 종류
+
+**범주형(Categorical, Discrete, Qualitative)**
+
+![범주형 변수를 위한 색상 구분 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429020021691.png)
+
+범주형 변수에는 독립되고 구별하기 쉬운 색상을 사용한다.
+
+- 즉 채도, 명도로 구분하지 않고, 색상의 차이로 구분한다.
+
+최대 10개의 색상까지 사용하며, 그외에는 기타로 묶는다.
+
+![색상에 따른 범주형 구분](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429020845573.png)
+
+**연속형 (Sequential)**
+
+정렬된 값을 가지는 순서형, 연속형 변수에 적합하며, 연속적인 색상 (주로 명도를 조절)을 통해 값을 표현한다.
+
+단일 색조로 표현하는 것이 좋고, 균일한 색상 변화가 중요하다.
+
+![연속형 변수의 색상 표시 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429021606042.png)
+
+
+
+
+
+**발산형(Diverge)**
+
+연속형과 유사하지만 중앙을 기준으로 발산하며, 상반된 값, binary 값을 표현하는데 적합
+
+양 끝으로 갈수록 색이 진해지며, 중앙의 색은 양쪽의 점에서 편향되지 않아야 함
+
+![발산형의 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429023609526.png)
 
 
 
 #### 그 외 색 Tips
 
+색상 대비(Color Constrast)
 
+- 가까운 색은 차이가 더 크게 보임(파랑보라, 빨강보라)
+
+명도 대비
+
+- 밝은 색과 어두운 색을 배치하면 밝은 색은 더 밝게, 어두운 색은 더 어둡게 보임 (회색검정)
+
+채도 대비
+
+- 채도의 차이, 채도가 더 높아보임 (회색주황)
+
+ 보색 대비
+
+- 정반대 색상을 사용하면 더 선명해 보인다.(빨강초록)
+
+를 통하여 강조할 수 있다.
+
+
+
+삼원색 (빨파노) 중 특정 색을 감지 못하면 **색맹**이라 하며, 부분적 인지 이상이 있다면 **색약**이라 한다.
+
+색인지가 중요한 분야에서는 필수적으로 고려하자.
+
+![Scientific Colormap](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429091219506.png)
 
 ### Facet
 
-#### 기본 Facet
+Facet은 분할이라는 의미로, 화면 상에 View를 분할 및 추가하여 다양한 관점을 전달함.
 
-
+- 같은 데이터셋에 서로 다른 인코딩을 통해 다른 인사이트
+- 같은 방법으로 동시에 여러 feature 보거나 큰 틀에서 볼 수 없는 부분 집합을 세세하게 보여줌.
 
 #### Matplotlib에서 구현
 
+![Figure와 Axes의 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429091738846.png)
 
-
+Figure는 큰 틀, Ax는 각 플롯이 들어가는 공간, Figure는 언제나 1개, 플롯은 N개 
 
 ### More Tips
 
+![Grid 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429205756422.png)
+
 #### Grid 이해하기
 
+기본적인 Grid는 축과 평행한 선을 사용하여 거리 및 값 정보를 보조적으로 제공
 
+색은 다른 표현들을 방해하지 않도록 무채색(color)이며, 
+
+항상 Layer 순서 상 맨 밑에 오도록 조정(zorder), 
+
+큰 격자/ 세부 격자(which='major', 'minor', 'both')
+
+X축, Y축 또는 동시에(axis='x', 'y', 'both')
+
+![x+y=c 형태의 그리드](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429211149665.png)
+
+![y=cx](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429211219611.png)
+
+![동심원형 그리드](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429211249637.png)
+
+또한 numpy + matplotlib를 통하여 x+y=c, y=cx, xy=c, 2차 함수등 여러가지 형태로 구현이 가능하다.
 
 #### 심플한 처리
 
+![선 추가하기](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429211355830.png)
 
+![면 추가하기](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429211418429.png)
 
 #### Setting 바꾸기
 
+![여러가지 테마](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429210259601.png)
+
+여러가지 테마로 바꿀 수 있다.
