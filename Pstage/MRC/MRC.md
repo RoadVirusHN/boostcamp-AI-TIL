@@ -627,3 +627,88 @@ FAISS란, similarity search와 dense vector의 clustering에 사용되는 라이
 ### Scaling up with FAISS
 
 실습
+
+## Linking MRC and Retrieval
+
+### Introduction to Open-domain Question Answert (ODQA)
+
+![전체 ODQA 구조](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210501103607834.png)
+
+ODQA는 지문이 따로 주어지지 않으며 방대한 World Knowledge에 기반해서 질의 응답
+
+Question processing + Passage retrieval + Answer processing 이 합쳐진 형태
+
+1) Question processing
+
+![Question Processing의 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210501103647390.png)
+
+Query formulation: 질문으로부터 키워드를 선택 / Answer type selection (ex. LOCATION : country)
+
+2) Passage retrieval
+
+기존의 IR 방법을 활용해서 연관된 document를 뽑고, passage 단위로 자른 후 선별 (Named entity/Passage 내 question 단어의 개수 등과 같은 hand-crafted feature 활용)
+
+3) Answer processing
+
+Hand-crafted features와 heuristic을 활용한 classifier, 주어진 question과 선별된 passage들 내에서 답을 선택
+
+### Retriever-Reader Approach
+
+Retriever-Reader 접근 방식은 데이터베이스에서 관련있는 문서를 검색한 뒤, 검색된 문서에서 질문에 해당하는 답을 찾아내는 방식
+
+즉 Retriever의 입력은 문서셋(Document corpus)와 질문(qeury)이며 출력은 관련성 높은 문서(document)이다.
+
+- 이때 TF-DF, BM25를 활용하면 학습하지 않고, Dense embedding일 경우 학습이 필요하다.
+
+Reader의 입력은 Retrieved된 문서(document)과 질문(query)이며, 출력은 답변(answer)이다.
+
+- sQuAD와 같은 MRC 데이터셋으로 학습하며, 학습데이터 추가를 위해 Distant supervision을 활용한다.
+
+**Distant supervision**
+
+![Distant supervision의 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210501110717171.png)
+
+질문-답변만 있는 데이터셋 (CuratedTREC, WebQuestions, WikiMovies)에서 MRC 학습 데이터 만들기, Supporting document가 필요함.
+
+1. 위키피디아에서 Retriever를 이용해 관련성 높은 문서를 검색
+2. 너무 짧거나 긴 문서, 질문의 고유명사를 포함하지 않는 등 부적합한 문서 제거
+3. answer가 exact match로 들어있지 않은 문서 제거
+4. 남은 문서 중에 질문과 (사용 단어 기준) 연관성이 가장 높은 단락을 supporting evidence로 사용함
+
+**Inference**
+
+- Retriever가 질문과 가장 관련성 높은 5개 문서 출력
+- Reader는 5개 문서를 읽고 답변 예측
+- Reader는 예측한 답변 중 가장 score가 높은 것을 최종 답으로 사용함
+
+### Issues and Recent Approaches
+
+**Different granularites of text at indexing time**
+
+![Wikipedia 구조의 단위](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210501111130589.png)
+
+위키피디아에서 각 Passage의 단위를 문서, 단락, 또는 문장으로 정의할지 정해야 함. 이렇게 정한 단위 기준을 Granularity라고 함.
+
+또한, Retriever 단계에서 몇 개의 문서를 정할지 고려해야하며(top-k), Granularty에 따라 k가 달라짐.
+
+(e.g article -> k=5, paragraph -> k=29, sentence -> k=78)
+
+![granulartiy에 따른 성능 변화](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210501111707546.png)
+
+>![granulartiy에 따른 성능 변화 출처](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210501112518984.png)
+
+**Single-passage training VS Multi-passage training**
+
+Single-passage : 현재 우리는 k개의 passages들을 reader이 각각 확인하고 특정 answer span에 대한 예측 점수를 나타냄, 그리고 이 중 가장 높은 점수를 가진 answer span을 고르도록 함
+
+이 경우 각 retrieved passages들에 대한 직접적인 비교라 볼 수 없으며, 이를 방지하기위해 Multi-passage가 등장
+
+Multi-passage는 retrieved passages 전체를 하나의 passage로 취급하고, reader 모델이 그 안에서 answer span 하나를 찾도록 하는 것,
+
+단, 문서가 너무 길어지므로 GPU에 많은 메모리가 할당되야 하며, 처리해야하는 연산량이 많아짐
+
+**Importance of each passage**
+
+Retriever 모델에서 추출된 top-k passage들의 retrieval score를 reader 모델에 전달, 단순히 reader가 span만 보고 판단하지 않고 context의 적절성도 고려함
+
+![Retriever-Reader 구조](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210501112432281.png)

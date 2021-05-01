@@ -184,7 +184,7 @@ Bar 사이의 Gap이 없으면 히스토그램(Histogram)이 되며, 연속된 �
 
 연속적으로 변화하는 값을 순서대로 점으로 나타내고, 이를 선으로 연결한 그래프
 #### Line Plot의 기본
-Line plot은 꺾은선 그래프, 선 그래프, line chart, line graph 등의 이름으로도 불리며, 시간/순서에 대한 변확에 적합하여 추세(시계열 분석)를 살피기 위해 사용함.(.plot()으로 사용)
+Line plot은 꺾은선 그래프, 선 그래프, line chart, line graph 등의 이름으로도 불리며, 시간/순서에 대한 변화에 적합하여 추세(시계열 분석)를 살피기 위해 사용함.(.plot()으로 사용)
 
 
 
@@ -202,7 +202,7 @@ Line plot은 꺾은선 그래프, 선 그래프, line chart, line graph 등의 �
 
 #### 정확한 Line plot
 
-![추세에 집중된 Line plot](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210426003104044.png)
+![정보에 집중된 plot vs 추세에 집중된 plot](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210426003104044.png)
 
 1. **추세에 집중하기**
 
@@ -222,7 +222,7 @@ Line plot은 꺾은선 그래프, 선 그래프, line chart, line graph 등의 �
 
 - Line은 점을 이어 만드는 요소이므로 데이터가 없어도 이를 이어서 만드는 보간을 하게 된다.
 - 데이터의 이해를 도울 수 있지만, 없는 데이터를 있다고 생각하거나 적은 차이를 못보게 할 수 있으므로 일반적인 분석에서는 지향 하자.
-
+  - 특히 곡선 보간은 조심하자
 - 데이터의 error나 noise가 포함되어 있는 경우, Moving Average 방법, Smooth Curve with Scipy(scipy의 interpolate 내부의 make_interp_spline(), interp1d() 또는 scipy의 ndimage.gaussian_filter1d() 등을 사용 가능)
 
 ![이중 축 그래프의 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210426004152188.png)
@@ -231,7 +231,8 @@ Line plot은 꺾은선 그래프, 선 그래프, line chart, line graph 등의 �
 
 ![이중축 vs 다중 plot의 가독성 차이](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210426004221912.png)
 
-- 한 plot에 대해 2개의 축을 이중 축(dual axis)라고 함, 왠만하면 이중 축보단 다중 plot으로 해결하는 게 좋다.
+- 한 plot에 대해 2개의 축을 사용하는 것을 이중 축(dual axis)라고 함, 왠만하면 이중 축보단 다중 plot으로 해결하는 게 좋다.
+  - 상관관계가 있어보이는 착시를 일으킨다.
 - 같은 시간 축에 대해 서로 다른 종류의 데이터를 표현하기 위해 축이 2개 필요 (.twinx() 사용)
 - 한 데이터에 대해 단위가 다른 경우, .secondary_xaxis(), .secondary_yaxis()를 사용해 보자.
 
@@ -277,7 +278,8 @@ Scatter plot을 통해 상관관계(양, 음의 상관 관계, 상관 없음), �
 
 1. **Overplotting 방지**
 
-- 점이 너무 많으면 분포 파악이 힘드므로, 투명도 조정, 지터링(jittering, 점의 위치 약간 변경), 2차원 히스토그램(히트맵을 사용하여 깔끔한 시각화), Contour plot(분포를 등고선을 사용해 포현) 등으로 표현하면 좋다.
+- 점이 너무 많으면 분포 파악이 힘드므로, 투명도 조정, 지터링(jittering, 점의 위치 약간 변경, 효율성이 조금 떨어짐), 2차원 히스토그램(히트맵을 사용하여 깔끔한 시각화), Contour plot(분포를 등고선을 사용해 표현) 등으로 표현하면 좋다.
+  - 이외에도 joint plot 등이 있음
 
 
 
@@ -295,7 +297,7 @@ Scatter plot을 통해 상관관계(양, 음의 상관 관계, 상관 없음), �
 
 3. **인과 관계와 상관 관계**
 
-- 인과 관계(causal relation)과 상관 관계(correlation)을 잘 구별하자
+- 인과 관계(causal relation, x축 때문에 y축이 변한다)과 상관 관계(correlation, x축과 y축이 동시에 어떠한 요인에 의해 변하는 관계이다.)을 잘 구별하자
 - 인과 관계는 사전 정보와 함께 가정으로 제시
 
 
