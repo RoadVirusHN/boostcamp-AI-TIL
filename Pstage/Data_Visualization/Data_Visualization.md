@@ -340,11 +340,7 @@ Text는 Data Visualization에서 명확하고 오해를 방지할 수 있는 수
 
 **Text 원하는 대로 사용하기**
 
-
-
-#### 실습
-
-
+[Data_Visualization_3\]3_1_Text.ipynb
 
 ### Color 사용하기
 
@@ -354,11 +350,13 @@ Visualization에 있어서 위치와 색은 가장 효과적인 채널 구분 �
 
 특히, 위치와 달리 사람이 직접 개입하여 골라야 하며, 심미성을 가진다.
 
+- 하지만 심미성보다는 정보 전달에 좀 더 신경쓰자.
+
 ![Data Vis에 있어서 구분과 수치 표현을 위한 방법들](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429013759543.png)
 
 ![색을 이용한 최댓값과 최솟값의 강조](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429014213984.png)
 
-일부 색의 사용 장소는 사회적인 약속, 색이 주는 느낌 그리고 자연에 대한 모방 등에 의해 이미 결정되어 있다.
+일부 색의 사용 장소는 사회적인 약속, 색이 주는 공통적인  느낌 그리고 자연에 대한 모방 등에 의해 이미 결정되어 있다.
 
 - ![당의 색깔에 따른 투표 결과](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429015011430.png)
 
@@ -367,7 +365,7 @@ Visualization에 있어서 위치와 색은 가장 효과적인 채널 구분 �
 
 #### Color Palette의 종류
 
-**범주형(Categorical, Discrete, Qualitative)**
+**범주형(Categorical, Discrete, Qualitative) Color Palette**
 
 ![범주형 변수를 위한 색상 구분 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429020021691.png)
 
@@ -379,7 +377,7 @@ Visualization에 있어서 위치와 색은 가장 효과적인 채널 구분 �
 
 ![색상에 따른 범주형 구분](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429020845573.png)
 
-**연속형 (Sequential)**
+**연속형 (Sequential) Color Palette**
 
 정렬된 값을 가지는 순서형, 연속형 변수에 적합하며, 연속적인 색상 (주로 명도를 조절)을 통해 값을 표현한다.
 
@@ -391,7 +389,7 @@ Visualization에 있어서 위치와 색은 가장 효과적인 채널 구분 �
 
 
 
-**발산형(Diverge)**
+**발산형(Diverge) Color Palette**
 
 연속형과 유사하지만 중앙을 기준으로 발산하며, 상반된 값, binary 값을 표현하는데 적합
 
@@ -414,12 +412,13 @@ Visualization에 있어서 위치와 색은 가장 효과적인 채널 구분 �
 채도 대비
 
 - 채도의 차이, 채도가 더 높아보임 (회색주황)
+- 더 선명해보여서 주로 사용함
 
  보색 대비
 
 - 정반대 색상을 사용하면 더 선명해 보인다.(빨강초록)
 
-를 통하여 강조할 수 있다.
+를 통하여 강조(Highlighting)할 수 있다.
 
 
 
@@ -441,6 +440,34 @@ Facet은 분할이라는 의미로, 화면 상에 View를 분할 및 추가하�
 ![Figure와 Axes의 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429091738846.png)
 
 Figure는 큰 틀, Ax는 각 플롯이 들어가는 공간, Figure는 언제나 1개, 플롯은 N개 
+
+주로
+
+- plt.subplot()
+- plt.figure() + fig.add_subplot()
+- plt.subplots()
+
+으로 subplot을 더하며,
+
+figuresize, dpi, sharex, sharey, squeeze, aspect 등의 argument를 조정할 수 있다.
+
+![기본적인 subplots](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210502155016443.png)
+
+가장 가본적인 형태로 subplot을 추가하면 위와 같다.
+
+![slicing과 위치를 조정해 만든 subplot](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210502155039582.png)
+
+위 subplot을 표현하기 위해 Slicing 또는 x, y, dx, dy를 사용하며, 
+
+Slicing 방법의 경우 fig.add_spec() 함수를 통해 자세하게 구현할 수 있다.
+
+위의 예시의 경우, ![각 부분의 slicing](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210502155134552.png)처럼 slicing한 모양이라 할 수 있다.
+
+같은 모양일 경우, (x,y), dx, dy로 작성하려면, fig.subplot2grid() 함수를 통해 구현할 수 있으며, ![x,y 기반 비율](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210502155324278.png)의 비율을 통해 구현할 수 있다.
+
+![특정 위치에 subplot](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210502155356077.png)![외부에 그리는 subplot](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210502155422717.png)
+
+ax.inset_axes()(좌)를 통하여 Ax 내부에 서브플롯을 추가하여 외부 정보나 미니맵 같은 형태를 추가할 수 있으며, make_axes_locatable(ax)(우) 함수를 통하여 그리드 외부에 사이드 subplot을 추가하여 제목, 통계 정보등을 제공할 수 있다. 
 
 ### More Tips
 
@@ -476,4 +503,9 @@ X축, Y축 또는 동시에(axis='x', 'y', 'both')
 
 ![여러가지 테마](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\Data_Visualization\Data_Visualization.assets\image-20210429210259601.png)
 
-여러가지 테마로 바꿀 수 있다.
+여러가지 미리 정의된 테마로 바꿀 수 있다. 
+
+ggplot, fivethirtyeight 이 대표적으로 많이 사용됨
+
+**실습**
+
