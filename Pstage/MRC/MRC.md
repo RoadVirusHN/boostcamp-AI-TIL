@@ -712,3 +712,65 @@ Multi-passage는 retrieved passages 전체를 하나의 passage로 취급하고,
 Retriever 모델에서 추출된 top-k passage들의 retrieval score를 reader 모델에 전달, 단순히 reader가 span만 보고 판단하지 않고 context의 적절성도 고려함
 
 ![Retriever-Reader 구조](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210501112432281.png)
+
+## Reducing Training Bias
+
+### Definition of Bias
+
+**Bias의 종류**
+
+1. 학습에서의 Bias :
+   - 학습할 때 과적합을 막거나 사전 지식을 주입하기 위해 특정 형태의 함수를 선호하는 것 (inductive bias)
+
+2. A Biased World : 
+   - 현실 세계가 편향되어 있기 때문에 모델에 원치 않는 속성이 학습되는 것 (historical bias) 
+   - 성별과 직업 간 관계 등 표면적인 상관관계 때문에 원치 않는 속성이 학습되는 것 (co-occurrence bias)
+     - Gender Bias : 특정 성별과 행동을 연관시켜서 예측 오류가 발생(의사의 사진은 높은 확률로 여성을 남성으로 잘못 판단함.)
+
+3. Bias in Data Generation : 
+   - 입력관 출력을 정의한 방식 때문에 생기는 편향 (specification bias)
+   - 데이터를 샘플링한 방식 때문에 생기는 편향 (sampling bias)
+     - 리터러시 다이제스트 잡지의 정반대의 여론 조사 결과 : 잡지 정기 구독자, 자동차 등록자, 사교클럽 명단 등에서 샘플 채취-> 부자들만 샘플을 채취한 것이 원인으로, 예측 실패 
+   - 어노테이터의 특성 때문에 생기는 편향 (annotator bias)
+
+### Bias in Open-domain Question Answering
+
+Retriever-Reader Pipeline에서 Reading Comprehension 부분의 bias에 집중함.
+
+만약 reader 모델이 한정된 데이터셋에서만 학습된다면, Reader는 항상 정답이 문서 내에 포함된 데이터쌍만(Positive)을 보게 됨
+
+특히 SQuAD와 같은 (Context, Query, Answer)이 모두 포함된 데이터는 positive가 완전히 고정되어 있음
+
+예를 들어 Inference 시 만약 데이터 내에서 찾아볼 수 없었던 새로운 문서를 주면, Reader 모델을 문서에 대한 독해능력이 떨어져 정답을 내지 못함
+
+이를 막기 위해 
+
+1. Train negative examples
+
+   훈련 시, 잘못된 예시를 보여줘야 retriever이 negative한 내용들은 먼 곳에 배치할 수 있음, 또한, negative sample 또한 다양성을 고려해야함
+
+   Corpus 내에서 랜덤하게 뽑거나 좀더 헷갈리는 negative 샘플들 뽑기 위해 높은 BM25/ TF-IDF 매칭 스코어를 가지지만, 답을 포함하지 않는 샘플을 뽑거나, 같은 문서에 나온 다른 Passage/Question 선택
+
+2. Add no answer bias
+
+   입력 시퀀스의 길이가 N일 시, 시퀀스의 길이 외 1개의 토큰이 더 있다고 생각하기, 
+
+   훈련 모델의 마지막 레이어 weight에 훈련 가능한 bias를 하나 더 추가
+
+   Softmax로 answer prediction을 최종적으로 수행할 때, start end 확률이 해당 bias 위치에 있는 경우가 가장 확률이 높으면 이는 "대답 할 수 없다"라고 취급
+
+### Annotation Bias from Datasets
+
+Annotaion Bias란, ODQA 학습 시 기존의 MRC 데이터셋 활용시, ODQA 세팅에는 적합하지 않음 bias가 데이터 제작 (annotation) 단게에서 발생 가능
+
+![dataet 별 bias](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210503223157456.png)
+
+데이터셋 별 성능 차이가 annotation bias로 인해 발생 가능
+
+![데이터셋 별 성능 차이](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210503223656493.png)
+
+이를 막기 위해, Annotation bias를 고려하고 데이터를 모아야 한다.
+
+Natural Questions : Supporting evidence가 주어지지 않은, 실제 유저의 question들을 모아서 dataset을 구성
+
+SQuAD : Passage가 주어지고, 주어진 passage 내에서 질문과 답을 생성하므로, ODQA에 applicable하지 않은 질문들이 존재한다.
