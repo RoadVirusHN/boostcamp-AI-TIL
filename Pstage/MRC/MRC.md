@@ -721,6 +721,7 @@ Retriever 모델에서 추출된 top-k passage들의 retrieval score를 reader �
 
 1. 학습에서의 Bias :
    - 학습할 때 과적합을 막거나 사전 지식을 주입하기 위해 특정 형태의 함수를 선호하는 것 (inductive bias)
+   - 경향과 의도를 위해 일부러 집어넣는 경우가 많음
 
 2. A Biased World : 
    - 현실 세계가 편향되어 있기 때문에 모델에 원치 않는 속성이 학습되는 것 (historical bias) 
@@ -728,7 +729,7 @@ Retriever 모델에서 추출된 top-k passage들의 retrieval score를 reader �
      - Gender Bias : 특정 성별과 행동을 연관시켜서 예측 오류가 발생(의사의 사진은 높은 확률로 여성을 남성으로 잘못 판단함.)
 
 3. Bias in Data Generation : 
-   - 입력관 출력을 정의한 방식 때문에 생기는 편향 (specification bias)
+   - 입력과 출력을 정의한 방식 때문에 생기는 편향 (specification bias)
    - 데이터를 샘플링한 방식 때문에 생기는 편향 (sampling bias)
      - 리터러시 다이제스트 잡지의 정반대의 여론 조사 결과 : 잡지 정기 구독자, 자동차 등록자, 사교클럽 명단 등에서 샘플 채취-> 부자들만 샘플을 채취한 것이 원인으로, 예측 실패 
    - 어노테이터의 특성 때문에 생기는 편향 (annotator bias)
@@ -741,13 +742,13 @@ Retriever-Reader Pipeline에서 Reading Comprehension 부분의 bias에 집중�
 
 특히 SQuAD와 같은 (Context, Query, Answer)이 모두 포함된 데이터는 positive가 완전히 고정되어 있음
 
-예를 들어 Inference 시 만약 데이터 내에서 찾아볼 수 없었던 새로운 문서를 주면, Reader 모델을 문서에 대한 독해능력이 떨어져 정답을 내지 못함
+예를 들어 Inference 시 만약 데이터 내에서 찾아볼 수 없었던 새로운 문서를 주면, Reader 모델을 문서에 대한 독해능력이 떨어져 정답을 내지 못함(ex) 학습시에 문학과 관련 주제만 주어졌는데, 실제 Inference 때에는 공학관련 지문들이 나온다면?)
 
 이를 막기 위해 
 
 1. Train negative examples
 
-   훈련 시, 잘못된 예시를 보여줘야 retriever이 negative한 내용들은 먼 곳에 배치할 수 있음, 또한, negative sample 또한 다양성을 고려해야함
+   훈련 시, 잘못된 예시를 보여줘야 retriever이 negative한 내용들은 먼 곳에 배치할 수 있음, 또한, negative sample 또한 다양성을 고려해야 함.
 
    Corpus 내에서 랜덤하게 뽑거나 좀더 헷갈리는 negative 샘플들 뽑기 위해 높은 BM25/ TF-IDF 매칭 스코어를 가지지만, 답을 포함하지 않는 샘플을 뽑거나, 같은 문서에 나온 다른 Passage/Question 선택
 
@@ -763,14 +764,179 @@ Retriever-Reader Pipeline에서 Reading Comprehension 부분의 bias에 집중�
 
 Annotaion Bias란, ODQA 학습 시 기존의 MRC 데이터셋 활용시, ODQA 세팅에는 적합하지 않음 bias가 데이터 제작 (annotation) 단게에서 발생 가능
 
+예를 들어 SQuAD나 TriviaQA는 질문을 하는 사람이 답을 아는 상태로 tagging 했으므로, 너무 쉬운 학습이 된다.
+
+또한, SQuAD는 고작 500개의 article에서 데이터를 추출했다.
+
 ![dataet 별 bias](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210503223157456.png)
 
 데이터셋 별 성능 차이가 annotation bias로 인해 발생 가능
+
+(BM25 : Sparse embedding / DPR : dense embedding)
 
 ![데이터셋 별 성능 차이](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210503223656493.png)
 
 이를 막기 위해, Annotation bias를 고려하고 데이터를 모아야 한다.
 
-Natural Questions : Supporting evidence가 주어지지 않은, 실제 유저의 question들을 모아서 dataset을 구성
+Natural Questions dataset : Supporting evidence가 주어지지 않은, 실제 유저의 question들을 모아서 dataset을 구성
 
-SQuAD : Passage가 주어지고, 주어진 passage 내에서 질문과 답을 생성하므로, ODQA에 applicable하지 않은 질문들이 존재한다.
+SQuAD : Passage가 주어지고, 주어진 passage 내에서 질문과 답을 생성하므로, ODQA에 applicable하지 않은 질문들이 존재한다(미국의 대통령은 누구인가? => 어느 시기냐에 따라 다름).
+
+## Closed-book QA with T5
+
+![Closed-book Question Answering의 구조 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210504091130622.png)
+
+### Closed-book Question Answering
+
+사전학습을 통해 대량의 지식을 학습 한 뒤, 굳이 Retriever 단계를 거치지 않고 모델 내부의 Knowledge storage를 통해 Answering 하는 것
+
+GPT-2를 통해 Zero-shot QA를 해보면 어느 정도 대답이 가능함
+
+|                  | Open-book QA                                                 | Closed-book QA                                               |
+| ---------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| 지식을 찾는 방식 | 대량의 지식 소스를 특정 문서 단위로 나누어 Dense/Sparse 형태로 표현한 후, query가 들어오면 가장 그와 관련된 문서를 search | 대량의 지식 소스(위키피디아 등)를 기반으로 사전학습된 언어 모델이 그 지식을 기억하고 있을 것이라 가정함. Search 과정 없이 바로 정답을 생성함 |
+| 문제점           | 지식 소스를 저장하기 어려움, 검색하는 시간 소요              | 사전학습된 언어 모델이 얼마나 지식을 잘 기억하고 있는지가 매우 중요함, 학습 시간이 길고 parameter수가 큼, 해석하기 어려움 |
+
+### Text-to-Text Format
+
+Text-to-Text format : 모든 종류의 문제를 Text 대 Text로 매핑되는 문제로 바꿈
+
+**Closed-book QA as Text-to-Text Format**
+
+Generation-based MRC와 유사하지만 Context가 없이 질문만 들어가며, Retriever 단계가 없다.
+
+사전학습된 언어 모델은 BART와 같은 seq-to-seq 형태의 Transformer 모델을 사용함
+
+Text-to-Text format에서는 각 입력값(질문)과 출력값(답변)에 대한 설명을 맨 앞에 추가함.
+
+**Text-to-Text Format**
+
+Text-to-text problem은 input으로 text를 받아서, output으로 새로운 text를 생헝하는 문제이며, 다양한 text processing problem이 text-to-text 문제로 변형될 수 있다.
+
+![Text-to-Text 문제의 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210504092457445.png)
+
+Text-to-Text format 문제의 예시
+
+1. Task-specific prefix를 추가하여 특정 task에 알맞은 output text를 생성하도록 함
+
+- Machine translation의 경우, prefix로 translate A to B (A: source language/ B: target language)를 통해 가능
+  - "translate English to German: That is good" => "Das ist gut."
+
+2. Text classification(MNLI)
+
+- 두개의 sentence가 주어지고 이 둘의 관계를 예측하는 task (neutral, contradiction, entailment)
+  - Input: "mnli hypothesis: <sent1> premise: <sent2>"
+  - Output: "neutral" or "contradiction" or "entailment"
+
+![TtT Model overview](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210504093605992.png)
+
+**T5**
+
+![T5 모델 구조](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210504093738892.png)
+
+Text-to-Text format이라는 형태로 데이터의 입출력을 만들어 거의 모든 자연어처리 문제를 해결하도록 학습된 seq-to-seq 형태의 Transformer 모델
+
+![T5의 여러가지 시도](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210504094037419.png)
+
+T5의 Pre-training 모델의 경우 다양한 모델 구조, 사전학습 목표, 사전학습용 데이터, Fine-tuning 방법 등을 체계적으로 실험함, 가장 성능이 좋은 방식들을 선택하여 방대한 규모의 모델을 학습 시킴
+
+T5-xlarge의 경우 parameter수가 11B라는 방대한 크기를 자랑함
+
+![T5 Fine-tuning vs Pre-training](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210504105614705.png)
+
+pre-trained 된 T5를 활용 시, Fine-tuning된 MRC 데이터셋(TriviaQA, WebQuestions, Natural Questions)의 QA pair만(context 제외)를 활용하고, Task-specific prefix(어느 데이터셋, 즉 어느 task인가?)을 추가 한뒤, 답이 여러개일 경우도 고려해서 학습 시킴
+
+ex) Input: trivia question :how many legs does a ladybird have? Trget: six
+
+### Experiment Results & Analysis
+
+Dataset : Open-domain QA 데이터셋 또는 MRC 데이터셋에서 지문을 제거하고 질문과 답변만 남긴 데이터셋을 활용
+
+Salient Span Masking : 고유 명사, 날짜 등 의미를 갖는 단위에 속하는 토큰 범위를 마스킹한 뒤 학습
+
+Fine-tuning : Pre-trained T5 체크포인트를 Open-domain QA 학습 데이터셋으로 추가 학습
+
+![T5 Closed-book Question Answering 예시](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210504111047154.png)
+
+대부분 Open-book 모델보다 성능이 뛰어나며, 모델 크기가 커질수록 성능이 증가했으며, 특히 Salient Span Masking이 성능을 크게 끌어올림
+
+또한, 오답의 62% 가량이 실제 오답이며, 나머지 38%는 중복 답안(Incomplete Annotation), 각기 다른  시기, 관점, 질문의 해석에 따라 정답이 될 수 있거나(Unanswerable), 정답의 다른 표현을 낸 경우(Phrasing Mismatch)이므로 실제 성능은 더욱 증가한다.
+
+Closed-book QA의 한계로, 
+
+1. 모델의 크기가 너무 커서 계산량이 많고 속도가 느림 -> 더 효율적인 모델 필요
+2. 모델이 어떤 데이터로 답을 내는지 알 수 없음 -> 결과의 해석 가능성(interpretability)를 높이는 연구 필요
+3. 모델이 참조하는 지식을 추가하거나 제거하기 어려움
+
+## QA with Phrase Retrieval
+
+### Phrase Retrieval in Open-Domain Question Answering
+
+기존의 Retriever-Reader 방식은 다음과 같은 한계를 갖는다.
+
+1. Error Propagation: 5-10개의 문서만 reader에게 전달
+2. Query-dependent encoding: query에 따라 정답이 되는 answer span에 대한 encoding이 달라짐
+
+2단계로 이루지 말고 바로 context에서 정답을 search하는 방법인 Phrase Indexing 고안
+
+![Phrase Indexing](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210506094451910.png)
+
+미리 계산된 key vector와 Query vector를 비교하여 답을 구하게 된다. 
+
+![Query-Agnostic Decompostion](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210506095646964.png)
+
+기존의 a,q,d 조합 중 가장 점수가 높은 것을 찾는 방법(F 함수)에서 아래의  Query만(G 함수) 다시 계산하는 방법올 바꾸어 더욱 효율적이다.
+
+다만 실제로 F 함수를 G와 H 함수로 정확히 대체할 수 없어 Approximation 하는 방법을 사용하며, 이때 실제 F 함수값과 G, H  함수 값의 차이인 Decomposition Gap이 성능 하락의 주요 원인이 된다.
+
+이때, 각 phrase를 vector space 상에 잘 mapping 하기 위해 Dense와 Sparse 임베딩을 둘다 이용하게 된다.
+
+### Dense-sparse Representation for Phrases
+
+Dense vectors는 통사적, 의미적 정보를 담는 데 효과적이며,(유연함)
+
+Sparse vectors는 어휘적 정보를 담는 데 효과적이므로, (명확함)
+
+이 둘을 전부 이용하여 phrase (and question) embedding을 할 수 있다.
+
+![phrase and Question Embedding](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210506100447565.png)
+
+Dense vector를 만드는 방법
+
+- Pre-trained LM (e.g. BERT)를 이용
+- Start vector와 end vector를 재사용해서 메모리 사용량 줄임
+
+![Dense vector를 만드는 방법](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210506101357044.png)
+
+Coherency vector 생성법
+
+- phrase가 한 단위의 문장 구성 요소에 해당하는지를 나타냄
+- 구를 형성하지 않는 phrase를 걸러내기 위해 사용함
+- Start vector와 end vector를 이용하여 계산
+
+![Coherency vector 생성법](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210506101600118.png)
+
+Question embedding 생성법
+
+- Question을 임베딩할 때는 [CLS] 토큰 (BERT)을 활용
+
+![Question embedding 생성법](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210506101649648.png)
+
+Sparse vector를 만드는 방법
+
+- 문맥화된 임베딩(contextualized embedding)을 활용하여 가장 관련성이 높은 n-gram으로 sparse vector 구성
+
+![Sparse vector를 만드는 방법](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\MRC\MRC.assets\image-20210506101836990.png)
+
+**Scalability Challenge**
+
+Wikipedia 같은 대량의 phrases를 처리하기 위해, Storage, indexing, search의 scalabilty가 고려되어야 하며,
+
+Storage의 경우 Pointer, filter, scalar quantization을 활용하여 1/130 수준 까지 줄일 수 있음
+
+Search 속도의 경우 FAISS를 활용해 dense vector에 대한 search를 먼저 수행 후, sparse vector로 reranking 
+
+### Experiment Results & Analysis
+
+Phrase retrieval 방식은 발표 당시에는 약간의 성능 상승과 대단히 큰 inference speed를 자랑했었지만, Decomposability gap이 불러오는 효과로 최근 발표된 Retrieval-Reader 방식의 연구들 보다 성능이 뒤쳐지며, Storage 용량을 크게 필요로 한다는 단점을 가지게 된다.
+
