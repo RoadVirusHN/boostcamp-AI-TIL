@@ -549,6 +549,31 @@ Riid의 1등 솔루션인 Last Query Transformer RNN은, 위 두 가지 문제�
 특징으로, 
 
 1. 다수의 Feature를 사용하지 않음, 대신 sequence 길이를 늘림(시간 복잡도가 증가하는 문제를 아래로 해결).
+
+   - 5개의 feature 만 사용, 다른 상위권 모델의 경우 70~80개 사용
+
 2. 마지막 Query만 사용하여 시간 복잡도를 낮춤
+
+   ![행렬 곱이 일어나는 지점](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\DKT\DKT.assets\image-20210601010907195.png)
+
+   - 일반적으로 $n \times m$ 행렬과  $m \times l$ 행렬의 곱에 대한 시간 복잡도는 $O(nml)$이다.
+   - Transformer에서 Query, Key, Value에 대한 행렬 Q, K, V가 각각 (L, d)로 주어져 있고, 우리가 계산하는 Attention Score의 계산식은 다음과 같다.
+
+   $$
+   Att(Q, K, V) = \mathcal{softmax}\frac{QK^T}{\sqrt{d}}*V\\
+   Scaled\ dot\ attention : 유사도\ 구할시\ dot\ 연산\ 활용
+   $$
+
+   - 시간 복잡도가 $O(L^2d)$로 변한다.
+   - 추가적으로 마지막 Query만 사용한다면, Q 행렬의 차원이 (L, d)에서 (1, d)로 줄어든다.
+   - 즉, 최종적으로 $O(Ld)$로 줄어든다.
+
+   ![Last Query Transformer RNN](C:\Users\roadv\Desktop\AI_boostcamp\BoostCamp AI TIL\Pstage\DKT\DKT.assets\image-20210601011046485.png)
+
 3. 문제 간 특징을 Transformer로 파악하고, 일련의 Sequece 사이 특징들을 LSTM을 활용해 뽑아낸 뒤, 마지막 DNN을 통해 Sequence 별 정답을 예측
+
+- Positional embedding과 look-ahead mask를 제외하여 순서와 관계없이 입력 간의 관계를 파악하게 함
+- 그 뒤, Sequential 특성 파악을 위해 LSTM 활용
+- 이를 통해, Encoder 수(=Layer 수)와 Sequence length를 증가시켜 성능이 향상 됨.
+- BERT 모델에 비해 3배 이상의 sequence length를 가짐(512 vs 1728)
 
