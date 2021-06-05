@@ -577,3 +577,6 @@ Riid의 1등 솔루션인 Last Query Transformer RNN은, 위 두 가지 문제�
 - 이를 통해, Encoder 수(=Layer 수)와 Sequence length를 증가시켜 성능이 향상 됨.
 - BERT 모델에 비해 3배 이상의 sequence length를 가짐(512 vs 1728)
 
+## ML Pipeline
+
+[DKT-8]ML_Pipeline.ipynb 참조
