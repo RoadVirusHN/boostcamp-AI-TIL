@@ -580,3 +580,38 @@ Riid의 1등 솔루션인 Last Query Transformer RNN은, 위 두 가지 문제�
 ## ML Pipeline
 
 [DKT-8]ML_Pipeline.ipynb 참조
+
+## Model Serving
+
+### 모델 서빙의 종류
+
+**On-device Serving**
+
+
+
+**Cloud-based Serving**
+
+
+
+
+
+### 웹서버를 활용한 모델 서빙
+
+#### HTTP 통신
+
+
+
+#### 웹 서버 구축
+
+
+
+### MLflow를 활용한 모델 서빙
+
+![MLflow 로고](DKT.assets/image-20210607225750620.png)
+
+#### MLflow
+
+
+
+#### 예시 시스템
+
