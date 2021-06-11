@@ -583,6 +583,12 @@ Riid의 1등 솔루션인 Last Query Transformer RNN은, 위 두 가지 문제�
 
 ## Model Serving
 
+
+
+
+
+
+
 ### 모델 서빙의 종류
 
 **On-device Serving**
@@ -615,3 +621,52 @@ Riid의 1등 솔루션인 Last Query Transformer RNN은, 위 두 가지 문제�
 
 #### 예시 시스템
 
+
+
+## End to End Project
+
+### 실제 현업과 Competition의 비교
+
+![Real world vs competition](DKT.assets/image-20210611212230709.png)
+
+![Ai task들](DKT.assets/image-20210611212400505.png)
+
+### 문제정의 3요소
+
+**input(Data_X, DataType)**
+
+
+
+
+
+**Output(Data_Y, 예측해야 할 값)**
+
+
+
+
+
+**Metric(평가 지표)**
+
+### Workflow
+
+**Workflow란?**
+
+![image-20210611233524730](DKT.assets/image-20210611233524730.png)
+
+#### 워크 플로우 관리
+
+
+
+**Apache Airflow를 활용한 워크 플로우 관리**
+
+![Apache Airflow 로고](DKT.assets/image-20210611233443912.png)
+
+
+
+
+
+**토이 프로젝트 소개**
+
+
+
+ 
