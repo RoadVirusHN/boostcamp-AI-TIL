@@ -661,6 +661,14 @@ Riid의 1등 솔루션인 Last Query Transformer RNN은, 위 두 가지 문제�
 
 ![Apache Airflow 로고](DKT.assets/image-20210611233443912.png)
 
+Airflow는 Workflow를 프로그래밍 방식으로 작성, 예약 및 모니터링하는 플랫폼으로, python을이용 한 워크 플로우 관리 툴이다.
+
+- Airbnb -> Apache 로 프로젝트 넘어감
+
+Airflow는 크게
+
+Webserver, Scheduler, Worker, Meta DB로 이루어져 있다.
+
 
 
 
